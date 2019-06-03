@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
+ */
+
+package com.huawei.wearable.watchfacecommon.provider.asset.manager;
+
+/**
+ * 自定义资源包持有者
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/3/6
+ */
+public class AssetPackageHolder {
+    private static final String TAG = "AssetPackageHolder";
+
+    private static AssetPackageHolder instance = null;
+
+    private AssetPackage assetPackage;
+
+    private AssetPackageHolder() {
+    }
+
+    /**
+     * 单例获取
+     * @return instance
+     */
+    public static AssetPackageHolder getInstance() {
+        if (instance == null) {
+            synchronized (AssetPackageHolder.class) {
+                if (instance == null) {
+                    instance = new AssetPackageHolder();
+                }
+            }
+        }
+        return instance;
+    }
+
+    public static void setInstance(AssetPackageHolder instance) {
+        AssetPackageHolder.instance = instance;
+    }
+
+    public AssetPackage getAssetPackage() {
+        return assetPackage;
+    }
+
+    public void setAssetPackage(AssetPackage assetPackage) {
+        this.assetPackage = assetPackage;
+    }
+}
