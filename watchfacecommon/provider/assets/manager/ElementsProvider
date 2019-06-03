@@ -1,0 +1,140 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
+ */
+
+package com.huawei.wearable.watchfacecommon.provider.asset.manager;
+
+import android.text.TextUtils;
+
+import com.huawei.wearable.watchfacecommon.provider.asset.model.Config;
+import com.huawei.wearable.watchfacecommon.provider.asset.model.Element;
+import com.huawei.wearable.watchfacecommon.provider.asset.model.Provider;
+import com.huawei.wearable.watchfacecommon.provider.asset.model.Providers;
+import com.huawei.wearable.watchfacecommon.provider.asset.model.Styles;
+import com.huawei.wearable.watchfacecommon.utils.ContextUtil;
+import com.huawei.wearable.watchfacecommon.utils.HwLogUtil;
+import com.huawei.wearable.watchfacecommon.utils.HwUtil;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 数据提供类
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/23
+ */
+public class ElementsProvider {
+    private static final String TAG = "ElementsProvider";
+
+    private ResourceResolver mResolver;
+
+    private Providers mProviders;
+
+    private Provider mProvider;
+
+    /**
+     * 构造方法
+     * @param resolver 资源解析器
+     */
+    public ElementsProvider(ResourceResolver resolver) {
+        mResolver = resolver;
+        mProviders = resolver.parserConfigFile();
+        if (mProviders == null) {
+            return;
+        }
+        List<Provider> providerList = mProviders.getProviders();
+        if ((providerList == null) || (providerList.size() <= 0)) {
+            return;
+        }
+        for (Provider provider : providerList) {
+            if (provider == null) {
+                continue;
+            }
+            String dpiStr = provider.getDpi();
+            try {
+                if (Integer.parseInt(dpiStr) == HwUtil.getDisplayMetrics(ContextUtil.getContext())) {
+                    mProvider = provider;
+                }
+            } catch (NumberFormatException e) {
+                HwLogUtil.e(TAG, "ElementsProvider() NumberFormatException");
+            }
+        }
+    }
+
+    /**
+     * 获取element对象
+     * @param label 标签
+     * @return element对象
+     */
+    public Optional<Element> getElement(String label) {
+        if (mProvider == null) {
+            return Optional.empty();
+        }
+        List<Element> elements = mProvider.getElements();
+        if ((elements == null) || (elements.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Element element : elements) {
+            if (TextUtils.equals(element.getLabel(), label)) {
+                return Optional.of(element);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * 获取element集合
+     * @return element集合
+     */
+    public List<Element> getElements() {
+        if (mProvider == null) {
+            return Collections.emptyList();
+        }
+        List<Element> elements = mProvider.getElements();
+        if ((elements == null) || (elements.size() <= 0)) {
+            return Collections.emptyList();
+        }
+        return elements;
+    }
+
+    /**
+     * 获取styles对象
+     * @return styles对象
+     */
+    public Optional<Styles> getStyles() {
+        if (mProvider == null) {
+            return Optional.empty();
+        }
+        Styles styles = mProvider.getStyles();
+        if (styles == null) {
+            return Optional.empty();
+        }
+        return Optional.of(styles);
+    }
+
+    /**
+     * 获取Config对象
+     * @return config对象
+     */
+    public Optional<Config> getConfig() {
+        if (mProvider == null) {
+            return Optional.empty();
+        }
+        Config configs = mProvider.getConfigs();
+        if (configs == null) {
+            return Optional.empty();
+        }
+        return Optional.of(configs);
+    }
+
+    /**
+     * 保存表盘配置
+     * @return element对象
+     */
+    public boolean saveProviders() {
+        return mResolver.writeBackConfigFile(mProviders);
+    }
+}
