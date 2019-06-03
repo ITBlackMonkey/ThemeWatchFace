@@ -1,0 +1,410 @@
+表盘资源包设计
+修订记录
+日期	修订版本	CR号	修改章节	修改描述	作者
+2018-11-20	V0.1			初稿完成，包含背景、时间两种元素的属性定义	慕占荣
+230717
+2018-12-07	V0.2		3.5
+3.6	补充complication控件元素的属性定义	慕占荣
+230717
+2018-12-18	V0.3		1.1
+1.3	按照评审结果修改：
+1.补充description.xml中分辨率、版本号定义规则
+2.watch_face_config.xml中分辨率定义支持长方形屏幕	慕占荣
+230717
+2018-12-29	V0.4			按照表盘支持自定义的设计修改文档	慕占荣
+230717
+					
+					
+					
+					
+					
+
+
+
+
+
+
+
+
+
+
+1.	表盘包结构说明
+ 
+preview：存放表盘预览图的目录（在表盘市场中展示的预览图）
+com.huawei.watchface：表盘bin，存放表盘的资源与配置文件
+description.xml：表盘描述文件
+1.1.	Description.xml 描述文件
+ 
+注意：
+1.	主题英文名，中文名，开发者名称，设计师名称四项在主题上线后均不可修改；
+2.	设计师名称与设计师的开发者联盟账户绑定；
+3.	主题英文字体，中文字体均采用默认不可以修改；
+4.	主题分辨率，由云端按照设备屏幕分辨率统一分配编码；
+设备传播名	屏幕分辨率	分辨率编码
+Huawei Watch 2	390*390	HWHD01
+Huawei Watch GT	454*454	HWHD02
+Honor Magic Watch	390*390	HWHD01
+screen字段填写对应的分辨率编码。
+5.	主题版本号x.y.z
+x作为设备GUI框架能力的标识，对应关系如下：
+设备传播名	GUI框架能力	x
+Huawei Watch 2
+Cassini	Wear OS	1
+Huawei Watch GT Honor Magic Watch	TouchGFX	2
+Band B5	普通嵌入式GUI	3
+y作为设备表盘框架能力的版本号，用于标识设备上表盘框架能力的迭代更新，从1开始定义。要求设备表盘框架能力要始终向前兼容。
+z作为表盘资源包版本号，用于表盘版本更新，从1开始定义
+//端侧向云侧查询表盘列表时，带版本号格式 x.y
+1.2.	Preview 表盘预览图
+Preview目录下的预览图是给主题市场上展示的，需要有两张，分别为：
+cover.jpg：封面，用于表盘市场上展示表盘效果
+icon_small.jpg：图标预览
+ 
+预览图尺寸，在不同设备分辨率下分别为：
+设备传播名	屏幕分辨率	预览图尺寸
+Huawei Watch 2	390*390	210*210
+Huawei Watch GT	454*454	250*250
+Honor Magic Watch	390*390	216*216
+1.3.	Com.huawei.watchface 表盘bin
+表盘bin，存放表盘的资源与配置文件，APP只将表盘资源包中的表盘bin传输给设备。表盘bin是个压缩包（对于智能表，是zip压缩包；对于运动表，是GUI.bin格式的压缩包），压缩包中结构如下：
+ 
+390：图片资源目录，存放表盘用到的所有图片文件，以手表屏幕分辨率数字命名
+•	可以有多个不同分辨率的图片资源目录，以适配不同尺寸的手表
+•	针对圆形/正方形的屏幕，直接采用屏幕直径/边长命名， 如：390
+•	针对长方形屏幕，采用 宽.长 的格式命名，如： 390.454
+fonts：字体资源目录，存放表盘用到的所有字体文件
+watch_face_config.xml：表盘配置文件，描述表盘layout与内容配置情况。
+watch_face_info.xml：表盘信息文件，内容与description.xml相同。
+2.	表盘配置文件说明
+2.1.	概述
+文件为xml格式，使用utf-8编码，总体结构如下：
+ 
+providers：根节点，表盘配置全部在此节点下面定义
+provider：子根节点，描述针对某个屏幕尺寸的表盘配置，可以有多个针对不同屏幕尺寸的字根节点定义，与watchface目录下面的资源图片目录对应。
+element：元素节点，描述表盘上的某个具体元素，如背景、时间、日期等。每个元素都必须有一个label属性，用于描述这个元素具体是什么元素。其他的属性则描述这个元素的样式以及绘制参数。
+2.2.	元素说明
+2.2.1.	功能维度
+从功能维度，可以将表盘元素进行以下归类：
+1.	背景
+2.	时间
+包括：月、日、星期、小时、分钟、秒
+3.	控件
+包括快捷入口和数据控件两类
+快捷入口：锻炼、活动记录、心率、睡眠、音乐、钱包、电话、短信、通讯录、秒表、定时器、日程、提醒、手电筒、设置
+数据控件：步数、心率、卡路里、阴晴、温度、PM2.5、空气质量AQI、日出日落时间、月相、农历、气压、海拔高度、电量
+2.2.2.	样式维度
+从样式维度，各元素支持的样式如下：
+元素	样式
+背景	静态
+	动态（运动表不支持）
+时间	月/星期	数字
+		文字
+		指针
+	日/时/分/秒	数字
+		指针
+控件	Widget	文字
+		图片
+		指针
+		图形
+	Complication	SMALL_IMAGE
+		SHORT_TEXT
+		RANGED_VALUE
+控件分Widget和Complication两类，区别如下
+	Widget	Complication
+实现基础	华为自定义的	基于Wear OS的Complication实现
+样式	可以做的多样化	受限于Complication实现，样式相对单一
+自定义	样式与具体数据绑定，切换成指定范围内数据，手表和APP上都可以自定义	基于Complication支持的数据列表自定义，只能在手表上自定义
+适用于	智能表/运动表	只适用于智能表
+2.2.3.	绘制方式维度
+从绘制方式维度，表盘各元素常用到的绘制方式如下：
+元素	样式	绘制方式
+背景	静态	single_res、selected_res
+	动态	ordered_res、gif_res、video_res
+时间	月/星期	数字	text、combined_res
+		文字	text、selected_res
+		指针	hand_res
+	日/时/分/秒	数字	text、combined_res
+		指针	hand_res
+控件	Widget	数字	text、combined_res
+		文字	text、selected_res
+		图片	single_res、selected_res、ordered_res
+		指针	hand_res
+		图形	line、arc
+	Complication	SMALL_IMAGE	complication
+		SHORT_TEXT	complication
+		RANGED_VALUE	complication
+以上绘制方式说明如下
+绘制方式	说明	应用场景
+text	文本绘制	绘制数字、文字，如数字时间、文字的月份、步数等
+single_res	单图绘制	绘制一张静态图，如静态背景图、步数图标等
+selected_res	选图绘制	从多张静态图中选择一张绘制，选图的逻辑与具体业务相关，如文字月份，可以种12张月份图片中选择当月的图片绘制；再如天气图标，有晴天、阴天、雨天等不同的图标，根据真实的天气情况选择一张绘制。
+combined_res	组合图绘制	使用0~9十个数字的图片组合来绘制一个数字，如步数
+ordered_res	序列帧绘制	通过快速切换图片形成动画效果，一般情况下，按照每秒30帧来设计资源，最大不超过每秒40帧。考虑内存限制，不建议整个表盘背景使用序列帧来做动画效果，可以在某个控件局部范围内使用，如陀飞轮动画效果。
+hand_res	指针绘制	绘制指针，如时针、分针、秒针；再如电量百分比，也可以做指针效果
+gif_res	动图绘制	使用gif动图资源绘制表盘背景
+video_res	视频绘制	使用视频资源绘制表盘背景
+line	直线绘制	一般用于绘制直线进度条，如电量百分比、步数完成度
+arc	弧形绘制	一般用于绘制弧形进度条，如电量百分比、步数完成度
+complication	complication绘制	专门用于绘制Wear OS的complication控件
+3.	基本绘制单元
+每种绘制方式都有一组特定的属性来描述，形成一个基本绘制单元。
+3.1.	文本绘制
+draw_type	属性	说明
+text	text_content	文本默认内容，可选
+	text_active_color	全亮模式的字体颜色，"#AARRGGBB" 格式定义
+	text_ambient_color	半亮模式的字体颜色，"#AARRGGBB" 格式定义，可选
+	text_font	字体文件，如"Roboto-Regular.ttf"，对应字体文件需要打包到fonts目录中
+	text_size	字体大小
+	text_align	文本对齐方式，取值：left / right / center
+	text_position	文本绘制在表盘上的绝对坐标"x,y"
+x的取值和对齐方式相关：左对齐时，为文本最左端x坐标；右对齐时，为文本最右端x坐标；居中对齐时，为文本中心点x坐标
+y的取值为文本中心点y坐标
+	res_position_relative	当文本在控件中绘制时，要使用相对坐标，以控件矩形区域左上角顶点为原点，定义文本的相对坐标"x,y"
+x的取值也和对齐方式相关：左对齐时，为文本最左端x相对坐标；右对齐时，为文本最右端x相对坐标；居中对齐时，为文本中心点x相对坐标
+y的取值为文本中心点y相对坐标
+	value_type	数据属性，在控件中绘制时可选定义，描述控件绑定的具体数据类型，取值范围见控件支持的数据类型列表。
+3.2.	单图绘制
+draw_type	属性	说明
+single_res	res_active	全亮模式图片资源
+	res_ambient	半亮模式图片资源，可选
+	res_position	图片绘制在表盘上的中心点绝对坐标"x,y"
+	res_position_relative	当图片在控件中绘制时，要使用相对坐标，以控件矩形区域左上角顶点为原点，定义图片中心点的相对坐标"x,y"
+	value_type	数据属性，在控件中绘制时可选定义，描述控件绑定的具体数据类型，取值范围见控件支持的数据类型列表。
+3.3.	选图绘制
+draw_type	属性	说明
+selected_res	res_active	全亮模式图片资源，多张图片顺序排列用逗号分隔，如"week_1.png, week_2.png, week_3.png, week_4.png, week_5.png, week_6.png, week_7.png"
+	res_ambient	半亮模式图片资源，多张图片用逗号分隔，可选
+	res_position	图片绘制在表盘上的中心点绝对坐标"x,y"
+	res_position_relative	当图片在控件中绘制时，要使用相对坐标，以控件矩形区域左上角顶点为原点，定义图片中心点的相对坐标"x,y"
+	value_type	数据属性，在控件中绘制时可选定义，描述控件绑定的具体数据类型，取值范围见控件支持的数据类型列表。
+3.4.	组合图绘制
+draw_type	属性	说明
+combined_res	res_active	全亮模式图片资源，0~9十个数字的图片顺序排列，如" steps_0.png, steps_1.png, steps _2.png, steps_3.png, steps_4.png, steps_5.png, steps_6.png, steps_7.png, steps_8.png, steps_9.png"
+	res_ambient	半亮模式图片资源，0~9十个数字的图片顺序排列，可选
+	res_align	数字对齐方式，取值：left / right / center
+	res_position	数字绘制在表盘上的绝对坐标"x,y"
+x的取值和对齐方式相关：左对齐时，为数字最左端x坐标；右对齐时，为数字最右端x坐标；居中对齐时，为数字中心点x坐标
+y的取值为数字中心点y坐标
+	res_position_relative	当数字在控件中绘制时，要使用相对坐标，以控件矩形区域左上角顶点为原点，定义数字的相对坐标"x,y"
+x的取值也和对齐方式相关：左对齐时，为数字最左端x相对坐标；右对齐时，为数字最右端x相对坐标；居中对齐时，为数字中心点x相对坐标
+y的取值为数字中心点y相对坐标
+	value_type	数据属性，在控件中绘制时可选定义，描述控件绑定的具体数据类型，取值范围见控件支持的数据类型列表。
+3.5.	序列帧绘制
+draw_type	属性	说明
+ordered_res	res_active	全亮模式图片资源，图片序列用逗号分隔
+	res_ambient	半亮模式下不支持序列帧，不需要定义此属性
+	res_position	图片绘制在表盘上的中心点绝对坐标"x,y"
+	res_position_relative	当图片在控件中绘制时，要使用相对坐标，以控件矩形区域左上角顶点为原点，定义图片中心点的相对坐标"x,y"
+3.6.	指针绘制
+draw_type	属性	说明
+hand_res	res_active_scale	全亮模式指针刻度图片资源，可选
+	res_active_left	全亮模式指针在左半边（6点~12点）的资源
+	res_active_right	全亮模式指针在右半边（0点~6点）的资源，可选
+	res_active_dot	全亮模式指针固定点资源（可选）
+	res_ambient_scale	半亮模式指针刻度图片资源，可选
+	res_ambient_left	半亮模式指针在左半边（6点-12点）的资源，可选
+	res_ambient_right	半亮模式指针在右半边（0点-6点）的资源，可选
+	res_ambient_dot	半亮模式指针固定点资源，可选
+	res_shadow	指针影子资源，可选
+	rotate_start_angel	指针旋转起始角度，可选，默认为0
+	rotate_end_angel	指针旋转终止角度，可选，默认为360
+	rotate_point_hand	指针资源上的旋转坐标（指针上的旋转点以指针资源左上角为原点的相对坐标）
+	rotate_point_face	指针在表盘上的旋转坐标
+	rotate_point_face_relative	当指针在控件中绘制时，要使用相对坐标，以控件矩形区域左上角顶点为原点，定义指针在表盘上的相对旋转坐标
+	value_type	数据属性，在控件中绘制时可选定义，描述控件绑定的具体数据类型，取值范围见控件支持的数据类型列表。
+	min_value	指针起始角度代表的数据值，取值与value_type取值相关，如定义value_type是电量，则min_value="0"
+	max_value	指针终止角度代表的数据值，取值与value_type取值相关，如定义value_type是电量，则max_value="100"
+3.7.	动图绘制
+draw_type	属性	说明
+gif_res	res_active	全亮模式gif动图资源
+	res_ambient	半亮模式下不支持动图，不需要定义此属性
+	res_position	动图绘制在表盘上的中心点绝对坐标"x,y"
+	res_position_relative	动图只用于表盘背景，不支持在控件中使用，不需要定义此属性
+3.8.	视频绘制
+draw_type	属性	说明
+video_res	res_active	全亮模式视频资源
+	res_ambient	半亮模式下不支持视频，不需要定义此属性
+	res_position	视频画面绘制在表盘上的中心点绝对坐标"x,y"
+	res_position_relative	视频只用于表盘背景，不支持在控件中使用，不需要定义此属性
+3.9.	直线绘制
+draw_type	属性	说明
+line	primary_color	直线主颜色，使用"#AARRGGBB" 格式定义
+支持渐变色，通过"#AARRGGBB,"#AARRGGBB " 格式定义
+	secondary_color	绘制进度条时，定义进度条底色，可选
+	line_width	直线宽度
+	start_cap	直线起始点形状，可定义矩形或圆形，取值：rect / round
+	end_cap	直线终止点形状，可定义矩形或圆形，取值：rect / round
+	start_point	直线起始点绝对坐标
+	end_point	直线终止点绝对坐标
+	start_point_relative	直线起始点相对坐标，在控件中绘制时使用相对坐标，已控件矩形区域左上角顶点为原点
+	end_point_relative	直线终止点相对坐标，在控件中绘制时使用相对坐标，以控件矩形区域左上角顶点为原点
+	value_type	数据属性，在控件中绘制时可选定义，描述控件绑定的具体数据类型，取值范围见控件支持的数据类型列表。
+	min_value	直线起始点代表的数据值，取值与value_type取值相关，如定义value_type是电量，则min_value="0"
+	max_value	直线终止点代表的数据值，取值与value_type取值相关，如定义value_type是电量，则max_value="100"
+3.10.	弧形绘制
+draw_type	属性	说明
+arc
+		primary_color	弧形主颜色，使用"#AARRGGBB" 格式定义
+支持渐变色，通过"#AARRGGBB, #AARRGGBB" 格式定义
+	secondary_color	绘制弧形进度条时，定义进度条底色，可选
+	line_width	弧线宽度
+	start_cap	弧线起始点形状，可定义矩形或圆形，取值：rect / round
+	end_cap	弧线终止点形状，可定义矩形或圆形，取值：rect / round
+	start_angle	弧形起始角度
+	end_angle	弧形终止角度
+	rect	弧形的外切矩形，定义格式 "left, top, right, bottom"
+定义为正方形时，弧形为圆弧；定义为长方形时，弧形为椭圆弧
+	rect_relative	弧形的外切矩形相对坐标，在控件中绘制时使用相对坐标，以控件矩形区域左上角顶点为原点
+	value_type	数据属性，在控件中绘制时可选定义，描述控件绑定的具体数据类型，取值范围见控件支持的数据类型列表。
+	min_value	弧形起始角度代表的数据值，取值与value_type取值相关，如定义value_type是电量，则min_value="0"
+	max_value	弧形终止角度代表的数据值，取值与value_type取值相关，如定义value_type是电量，则max_value="100"
+3.11.	complication绘制
+draw_type	属性	说明
+complication	background_color	控件区域背景色，可选
+	background_drawable	控件区域背景图，可选
+	border_color	边线颜色，可选
+	highlight_color	控件点击时的高亮颜色，可选
+	icon_color	图标着色颜色，可选
+	text_color	文本颜色
+	text_font	文本字体
+	text_size	文本大小
+	title_color	标题颜色
+	title_font	标题字体
+	title_size	标题大小
+	range_primary_color	进度条颜色
+	range_secondary_color	进度条底色
+	bounds_rect	控件区域位置
+4.	位置变换效果
+对于部分基本绘制单元，支持额外添加位置变换效果，比如把文本（如步数）旋转一定角度显示到表盘上；又比如把一小球图片以表盘上指定一点为中心，随时间来回旋转，形成摆钟效果；再比如把心率图标随时间放大缩小，形成心跳效果等。
+4.1.	旋转
+支持添加旋转效果的基本绘制单元有：文本绘制、单图绘制、选图绘制、组合图绘制、complication绘制。
+支持三种旋转类型：旋转固定角度（fixed）、随时间旋转（time_variant）、随陀螺仪旋转（gyro_variant），使用rotate_type属性定义。
+4.1.1.	旋转固定角度
+rotate_type	属性	说明
+fixed	rotate_fixed_degree	旋转的角度，绘制单元的起始位置围绕旋转中心顺时针旋转的角度
+	rotate_center_point	旋转中心绝对坐标
+	rotate_center_point _relative	旋转中心相对坐标，控件内元素旋转时使用相对坐标，以控件矩形区域左上角顶点为原点。
+4.1.2.	随时间旋转
+rotate_type	属性	说明
+time_variant	rotate_degree	一个周期的旋转角度，顺时针旋转时为正值；逆时针旋转时为负值。
+可分段描述旋转过程，如摆钟效果，可分四段描述：第一段小球在最低点顺时针匀减速旋转45度至左边最高点；第二段小球在左边最高点逆时针匀加速旋转45度至最低点；第三段小球在最低点逆时针匀减速旋转45度至右边最高点；第四段小球在右边最高点顺时针匀加速旋转45度至最低点。定义为 rotate_degree="45,-45,-45,45"
+	rotate_time	一个周期的旋转时间（毫秒），旋转角度分段定义时，旋转时间也需分段定义，如上述摆钟效果，定义为 rotate_time="250,250,250,250"
+	rotate_motion_type	旋转速度的类型，分：匀速、匀加速、匀减速三种，取值分别为 uniform / uniform_accelerated / uniform_decelerated
+旋转角度分段定义时，旋转速度类型也需要分段定义，如上述摆钟效果，定义为rotate_motion_type="uniform_decelerated, uniform_accelerated, uniform_decelerated, uniform_accelerated"
+	rotate_center_point	旋转中心绝对坐标
+	rotate_center_point_relative	旋转中心相对坐标，控件内元素旋转时使用相对坐标，以控件矩形区域左上角顶点为原点。
+4.1.3.	随陀螺仪旋转
+rotate_type	属性	说明
+gyro_variant		
+4.2.	缩放
+支持添加缩放效果的基本绘制单元有：文本绘制、单图绘制、选图绘制、组合图绘制。
+支持缩放类型：随时间缩放（time_variant），使用scale_type属性定义。
+4.2.1.	随时间缩放
+scale_type	属性	说明
+time_variant	scale_amount	一个周期的缩放倍数
+可分段描述缩放过程，如心跳效果，可分四段描述：第一段心率图标从原始大小缩小至0.8倍大小（缩放倍数为0.8）；第二段心率图标从0.8倍大小缩小至0.5倍大小（缩放倍数为0.625）；第三段心率图标从0.5倍大小放大至0.8倍大小（缩放倍数为1.6）；第四段心率图标从0.8倍大小放大至原始大小（缩放倍数为1.25）。定义为 scale_amount="0.8, 0.625, 1.6, 1.25"
+	scale_time	一个周期的缩放时间（毫秒），缩放倍数分段定义时，缩放时间也需分段定义，如上述心跳效果，定义为 rotate_time="300,200,200,300"
+	scale_motion_type	缩放速度的类型，分：匀速、匀加速、匀减速三种，取值分别为 uniform / uniform_accelerated / uniform_decelerated
+缩放倍数分段定义时，缩放速度类型也需要分段定义，如上述心跳效果，定义为scale_motion_type ="uniform, uniform, uniform, uniform"
+	scale_center_point	缩放中心绝对坐标（缩放中心的坐标不会随缩放而改变）
+	scale_center_point_relative	缩放中心相对坐标，控件内元素缩放时使用相对坐标，以控件矩形区域左上角顶点为原点。
+5.	表盘元素定义
+表盘各元素（背景、时间、日期、控件）都是按层（layer）定义的，每个layer就是一个基本绘制单元，可以有一个或多个layer。有多个layer时，按layer的index顺序绘制。
+表盘各元素（背景、时间、日期、控件）都有支持自定义和不支持自定义两种方式。支持自定义时，需要把每个自定义的可选项定义为一个option，每个option就是一个完整的表盘元素。
+支持自定义的表盘背景元素定义示例：
+ 
+不支持自定义的表盘背景元素定义示例：
+ 
+属性说明：
+属性	属性说明
+is_support_option	元素是否支持自定义
+option_count	元素支持自定义时，自定义可选项个数
+selected_option	默认选项索引，为0时表示不指定任何选项
+index	每个option或者layer的索引，从1开始定义
+layer_count	组成元素的layer个数
+draw_type	每个layer属于具体哪个基本绘制单元
+5.1.	背景
+1.	定义背景的label为background。
+2.	背景支持的基本绘制单元有
+基本绘制单元	说明
+文本绘制	背景上绘制文字，需要使用text_content定义文字内容
+单图绘制	背景上绘制一张静态图片
+选图绘制	从多张图片中选择一张绘制到背景上
+动图绘制	背景上绘制一个gif动图
+视频绘制	背景上绘制一个视频
+3.	不管是使用哪种绘制方式，半亮的背景资源res_ambient只需一张静态图片即可。
+4.	背景中使用的基本绘制单元，不需要定义value_type。
+5.	背景图片、动图、视频尺寸必须和手表屏幕尺寸相同。
+5.2.	时间
+1.	定义时间的label为time。
+2.	时间支持的基本绘制单元有
+基本绘制单元	说明
+文本绘制	绘制数字的时间
+单图绘制	可用于绘制数字时间中的冒号
+选图绘制	可用于绘制数字时间中的AM、PM
+组合图绘制	可用于绘制数字时间中的时分秒
+指针绘制	绘制指针时间
+3.	秒在半亮模式下不显示，故不需要定义秒的半亮文本颜色或者半亮资源
+4.	时间中基本绘制单元支持的value_type有：hour / minute / second / am_pm。
+5.	同一指针的全亮、半亮、左边、右边、影子等资源，尺寸必须相同。
+5.3.	日期
+1.	定义日期的label为date。
+2.	日期支持的基本绘制单元有
+基本绘制单元	说明
+文本绘制	绘制数字/文字的日期
+单图绘制	可用于绘制月、日、星期之间的连接符号，如 "-"，或者 ","
+选图绘制	可用于文字的月份、星期
+组合图绘制	可用于绘制数字的月、日、星期
+指针绘制	绘制指针的月、日、星期
+3.	日期中基本绘制单元支持的value_type有：digit_month / word_month / day / digit_week / word_week。
+4.	对于文字的月份和星期，使用文本绘制时，可额外定义两个属性：word_is_abbr属性定义是否使用英文单词简写；word_capital_type属性定义单词是全词大写还是只首字母大写。
+5.4.	Widget控件
+Widget控件区别于背景、时间、日期的地方在于：背景、时间、日期的自定义只能换样式，而widget的自定义可以换数据内容，控件样式是与具体的数据内容绑定的。Widget的属性定义分两部分：container和option。container与位置相关，描述控件的矩形区域以及自定义能力；option与具体数据相关，描述控件可选的数据内容及其样式。与此同时，也支持不允许自定义的Widget控件，即container位置只能绘制某特定的数据内容，不允许切换为其他数据内容，属性定义时，直接将数据内容及其样式相关的属性定义到container下面。
+以下是Widget控件定义的示例：
+ 
+1.	定义widget控件的label为widget。
+2.	Widget控件支持的基本绘制单元有
+基本绘制单元	说明
+文本绘制	绘制控件上的文字
+单图绘制	控件上绘制一张图片，如步数图标
+选图绘制	从指定一些图片中选择一张绘制到控件上，如天气阴晴情况图标
+组合图绘制	可用于在控件上绘制数据，如步数
+序列帧绘制	可用于在控件上绘制序列帧动画
+指针绘制	可用于在控件上绘制指针，如电量百分比
+直线绘制	可用于在控件上绘制直线进度条
+弧形绘制	可用于在控件上绘制弧形进度条
+3.	Widget控件中所有基本绘制单元的位置描述属性全部使用相对位置属性
+4.	Widget控件中基本绘制单元支持的value_type有（持续更新）
+value_type	说明
+hour	小时
+minute	分钟
+second	秒
+am_pm	Am 、pm
+digit_month	数字月份
+word_month	文字月份
+day	日
+digit_week	数字星期
+word_week	文字星期
+steps	步数
+	
+5.5.	Complication控件
+complication控件定义示例：
+ 
+1.	定义complication控件的label为complication。
+2.	Complication控件支持的基本绘制单元只有complication绘制
+3.	Complication控件只在智能表上支持
+4.	Complication控件不需要定义可选的数据范围，可选数据范围由系统决定
+5.	Complication控件使用draw_type定义默认数据类型，支持的draw_type有
+value_type	说明
+steps	步数
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
