@@ -1,21 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
- */
-
-package com.huawei.wearable.watchfacecommon.provider.asset.manager;
-
-import java.util.Collections;
-import java.util.List;
-
-import com.huawei.wearable.watchfacecommon.provider.asset.model.HwTheme;
-import com.huawei.wearable.watchfacecommon.utils.ContextUtil;
-import com.huawei.wearable.watchfacecommon.utils.HwLogUtil;
-
-import android.graphics.Bitmap;
-import android.graphics.Movie;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
 
 /**
  * 主题资源包
