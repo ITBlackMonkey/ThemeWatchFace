@@ -1,0 +1,190 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
+ */
+
+package com.huawei.wearable.watchfacecommon.provider.asset.manager;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.huawei.wearable.watchfacecommon.utils.HwLogUtil;
+
+import android.graphics.Bitmap;
+import android.graphics.Movie;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+
+/**
+ * bitmap管理类
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/23
+ */
+public class ResourceCache {
+    private static final String TAG = "ResourceCache";
+
+    private HashMap<String, Bitmap> mBitmapCache;
+
+    private HashMap<String, Drawable> mDrawableCache;
+
+    private HashMap<String, Movie> mMovieCache;
+
+    private HashMap<String, Typeface> mTypefaceCache;
+
+    private ResourceResolver mResolver;
+
+    ResourceCache(ResourceResolver resolver) {
+        mResolver = resolver;
+        mBitmapCache = new HashMap<>(0);
+        mDrawableCache = new HashMap<>(0);
+        mMovieCache = new HashMap<>(0);
+        mTypefaceCache = new HashMap<>(0);
+    }
+
+    Bitmap getBitmap(String name) {
+        Bitmap bitmap = null;
+        if (!TextUtils.isEmpty(name)) {
+            bitmap = mBitmapCache.get(name);
+            if (null == bitmap) {
+                bitmap = mResolver.resolveBitmapByName(name);
+                if (null != bitmap) {
+                    mBitmapCache.put(name, bitmap);
+                } else {
+                    HwLogUtil.e(TAG, "getBitmap(), no bitmap find of name: " + name);
+                }
+            }
+        } else {
+            HwLogUtil.e(TAG, "getBitmap(), nameStr is null");
+        }
+        return bitmap;
+    }
+
+    List<Bitmap> getBitmaps(String nameStr) {
+        if (TextUtils.isEmpty(nameStr)) {
+            HwLogUtil.e(TAG, "getBitmaps(), nameStr is null");
+            return Collections.emptyList();
+        }
+        List<Bitmap> bitmaps = new ArrayList<>(0);
+        for (String name : nameStr.trim().split(",")) {
+            name = name.trim();
+            if (name.endsWith(".png")) {
+                Bitmap bitmap = mBitmapCache.get(name);
+
+                if (null == bitmap) {
+                    bitmap = mResolver.resolveBitmapByName(name);
+                    if (null != bitmap) {
+                        mBitmapCache.put(name, bitmap);
+                    } else {
+                        HwLogUtil.e(TAG, "getBitmaps(), no bitmap find of name: " + name);
+                    }
+                }
+                bitmaps.add(bitmap);
+            }
+        }
+        return bitmaps;
+    }
+
+    Drawable getDrawable(String name) {
+        Drawable drawable = null;
+        if (!TextUtils.isEmpty(name)) {
+            drawable = mDrawableCache.get(name);
+            if (null == drawable) {
+                drawable = mResolver.resolveDrawableByName(name);
+                if (null != drawable) {
+                    mDrawableCache.put(name, drawable);
+                } else {
+                    HwLogUtil.e(TAG, "getDrawable(), no drawable find of name: " + name);
+                }
+            }
+        } else {
+            HwLogUtil.e(TAG, "getDrawable(), nameStr is null");
+        }
+        return drawable;
+    }
+
+    List<Drawable> getDrawables(String nameStr) {
+        if (TextUtils.isEmpty(nameStr)) {
+            HwLogUtil.e(TAG, "getDrawables(), nameStr is null");
+            return Collections.emptyList();
+        }
+        List<Drawable> drawables = new ArrayList<>(0);
+        for (String name : nameStr.trim().split(",")) {
+            name = name.trim();
+            if (name.endsWith(".png")) {
+                Drawable drawable = mDrawableCache.get(name);
+                if (null == drawable) {
+                    drawable = mResolver.resolveDrawableByName(name);
+                    if (null != drawable) {
+                        mDrawableCache.put(name, drawable);
+                    } else {
+                        HwLogUtil.e(TAG, "getDrawables(), no drawable find of name: " + name);
+                    }
+                }
+                drawables.add(drawable);
+            }
+        }
+        return drawables;
+    }
+
+    Movie getMovie(String name) {
+        Movie movie = null;
+        if (!TextUtils.isEmpty(name)) {
+            movie = mMovieCache.get(name);
+            if (null == movie) {
+                movie = mResolver.resolveGifByName(name);
+                if (null != movie) {
+                    mMovieCache.put(name, movie);
+                } else {
+                    HwLogUtil.e(TAG, "getMovie(), no movie find of name: " + name);
+                }
+            }
+        } else {
+            HwLogUtil.e(TAG, "getMovie(), nameStr is null");
+        }
+        return movie;
+    }
+
+    Typeface getTypeface(String name) {
+        Typeface tf = null;
+        if (!TextUtils.isEmpty(name)) {
+            tf = mTypefaceCache.get(name);
+            if (tf == null) {
+                tf = mResolver.resolveTypefaceByName(name);
+                if (null != tf) {
+                    mTypefaceCache.put(name, tf);
+                } else {
+                    HwLogUtil.e(TAG, "getTypeface(), no typeface find of name: " + name);
+                }
+            }
+        } else {
+            HwLogUtil.e(TAG, "getTypeface(), name is null");
+        }
+        return tf;
+    }
+
+    void onDestroy() {
+        if (!mBitmapCache.isEmpty()) {
+            for (Map.Entry<String, Bitmap> entry : mBitmapCache.entrySet()) {
+                Bitmap bitmap = entry.getValue();
+                if ((null != bitmap) && (!bitmap.isRecycled())) {
+                    bitmap.recycle();
+                }
+            }
+            mBitmapCache.clear();
+        }
+        if (!mDrawableCache.isEmpty()) {
+            mDrawableCache.clear();
+        }
+        if (!mMovieCache.isEmpty()) {
+            mMovieCache.clear();
+        }
+        if (!mTypefaceCache.isEmpty()) {
+            mTypefaceCache.clear();
+        }
+    }
+}
