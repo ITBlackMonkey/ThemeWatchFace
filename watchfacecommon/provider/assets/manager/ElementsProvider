@@ -1,23 +1,4 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
- */
 
-package com.huawei.wearable.watchfacecommon.provider.asset.manager;
-
-import android.text.TextUtils;
-
-import com.huawei.wearable.watchfacecommon.provider.asset.model.Config;
-import com.huawei.wearable.watchfacecommon.provider.asset.model.Element;
-import com.huawei.wearable.watchfacecommon.provider.asset.model.Provider;
-import com.huawei.wearable.watchfacecommon.provider.asset.model.Providers;
-import com.huawei.wearable.watchfacecommon.provider.asset.model.Styles;
-import com.huawei.wearable.watchfacecommon.utils.ContextUtil;
-import com.huawei.wearable.watchfacecommon.utils.HwLogUtil;
-import com.huawei.wearable.watchfacecommon.utils.HwUtil;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * 数据提供类
