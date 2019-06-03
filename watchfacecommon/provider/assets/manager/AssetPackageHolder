@@ -1,8 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
- */
-
-package com.huawei.wearable.watchfacecommon.provider.asset.manager;
 
 /**
  * 自定义资源包持有者
