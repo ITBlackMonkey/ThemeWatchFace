@@ -1,9 +1,3 @@
-package com.google.android.clockwork.home.partnerapi;
-
-import com.google.android.clockwork.home.watchfaces.WatchFaceInfo;
-import com.google.android.clockwork.home.partnerapi.SetWatchFaceCallback;
-import android.content.ComponentName;
-import java.util.List;
 
 /**
  * Home APIs for whitelisted partner apps to manage watches.
