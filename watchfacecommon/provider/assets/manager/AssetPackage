@@ -1,0 +1,218 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
+ */
+
+package com.huawei.wearable.watchfacecommon.provider.asset.manager;
+
+import java.util.Collections;
+import java.util.List;
+
+import com.huawei.wearable.watchfacecommon.provider.asset.model.HwTheme;
+import com.huawei.wearable.watchfacecommon.utils.ContextUtil;
+import com.huawei.wearable.watchfacecommon.utils.HwLogUtil;
+
+import android.graphics.Bitmap;
+import android.graphics.Movie;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+
+/**
+ * 主题资源包
+ *
+ * @author m00230717
+ * @version 1.0.0
+ * @since 2019/3/6
+ */
+public class AssetPackage {
+    private static final String TAG = "AssetPackage";
+
+    private static final String PREVIEW_RES_NAME = "preview.png";
+
+    private ResourceResolver mResolver;
+
+    private ResourceCache mResourceCache;
+
+    private ElementsProvider mProvider;
+
+    /**
+     * 构造方法
+     * @param path 资源路径
+     * @param isAssets 是否assets
+     */
+    public AssetPackage(String path, boolean isAssets) {
+        mResolver = new ResourceResolver(ContextUtil.getContext(), path, isAssets);
+        mResourceCache = new ResourceCache(mResolver);
+    }
+
+    /**
+     * 获取元素描述信息ElementsProvider
+     *
+     * @return ElementsProvider对象
+     */
+    public ElementsProvider getElementsProvider() {
+        if (mProvider == null) {
+            mProvider = new ElementsProvider(mResolver);
+        }
+        return mProvider;
+    }
+
+    /**
+     * 获取视频路径
+     *
+     * @param info 资源信息
+     * @return 路径
+     */
+    public String getVideoPath(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getVideoPath() , info: null");
+            return "";
+        }
+
+        return mResolver.getVideoPath(info.trim());
+    }
+
+    /**
+     * 获取gif对象
+     *
+     * @param info 资源信息
+     * @return gif对象
+     */
+    public Movie getGif(String info) {
+        Movie movie = null;
+        if (!TextUtils.isEmpty(info)) {
+            movie = mResourceCache.getMovie(info.trim());
+        } else {
+            HwLogUtil.i(TAG, "getGif() label: info: null");
+        }
+        return movie;
+    }
+
+    /**
+     * 获取bitmap对象
+     *
+     * @param info 资源信息
+     * @return bitmap
+     */
+    public Bitmap getBitmap(String info) {
+        Bitmap bitmap = null;
+        if (!TextUtils.isEmpty(info)) {
+            bitmap = mResourceCache.getBitmap(info.trim());
+        } else {
+            HwLogUtil.i(TAG, "getBitmap() info is null");
+        }
+        return bitmap;
+    }
+
+    /**
+     * 获取bitmaps对象
+     *
+     * @param info 资源信息
+     * @return bitmaps
+     */
+    public List<Bitmap> getBitmaps(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getBitmaps(), info: null");
+            return Collections.emptyList();
+        }
+        HwLogUtil.e(TAG, "getBitmaps2(),info=" + info);
+        return mResourceCache.getBitmaps(info.trim());
+    }
+
+    /**
+     * 获取drawable对象
+     *
+     * @param info 资源信息
+     * @return drawable
+     */
+    public Drawable getDrawable(String info) {
+        Drawable drawable = null;
+        if (!TextUtils.isEmpty(info)) {
+            drawable = mResourceCache.getDrawable(info.trim());
+        } else {
+            HwLogUtil.i(TAG, "getDrawable() info: null");
+        }
+        return drawable;
+    }
+
+    /**
+     * 获取drawables对象
+     *
+     * @param info 资源信息
+     * @return drawables
+     */
+    public List<Drawable> getDrawables(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getDrawable() info: null");
+            return Collections.emptyList();
+        }
+        return mResourceCache.getDrawables(info.trim());
+    }
+
+    /**
+     * 获取typeface
+     *
+     * @param info 资源信息
+     * @return typeface
+     */
+    public Typeface getTypeface(String info) {
+        Typeface typeface = null;
+        if (!TextUtils.isEmpty(info)) {
+            typeface = mResourceCache.getTypeface(info.trim());
+        } else {
+            HwLogUtil.i(TAG, "getTypeface() label: info: null");
+        }
+        return typeface;
+    }
+
+    /**
+     * 获取表盘预览图
+     * @return 预览图bitmap
+     */
+    public Bitmap getWatchFacePreview() {
+        return mResourceCache.getBitmap(PREVIEW_RES_NAME);
+    }
+
+    /**
+     * 获取表盘名称
+     * @param isCN 是否中文
+     * @return 表盘名称
+     */
+    public String getWatchFaceName(boolean isCN) {
+        HwTheme hwTheme = mResolver.parserInfoFile();
+        if (hwTheme == null) {
+            return "";
+        }
+        return isCN ? (hwTheme.getTitleCn()) : (hwTheme.getTitle());
+    }
+
+    /**
+     * 获取表盘版本
+     * @return 表盘版本
+     */
+    public String getWatchFaceVersion() {
+        HwTheme hwTheme = mResolver.parserInfoFile();
+        if (hwTheme == null) {
+            return "";
+        }
+        return hwTheme.getVersion();
+    }
+
+    /**
+     * 获取表盘配置路径
+     * @return 表盘路径
+     */
+    public String getPath() {
+        return mResolver.getAssetPath();
+    }
+
+    /**
+     * 释放资源
+     */
+    public void onDestroy() {
+        mResourceCache.onDestroy();
+        mResourceCache = null;
+        mProvider = null;
+        mResolver = null;
+    }
+}
