@@ -1,0 +1,355 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
+ */
+
+package com.huawei.wearable.watchfacecommon.provider.asset.manager;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Movie;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+
+import com.huawei.watch.common.xml.GsonXml;
+import com.huawei.watch.common.xml.GsonXmlBuilder;
+import com.huawei.wearable.watchfacecommon.provider.asset.model.HwTheme;
+import com.huawei.wearable.watchfacecommon.provider.asset.model.Providers;
+import com.huawei.wearable.watchfacecommon.utils.CommonConstantsUtil;
+import com.huawei.wearable.watchfacecommon.utils.FileUtil;
+import com.huawei.wearable.watchfacecommon.utils.HwLogUtil;
+import com.huawei.wearable.watchfacecommon.utils.HwUtil;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+/**
+ * 资源解析类
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019-01-23
+ */
+class ResourceResolver {
+    private static final String TAG = "ResourceResolver";
+
+    private static final String CONFIG_FILE_NAME = "watch_face_config.xml";
+
+    private static final String INFO_FILE_NAME = "watch_face_info.xml";
+
+    private static final String FONTS_DIR_NAME = "fonts";
+
+    private static final String FONTS_CACHE_DIR_NAME = "font_cache";
+
+    private static final String VIDEO_CACHE_DIR_NAME = "video_cache";
+
+    private boolean mIsAssets;
+
+    private Context mContext;
+
+    private String mAssetPath;
+
+    private String mAssetName;
+
+    private String mResDirName;
+
+    ResourceResolver(Context context, String path, boolean isAssets) {
+        mContext = context;
+        mAssetPath = path;
+        mIsAssets = isAssets;
+        mAssetName = getAssetName(mAssetPath);
+        mResDirName = Integer.toString(HwUtil.getDisplayMetrics(mContext));
+    }
+
+    private String getAssetName(String assetPath) {
+        if (assetPath == null) {
+            return "";
+        }
+        List<String> paths = Arrays.asList(assetPath.split("/"));
+        if (paths.size() <= 0) {
+            HwLogUtil.i(TAG, "getAssetName() assetPath format error");
+            return "";
+        }
+        // 主题表盘需要获取主题压缩包的上一级目录
+        if ((!mIsAssets) && (paths.size() > CommonConstantsUtil.NUMBER_TWO)) {
+            return paths.get(paths.size() - CommonConstantsUtil.NUMBER_TWO);
+        } else {
+            return paths.get(paths.size() - 1);
+        }
+    }
+
+    private InputStream getInputStreamFromResource(String dir, String filename) {
+        InputStream inputStream = null;
+        if (TextUtils.isEmpty(filename)) {
+            HwLogUtil.e(TAG, "filename is null");
+        } else {
+            String subPath = (TextUtils.isEmpty(dir)) ? filename : (dir + File.separator + filename);
+            if (mIsAssets) {
+                try {
+                    inputStream = mContext.getAssets().open(mAssetPath + File.separator + subPath);
+                } catch (IOException e) {
+                    HwLogUtil.e(TAG, "getInputStreamFromResource()Assets IOException:" + subPath + " in " + mAssetPath);
+                }
+            } else {
+                try {
+                    ZipFile zipFile = new ZipFile(mAssetPath);
+                    ZipEntry zipEntry = new ZipEntry(subPath);
+                    inputStream = zipFile.getInputStream(zipEntry);
+                } catch (IOException e) {
+                    HwLogUtil.e(TAG, "getInputStreamFromResource() data IOException: " + subPath + " in " + mAssetPath);
+                }
+            }
+        }
+        return inputStream;
+    }
+
+    /**
+     * 字体资源获取：fonts->资源包
+     * @param dir 字体文件目录
+     * @param filename 字体文件名称
+     * @return 字体文件流
+     */
+    private InputStream getInputStreamFromFontResource(String dir, String filename) {
+        InputStream inputStream = null;
+        if (TextUtils.isEmpty(filename)) {
+            HwLogUtil.e(TAG, "getInputStreamFromFontResource filename is null");
+        } else {
+            if (!mIsAssets) {
+                String subPath = (TextUtils.isEmpty(dir)) ? filename : (dir + File.separator + filename);
+                try {
+                    // 从资源包中解析
+                    ZipFile zipFile = new ZipFile(mAssetPath);
+                    ZipEntry zipEntry = new ZipEntry(subPath);
+                    inputStream = zipFile.getInputStream(zipEntry);
+                    HwLogUtil.i(TAG, "getInputStreamFromFontResource from data file: " + mAssetPath);
+                } catch (IOException e) {
+                    HwLogUtil.w(TAG,
+                        "getInputStreamFromFontResource() data IOException: " + subPath + " in " + mAssetPath);
+                }
+            }
+        }
+        return inputStream;
+    }
+
+    private InputStream getInputStreamFromCache(File dir, String filename) {
+        if ((dir == null) || (!dir.exists()) || (!dir.isDirectory())) {
+            return null;
+        }
+        if (TextUtils.isEmpty(filename)) {
+            return null;
+        }
+        File file = new File(dir, filename);
+        if ((!file.exists()) || (!file.isFile())) {
+            return null;
+        }
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            HwLogUtil.e(TAG, "getInputStream() exception : " + e.getMessage());
+        }
+        return inputStream;
+    }
+
+    private <T> T parserXml(InputStream inputStream, Class<T> clazz) {
+        if (inputStream == null) {
+            HwLogUtil.e(TAG, "parserXml inputStream is null");
+            return null;
+        }
+        GsonXml gsonXml = new GsonXmlBuilder().setSameNameLists(true).create();
+        InputStreamReader reader = new InputStreamReader(inputStream);
+        return gsonXml.fromXml(reader, clazz);
+    }
+
+    public Providers parserConfigFile() {
+        HwLogUtil.i(TAG, "parserConfigFile()");
+        File configCacheDir = new File(getConfigFileCacheDir());
+        if (!configCacheDir.exists()) {
+            if (!configCacheDir.mkdirs()) {
+                return null;
+            }
+        }
+        File configCacheFile = new File(configCacheDir, CONFIG_FILE_NAME);
+        if (!configCacheFile.exists()) {
+            InputStream inputStream = getInputStreamFromResource("", CONFIG_FILE_NAME);
+            if (inputStream == null) {
+                return null;
+            }
+            if (!FileUtil.writeToFile(inputStream, configCacheFile)) {
+                return null;
+            }
+        }
+        InputStream inputStream = getInputStreamFromCache(configCacheDir, CONFIG_FILE_NAME);
+        Providers providers = parserXml(inputStream, Providers.class);
+        if (providers != null) {
+            HwLogUtil.i(TAG, "resolveConfigFile() providers=" + providers.toString());
+        }
+        return providers;
+    }
+
+    private String getConfigFileCacheDir() {
+        return mIsAssets ? (mContext.getDataDir() + File.separator + mAssetName)
+            : (mContext.getDataDir() + File.separator + mAssetName);
+    }
+
+    public boolean writeBackConfigFile(Providers providers) {
+        HwLogUtil.i(TAG, "writeBackConfigFile()");
+        File configCacheFile = new File(getConfigFileCacheDir(), CONFIG_FILE_NAME);
+        FileWriter writer = null;
+        try {
+            GsonXml gsonXml = new GsonXmlBuilder().setSameNameLists(true).create();
+            writer = new FileWriter(configCacheFile);
+            gsonXml.toXml(writer, providers);
+        } catch (IOException e) {
+            HwLogUtil.e(TAG, "write error:" + e.getMessage());
+            return false;
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    HwLogUtil.e(TAG, "write error:" + e.getMessage());
+                }
+            }
+        }
+        return true;
+    }
+
+    public HwTheme parserInfoFile() {
+        HwLogUtil.i(TAG, "parserInfoFile()");
+        InputStream inputStream = getInputStreamFromResource("", INFO_FILE_NAME);
+        HwTheme hwTheme = parserXml(inputStream, HwTheme.class);
+        if (hwTheme != null) {
+            HwLogUtil.i(TAG, "parserInfoFile() hwTheme=" + hwTheme.toString());
+        }
+        return hwTheme;
+    }
+
+    String getVideoPath(String name) {
+        if (TextUtils.isEmpty(name)) {
+            HwLogUtil.e(TAG, "getVideoPath(), name is null");
+            return null;
+        }
+        String dir = mContext.getCacheDir() + File.separator + VIDEO_CACHE_DIR_NAME;
+        File videoDir = new File(dir);
+        if (!videoDir.exists()) {
+            if (!videoDir.mkdirs()) {
+                HwLogUtil.e(TAG, "getVideoPath(), fail to create save dir");
+                return null;
+            }
+        }
+        File videoFile = new File(videoDir, name);
+        if (!videoFile.exists()) {
+            InputStream inputStream = getInputStreamFromResource(mResDirName, name);
+            if (inputStream == null) {
+                return null;
+            }
+            if (!FileUtil.writeToFile(inputStream, videoFile)) {
+                return null;
+            }
+        }
+        return videoFile.getAbsolutePath();
+    }
+
+    Movie resolveGifByName(String name) {
+        if ((TextUtils.isEmpty(name)) || (!name.endsWith(".gif"))) {
+            HwLogUtil.e(TAG, "resolveGifByName(), name is null or not end with .gif");
+            return null;
+        }
+
+        InputStream inputStream = getInputStreamFromResource(mResDirName, name);
+        if (inputStream == null) {
+            HwLogUtil.e(TAG, "resolveGifByName(), inputStream is null of name: " + name);
+            return null;
+        }
+        Movie movie = Movie.decodeStream(inputStream);
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            HwLogUtil.e(TAG, "resolveGifByName(), inputStream close exception");
+        }
+        return movie;
+    }
+
+    Bitmap resolveBitmapByName(String name) {
+        if (TextUtils.isEmpty(name)) {
+            HwLogUtil.e(TAG, "resolveBitmapByName(), name is null");
+            return null;
+        }
+        InputStream inputStream;
+        inputStream = getInputStreamFromResource(mResDirName, name);
+        if (inputStream == null) {
+            HwLogUtil.e(TAG, "resolveBitmapByName(), inputStream is null of name: " + name);
+            return null;
+        }
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            HwLogUtil.e(TAG, "resolveBitmapByName(), inputStream close exception");
+        }
+        return bitmap;
+    }
+
+    Drawable resolveDrawableByName(String name) {
+        Drawable drawable = null;
+        if (!TextUtils.isEmpty(name)) {
+            InputStream inputStream = getInputStreamFromResource(mResDirName, name);
+            if (inputStream == null) {
+                HwLogUtil.e(TAG, "resolveDrawableByName(), inputStream is null of name: " + name);
+            } else {
+                drawable = Drawable.createFromResourceStream(mContext.getResources(), null, inputStream, name);
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    HwLogUtil.e(TAG, "resolveDrawableByName(), inputStream close exception");
+                }
+            }
+        } else {
+            HwLogUtil.e(TAG, "resolveDrawableByName(), name is null");
+        }
+        return drawable;
+    }
+
+    Typeface resolveTypefaceByName(String name) {
+        HwLogUtil.d(TAG, "resolveTypefaceByName, name:" + name);
+        if (TextUtils.isEmpty(name)) {
+            HwLogUtil.e(TAG, "resolveTypefaceByName(), name is null");
+            return null;
+        }
+        String dir = mContext.getCacheDir() + File.separator + FONTS_CACHE_DIR_NAME;
+        File fontDir = new File(dir);
+        String nameStr = name.substring(0, name.indexOf("."));
+        if (!fontDir.exists()) {
+            if (!fontDir.mkdirs()) {
+                HwLogUtil.e(TAG, "resolveTypefaceByName(), fail to create cache dir");
+                return Typeface.create(nameStr, Typeface.NORMAL);
+            }
+        }
+        File fontFile = new File(fontDir, name);
+        if (!fontFile.exists()) {
+            InputStream inputStream = getInputStreamFromFontResource(FONTS_DIR_NAME, name);
+            if (inputStream == null) {
+                HwLogUtil.i(TAG, "resolveTypefaceByName not exist so find from system, nameStr:" + nameStr);
+                return Typeface.create(nameStr, Typeface.NORMAL);
+            }
+            if (!FileUtil.writeToFile(inputStream, fontFile)) {
+                return Typeface.create(nameStr, Typeface.NORMAL);
+            }
+        }
+        return Typeface.createFromFile(fontFile);
+    }
+
+    public String getAssetPath() {
+        return mAssetPath;
+    }
+}
