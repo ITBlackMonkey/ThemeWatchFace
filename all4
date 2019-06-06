@@ -1,0 +1,1101 @@
+/**
+ * 文本绘制类，支持位置变换效果
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public class TextDraw extends BaseDraw {
+    private static final String TAG = "TextDraw";
+
+    private static final float HALF = 0.5f;
+
+    private String mDefaultText;
+
+    private int mTextActiveColor;
+
+    private int mTextAmbientColor;
+
+    private Typeface mTextFont;
+
+    private float mTextSize;
+
+    private String mTextAlign;
+
+    private float[] mTextPosition;
+
+    private float[] mTextPositionRelative;
+
+    private String mWordSupportCN;
+
+    private String mWordIsAbbr;
+
+    private String mWordCapitalType;
+
+    private String mValueType;
+
+    private Paint mPaint;
+
+    private float mStartX;
+
+    private float mStartY;
+
+    private String mText;
+
+    private boolean mTextIsBold;
+
+    private float mTextWidth;
+
+    private float[] mTextShadowPosition;
+
+    private int mTextShadowColor;
+
+    private float mTextShadowRadius;
+
+    private boolean mIsSupportTextShadow;
+
+    /**
+     * 初始化文字绘制资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    public TextDraw(AssetPackage assetPackage, Layer layer) {
+        super(assetPackage, layer);
+        mDefaultText = HwUtil.getStringValue(layer.getTextContent());
+        mTextActiveColor = HwUtil.getColor(layer.getTextActiveColor());
+        mTextAmbientColor = HwUtil.getColor(layer.getTextAmbientColor());
+        mTextFont = assetPackage.getTypeface(layer.getTextFont());
+        mTextSize = HwUtil.getFloatValue(layer.getTextSize());
+        mTextAlign = HwUtil.getStringValue(layer.getTextAlign());
+        mTextPosition = HwUtil.getPoint(layer.getTextPosition());
+        mTextPositionRelative = HwUtil.getPoint(layer.getTextPositionRelative());
+        mTextIsBold = HwUtil.getBoolValue(layer.getTextIsBold());
+        mWordSupportCN = HwUtil.getStringValue(layer.getWordSupportCN());
+        mWordIsAbbr = HwUtil.getStringValue(layer.getWordIsAbbr());
+        mWordCapitalType = HwUtil.getStringValue(layer.getWordCapitalType());
+
+        mValueType = HwUtil.getStringValue(layer.getValueType());
+        mTextShadowPosition = HwUtil.getPoint(layer.getTextShadowPosition());
+        mTextShadowColor = HwUtil.getColor(layer.getTextShadowColor());
+        mTextShadowRadius = HwUtil.getFloatValue(layer.getTextShadowRadius());
+        mIsSupportTextShadow = HwUtil.getBoolValue(layer.getIsSupportTextShadow());
+    }
+
+    @Override
+    public void setWidgetRect(RectF rect) {
+        super.setWidgetRect(rect);
+        if (rect == null) {
+            return;
+        }
+        if (mTextPositionRelative == null) {
+            return;
+        }
+        mTextPosition = new float[] {rect.left + mTextPositionRelative[0], rect.top + mTextPositionRelative[1]};
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+    }
+
+    private void updatePaint(boolean isAmbientMode) {
+        if (mPaint == null) {
+            mPaint = new Paint();
+        }
+        mPaint.setTypeface(mTextFont);
+        mPaint.setTextSize(mTextSize);
+        mPaint.setFakeBoldText(mTextIsBold);
+        mPaint.setAntiAlias(true);
+        HwLogUtil.d(TAG, "mIsSupportTextShadow==" + mIsSupportTextShadow);
+        if (mIsSupportTextShadow && (mTextShadowPosition != null)) {
+            mPaint.setShadowLayer(mTextShadowRadius, mTextShadowPosition[0], mTextShadowPosition[1], mTextShadowColor);
+        }
+        mPaint.setColor(isAmbientMode ? mTextAmbientColor : mTextActiveColor);
+    }
+
+    private void updateText() {
+        if (!TextUtils.isEmpty(mDefaultText)) {
+            mText = mDefaultText;
+            return;
+        }
+        if ((TextUtils.isEmpty(mWordIsAbbr)) || (TextUtils.isEmpty(mWordCapitalType))) {
+            mText = DataAdapter.getInstance().getStringValue(mValueType);
+        } else {
+            String[] format = new String[] {mWordSupportCN, mWordIsAbbr, mWordCapitalType};
+            mText = DataAdapter.getInstance().getStringValue(mValueType, format);
+        }
+    }
+
+    private void updatePosition() {
+        if (TextUtils.isEmpty(mText)) {
+            return;
+        }
+        float textWidth = mPaint.measureText(mText);
+        if (TextUtils.equals(mTextAlign, UnitConstants.VALUE_ALIGN_RIGHT)) {
+            mStartX = mTextPosition[0] - textWidth;
+        } else if (TextUtils.equals(mTextAlign, UnitConstants.VALUE_ALIGN_CENTER)) {
+            mStartX = mTextPosition[0] - textWidth * HALF;
+        } else {
+            mStartX = mTextPosition[0];
+        }
+        mStartY = mTextPosition[1];
+        mTextWidth = textWidth;
+    }
+
+    /**
+     *  setTextParams
+     * @param typeface 字体
+     * @param fontSize 字体大小
+     * @param coordinate 文字位置
+     */
+    protected void setTextParams(Typeface typeface, float fontSize, float[] coordinate) {
+        mTextFont = typeface;
+        mTextSize = fontSize;
+        mTextPosition = coordinate;
+    }
+
+    public void setTextActiveColor(int textActiveColor) {
+        mTextActiveColor = textActiveColor;
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+        updatePaint(isAmbientMode);
+        updateText();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas, boolean isAmbientMode) {
+        updatePosition();
+        if (null != mText) {
+            canvas.drawText(mText, mStartX, mStartY, mPaint);
+        }
+    }
+
+    @Override
+    public float[] getDrawUnitEndPosition() {
+        return new float[] {mTextWidth, mStartX};
+    }
+
+    @Override
+    public String getDrawUnitAlign() {
+        return mTextAlign;
+    }
+
+    @Override
+    protected void onDestroy() {
+    }
+}
+
+
+
+
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.media.MediaCodec;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
+import android.view.Surface;
+
+/**
+ * 视频绘制类，不支持位置变换效果
+ *
+ * 只支持H264编码的.mp4视频文件解码
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public class VideoDraw extends BaseResDraw {
+    private static final String TAG = "VideoDraw";
+
+    /**
+     * 纳秒转微秒，微秒转毫秒单位换算
+     */
+    private static final int TIME_TRANS_UNIT = 1000;
+
+    private Surface mSurface;
+
+    private String videoPath;
+
+    private MediaExtractor mExtractor;
+
+    private MediaCodec mCodec;
+
+    private MediaFormat mOutputFormat;
+
+    private FrameCallback mFrameCallback;
+
+    private int frameRateRaw;
+
+    private long totalFrame;
+
+    private long startTime;
+
+    /**
+     * 初始化视频资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    public VideoDraw(AssetPackage assetPackage, Layer layer) {
+        super(assetPackage, layer);
+        videoPath = assetPackage.getVideoPath(layer.getResActive());
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas, boolean isAmbientMode) {
+        if (isAmbientMode) {
+            if ((getAmbientBitmaps() == null) || (getAmbientBitmaps().size() <= 0)) {
+                return;
+            }
+            Bitmap bitmap = getAmbientBitmaps().get(0);
+
+            if (null != bitmap) {
+                canvas.drawBitmap(bitmap, getPosition()[0], getPosition()[1], getPaint());
+            }
+        } else {
+            // 绘制canvas背景为透明色，视频在canvas所在layer的下一层layer输出
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        HwLogUtil.i(TAG, "onDestroy()");
+        if (mCodec != null) {
+            mCodec.stop();
+            mCodec.release();
+            mCodec = null;
+        }
+        if (mExtractor != null) {
+            mExtractor.release();
+            mExtractor = null;
+        }
+
+        mSurface.release();
+        mSurface = null;
+    }
+
+    /**
+     * 设置Surface对象
+     *
+     * @param surface Surface对象
+     */
+    public void setSurface(Surface surface) {
+        mSurface = surface;
+        setVideoPath(videoPath);
+        start();
+    }
+
+    private void start() {
+        // 开始解码
+        HwLogUtil.i(TAG, "start()");
+        if (mCodec != null) {
+            mCodec.start();
+            startTime = System.currentTimeMillis();
+        } else {
+            HwLogUtil.e(TAG, "mCodec is null");
+        }
+    }
+
+    private void setVideoPath(String path) {
+        try {
+            HwLogUtil.i(TAG, "video path: " + path);
+            // must be an absolute mVideoPath
+            File inputFile = new File(path);
+            if (!inputFile.canRead()) {
+                HwLogUtil.w(TAG, "Fail to read video file " + inputFile);
+                return;
+            }
+            // The MediaExtractor error messages aren't very useful. Check to see if the input
+            // file exists so we can throw a better one if it's not there.
+            mExtractor = new MediaExtractor();
+            mExtractor.setDataSource(inputFile.toString());
+            // 获取视频分轨
+            final int trackIndex = selectTrack(mExtractor);
+            if (trackIndex < 0) {
+                HwLogUtil.w(TAG, "No video track found in " + inputFile);
+                return;
+            }
+            mExtractor.selectTrack(trackIndex);
+            final MediaFormat format = mExtractor.getTrackFormat(trackIndex);
+            long durationUs = format.getLong(MediaFormat.KEY_DURATION);
+            frameRateRaw = format.getInteger(MediaFormat.KEY_FRAME_RATE);
+            totalFrame = durationUs * frameRateRaw / TIME_TRANS_UNIT;
+            HwLogUtil.i(TAG, "video metrics: " + format.toString());
+
+            mFrameCallback = getFrameCallback();
+            // Create a MediaCodec decoder, and configure it with the MediaFormat from the
+            // extractor. It's very important to use the format from the extractor because
+            // it contains a copy of the CSD-0/CSD-1 codec-specific data chunks.
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            mCodec = MediaCodec.createDecoderByType(mime);
+            setCallBack(trackIndex);
+            mCodec.configure(format, mSurface, null, 0);
+            mOutputFormat = mCodec.getOutputFormat();
+        } catch (IOException e) {
+            HwLogUtil.e(TAG, "video can not read");
+        }
+    }
+
+    private void setCallBack(final int trackIndex) {
+        mCodec.setCallback(new MediaCodec.Callback() {
+            @Override
+            public void onInputBufferAvailable(MediaCodec codec, int index) {
+                onInputFrameAvailable(codec, index, trackIndex);
+            }
+
+            @Override
+            public void onOutputBufferAvailable(MediaCodec codec, int index, MediaCodec.BufferInfo info) {
+                // 异常保护
+                if (index < 0) {
+                    HwLogUtil.e(TAG, "onOutputBufferAvailable index error, index:" + index);
+                    return;
+                }
+
+                boolean doRender = (info.size) != 0;
+                if (doRender && (mFrameCallback != null)) {
+                    mFrameCallback.preRender(info.presentationTimeUs);
+                }
+
+                codec.releaseOutputBuffer(index, doRender);
+
+                if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                    long durationTime = System.currentTimeMillis() - startTime;
+                    long currentFrame = totalFrame / durationTime;
+                    // 检测到了文件末尾，重新调到文件头
+                    HwLogUtil.i(TAG,
+                            "Reached END_OF_STREAM, looping! decode Time = " + durationTime + " ms"
+                                    + "| current frame-rate = " + currentFrame + " per sec");
+                    mExtractor.seekTo(0, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+                    // reset decoder state
+                    codec.flush();
+                    codec.start();
+                    startTime = System.currentTimeMillis();
+                }
+            }
+
+            @Override
+            public void onError(MediaCodec codec, MediaCodec.CodecException e) {
+                HwLogUtil.e(TAG, "onError msg:" + e.getMessage());
+            }
+
+            @Override
+            public void onOutputFormatChanged(MediaCodec codec, MediaFormat format) {
+                HwLogUtil.i(TAG, "onOutputFormatChanged format:" + format);
+                mOutputFormat = format;
+            }
+        });
+    }
+
+    private void onInputFrameAvailable(MediaCodec codec, int index, int trackIndex) {
+        // 异常保护
+        if (index < 0) {
+            HwLogUtil.e(TAG, "onInputBufferAvailable index error, index:" + index);
+            return;
+        }
+
+        ByteBuffer inputBuffer = codec.getInputBuffer(index);
+        // 使用解码器extractor，朝里填充要解码的数据
+        int chunkSize = mExtractor.readSampleData(inputBuffer, 0);
+        if (chunkSize < 0) {
+            // 读到文件流的末尾
+            codec.queueInputBuffer(index, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+            HwLogUtil.i(TAG, "sent input END_OF_STREAM");
+        } else {
+            // 检测视频读取器当前的视频轨道是否与之前的一致
+            if (mExtractor.getSampleTrackIndex() != trackIndex) {
+                HwLogUtil.w(TAG, "WEIRD: got sample from track "
+                        + mExtractor.getSampleTrackIndex() + ", expected " + trackIndex);
+            }
+
+            long presentationTimeUs = mExtractor.getSampleTime();
+            // After filling a range of the input buffer at the specified index submit it to the decoder
+            codec.queueInputBuffer(index, 0, chunkSize, presentationTimeUs, 0);
+            mExtractor.advance();
+        }
+    }
+
+    private FrameCallback getFrameCallback() {
+        SpeedControlCallback callback = new SpeedControlCallback();
+        // 默认使用视频文件帧速率播放
+        callback.setFixedPlaybackRate(frameRateRaw);
+        return callback;
+    }
+
+    /**
+     * Selects the video track, if any.
+     *
+     * @return the track index, or -1 if no video track is found.
+     */
+    private int selectTrack(MediaExtractor extractor) {
+        // Select the first video track we find, ignore the rest.
+        int numTracks = extractor.getTrackCount();
+        for (int i = 0; i < numTracks; i++) {
+            MediaFormat format = extractor.getTrackFormat(i);
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            if (mime.startsWith("video/")) {
+                HwLogUtil.d(TAG, "Extractor selected track " + i + " (" + mime + "): " + format);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+        if (!ambientMode){
+            mCodec.reset();
+           setVideoPath(videoPath);
+           start();
+        }else {
+            mCodec.flush();
+            mCodec.stop();
+        }
+    }
+
+    /**
+     * 视频帧回调类
+     *
+     * @since 2019/1/16
+     */
+    private interface FrameCallback {
+        /**
+         * Called immediately before the frame is rendered.
+         *
+         * @param presentationTimeUsec The desired presentation time, in microseconds.
+         */
+        void preRender(long presentationTimeUsec);
+
+        /**
+         * Called after the last frame of a looped movie has been rendered.This allows the
+         * callback to adjust its expectations of the next presentation time stamp.
+         */
+        void loopReset();
+    }
+
+    /**
+     * 本类用于控制帧播放速度
+     *
+     * @since 2019/1/16
+     */
+    private class SpeedControlCallback implements FrameCallback {
+        private static final String TAG = "SpeedControlCallback";
+
+        private static final boolean CHECK_SLEEP_TIME = false;
+
+        private static final long ONE_MILLION = 1000000L;
+
+        private static final int DEFAULT_FPS = 30;
+
+        private static final int SLEEP_USEC = 500000;
+
+        private static final int CAPPING_SEC = 5;
+
+        private static final int INTER_FRAME_SEC = 10;
+
+        private static final int FRAME_INTERVAL_USEC = 100;
+
+        private long mPrevPresentUsec;
+
+        private long mPrevMonoUsec;
+
+        private long mFixedFrameDurationUsec;
+
+        private boolean mLoopReset;
+
+        /**
+         * Sets a fixed playback rate.If set, this will ignore the presentation time stamp
+         * in the video file.Must be called before playback thread starts
+         */
+        public void setFixedPlaybackRate(int fps) {
+            mFixedFrameDurationUsec = ONE_MILLION / fps;
+        }
+
+        /**
+         * pre Render
+         * @param presentationTimeUsec The desired presentation time, in microseconds.
+         */
+        @Override
+        public void preRender(long presentationTimeUsec) {
+            // For the first frame, we grab the presentation time from the video
+            // and the current monotonic clock time. For subsequent frames, we
+            // sleep for a bit to try to ensure that we're rendering frames at the
+            // pace dictated by the video stream.
+            //
+            // If the frame rate is faster than vsync we should be dropping frames. On
+            // Android 4.4 this may not be happening.
+
+            if (mPrevMonoUsec == 0) {
+                // Latch current values, then return immediately.
+                mPrevMonoUsec = System.nanoTime() / TIME_TRANS_UNIT;
+                mPrevPresentUsec = presentationTimeUsec;
+            } else {
+                // Compute the desired time delta between the previous frame and this frame.
+                long frameDelta;
+                if (mLoopReset) {
+                    // We don't get an indication of how long the last frame should appear
+                    // on-screen, so we just throw a reasonable value in. We could probably
+                    // do better by using a previous frame duration or some sort of average
+                    // for now we just use 30fps.
+                    mPrevPresentUsec = presentationTimeUsec - ONE_MILLION / DEFAULT_FPS;
+                    mLoopReset = false;
+                }
+                if (mFixedFrameDurationUsec != 0) {
+                    // Caller requested a fixed frame rate. Ignore PTS.
+                    frameDelta = mFixedFrameDurationUsec;
+                } else {
+                    frameDelta = presentationTimeUsec - mPrevPresentUsec;
+                }
+                if (frameDelta < 0) {
+                    HwLogUtil.w(TAG, "Weird, video times went backward");
+                    frameDelta = 0;
+                } else if (frameDelta == 0) {
+                    // This suggests a possible bug in movie generation.
+                    HwLogUtil.w(TAG, "Warning: current frame and previous frame had same timestamp");
+                } else if (frameDelta > (INTER_FRAME_SEC * ONE_MILLION)) {
+                    // Inter-frame times could be arbitrarily long. For this player, we want
+                    // to alert the developer that their movie might have issues (maybe they
+                    // accidentally output timestamps in nsec rather than usec).
+                    HwLogUtil.i(TAG, "Inter-frame pause was " + (frameDelta / ONE_MILLION) + "sec, capping at 5 sec");
+                    frameDelta = CAPPING_SEC * ONE_MILLION;
+                } else {
+                    HwLogUtil.i(TAG, " no operate");
+                }
+                // when we want to wake up
+                long desiredUsec = mPrevMonoUsec + frameDelta;
+                long nowUsec = System.nanoTime() / TIME_TRANS_UNIT;
+                while (nowUsec < (desiredUsec - FRAME_INTERVAL_USEC)) {
+                    // Sleep until it's time to wake up. To be responsive to "stop" commands
+                    // we're going to wake up every half a second even if the sleep is supposed
+                    // to be longer (which should be rare). The alternative would be
+                    // to interrupt the thread, but that requires more work.
+                    //
+                    // The precision of the sleep call varies widely from one device to another
+                    // we may wake early or late. Different devices will have a minimum possible
+                    // sleep time. If we're within 100us of the target time, we'll probably
+                    // overshoot if we try to sleep, so just go ahead and continue on.
+                    long sleepTimeUsec = desiredUsec - nowUsec;
+                    if (sleepTimeUsec > SLEEP_USEC) {
+                        sleepTimeUsec = SLEEP_USEC;
+                    }
+                    checkSleepTime(sleepTimeUsec);
+                    nowUsec = System.nanoTime() / TIME_TRANS_UNIT;
+                }
+
+                // Advance times using calculated time values, not the post-sleep monotonic
+                // clock time, to avoid drifting.
+                mPrevMonoUsec += frameDelta;
+                mPrevPresentUsec += frameDelta;
+            }
+        }
+
+        private void checkSleepTime(long sleepTimeUsec) {
+            try {
+                if (CHECK_SLEEP_TIME) {
+                    long startNsec = System.nanoTime();
+                    Thread.sleep(sleepTimeUsec / TIME_TRANS_UNIT,
+                        (int)(sleepTimeUsec % TIME_TRANS_UNIT) * TIME_TRANS_UNIT);
+                    long actualSleepNsec = System.nanoTime() - startNsec;
+                    HwLogUtil.d(TAG,
+                        "sleep=" + sleepTimeUsec + " actual=" + (actualSleepNsec / TIME_TRANS_UNIT) + " diff="
+                            + (Math.abs(actualSleepNsec / TIME_TRANS_UNIT - sleepTimeUsec)) + " (usec)");
+                } else {
+                    Thread.sleep(sleepTimeUsec / TIME_TRANS_UNIT,
+                        (int)(sleepTimeUsec % TIME_TRANS_UNIT) * TIME_TRANS_UNIT);
+                }
+            } catch (InterruptedException ie) {
+                HwLogUtil.e(TAG, "checkSleepTime() InterruptedException");
+            }
+        }
+
+        @Override
+        public void loopReset() {
+            mLoopReset = true;
+        }
+    }
+
+    @Override
+    public void onClick(int x, int y) {
+        super.onClick(x, y);
+        mExtractor.seekTo(0, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+    }
+}
+
+
+
+
+
+
+
+
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * 视频播放类，支持多视频选择播放
+ *
+ * @author wwx706176
+ * @version 1.0.0
+ * @since 2019/05/10
+ */
+public class SelectVideoDraw extends BaseResDraw {
+    private static final String TAG = "SelectVideoDraw";
+
+    /**
+     * 纳秒转微秒，微秒转毫秒单位换算
+     */
+    private static final int TIME_TRANS_UNIT = 1000;
+
+    private Surface mSurface;
+
+    private String videoPath;
+
+    private MediaExtractor mExtractor;
+
+    private MediaCodec mCodec;
+
+    private MediaFormat mOutputFormat;
+
+    private SelectVideoDraw.FrameCallback mFrameCallback;
+
+    private int frameRateRaw;
+
+    private long totalFrame;
+
+    private long startTime;
+
+    private List<String> mVideopahList = new ArrayList<>(0);
+
+    private int mIndex;
+
+    /**
+     * 初始化视频资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    public SelectVideoDraw(AssetPackage assetPackage, Layer layer) {
+        super(assetPackage, layer);
+        String resActive = layer.getResActive();
+        String[] split = resActive.split(",");
+        List<String> strings = Arrays.asList(split);
+        for (String string : strings) {
+            mVideopahList.add(assetPackage.getVideoPath(string));
+        }
+
+        videoPath = mVideopahList.get(0);
+        HwLogUtil.e(TAG, "videoPath=====" + videoPath);
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas, boolean isAmbientMode) {
+        if (isAmbientMode) {
+            if ((getAmbientBitmaps() == null) || (getAmbientBitmaps().size() <= 0)) {
+                return;
+            }
+            Bitmap bitmap = getAmbientBitmaps().get(0);
+
+            if (bitmap != null) {
+                canvas.drawBitmap(bitmap, getPosition()[0], getPosition()[1], getPaint());
+            }
+        } else {
+            // 绘制canvas背景为透明色，视频在canvas所在layer的下一层layer输出
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        HwLogUtil.i(TAG, "onDestroy()");
+        if (mCodec != null) {
+            mCodec.stop();
+            mCodec.release();
+            mCodec = null;
+        }
+        if (mExtractor != null) {
+            mExtractor.release();
+            mExtractor = null;
+        }
+
+        if (mSurface != null) {
+            mSurface.release();
+            mSurface = null;
+        }
+    }
+
+    /**
+     * 设置Surface对象
+     *
+     * @param surface Surface对象
+     */
+    public void setSurface(Surface surface) {
+        mSurface = surface;
+        setVideoPath(videoPath);
+        start();
+    }
+
+    private void start() {
+        // 开始解码
+        HwLogUtil.i(TAG, "start()");
+        if (mCodec != null) {
+            mCodec.start();
+            startTime = System.currentTimeMillis();
+        } else {
+            HwLogUtil.e(TAG, "mCodec is null");
+        }
+    }
+
+    private void setVideoPath(String path) {
+        try {
+            HwLogUtil.i(TAG, "video path: " + path);
+            // must be an absolute mVideoPath
+            File inputFile = new File(path);
+            if (!inputFile.canRead()) {
+                HwLogUtil.w(TAG, "Fail to read video file " + inputFile);
+                return;
+            }
+            // The MediaExtractor error messages aren't very useful. Check to see if the input
+            // file exists so we can throw a better one if it's not there.
+            mExtractor = new MediaExtractor();
+            mExtractor.setDataSource(inputFile.toString());
+            // 获取视频分轨
+            final int trackIndex = selectTrack(mExtractor);
+            if (trackIndex < 0) {
+                HwLogUtil.w(TAG, "No video track found in " + inputFile);
+                return;
+            }
+            mExtractor.selectTrack(trackIndex);
+            final MediaFormat format = mExtractor.getTrackFormat(trackIndex);
+            long durationUs = format.getLong(MediaFormat.KEY_DURATION);
+            frameRateRaw = format.getInteger(MediaFormat.KEY_FRAME_RATE);
+            totalFrame = durationUs * frameRateRaw / TIME_TRANS_UNIT;
+            HwLogUtil.i(TAG, "video metrics: " + format.toString());
+
+            mFrameCallback = getFrameCallback();
+            // Create a MediaCodec decoder, and configure it with the MediaFormat from the
+            // extractor. It's very important to use the format from the extractor because
+            // it contains a copy of the CSD-0/CSD-1 codec-specific data chunks.
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            mCodec = MediaCodec.createDecoderByType(mime);
+            setCallBack(trackIndex);
+            mCodec.configure(format, mSurface, null, 0);
+            mOutputFormat = mCodec.getOutputFormat();
+        } catch (IOException e) {
+            HwLogUtil.e(TAG, "video can not read");
+        }
+    }
+
+    private void setCallBack(final int trackIndex) {
+        mCodec.setCallback(new MediaCodec.Callback() {
+            @Override
+            public void onInputBufferAvailable(MediaCodec codec, int index) {
+                onInputFrameAvailable(codec, index, trackIndex);
+            }
+
+            @Override
+            public void onOutputBufferAvailable(MediaCodec codec, int index, MediaCodec.BufferInfo info) {
+                // 异常保护
+                if (index < 0) {
+                    HwLogUtil.e(TAG, "onOutputBufferAvailable index error, index:" + index);
+                    return;
+                }
+
+                boolean doRender = (info.size) != 0;
+                if (doRender && (mFrameCallback != null)) {
+                    mFrameCallback.preRender(info.presentationTimeUs);
+                }
+
+                codec.releaseOutputBuffer(index, doRender);
+                if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                    long durationTime = System.currentTimeMillis() - startTime;
+                    long currentFrame = totalFrame / durationTime;
+                    // 检测到了文件末尾，重新调到文件头
+                    HwLogUtil.i(TAG, "Reached END_OF_STREAM, looping! decode Time = " + durationTime + " ms"
+                        + "| current frame-rate = " + currentFrame + " per sec");
+                    mExtractor.seekTo(0, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+                    // reset decoder state
+                    codec.flush();
+                    codec.start();
+                    startTime = System.currentTimeMillis();
+                }
+            }
+
+            @Override
+            public void onError(MediaCodec codec, MediaCodec.CodecException e) {
+                HwLogUtil.e(TAG, "onError msg:" + e.getMessage());
+            }
+
+            @Override
+            public void onOutputFormatChanged(MediaCodec codec, MediaFormat format) {
+                HwLogUtil.i(TAG, "onOutputFormatChanged format:" + format);
+                mOutputFormat = format;
+            }
+        });
+    }
+
+    private void onInputFrameAvailable(MediaCodec codec, int index, int trackIndex) {
+        // 异常保护
+        if (index < 0) {
+            HwLogUtil.e(TAG, "onInputBufferAvailable index error, index:" + index);
+            return;
+        }
+
+        ByteBuffer inputBuffer = codec.getInputBuffer(index);
+        // 使用解码器extractor，朝里填充要解码的数据
+        int chunkSize = mExtractor.readSampleData(inputBuffer, 0);
+        if (chunkSize < 0) {
+            // 读到文件流的末尾
+            codec.queueInputBuffer(index, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+            HwLogUtil.i(TAG, "sent input END_OF_STREAM");
+        } else {
+            // 检测视频读取器当前的视频轨道是否与之前的一致
+            if (mExtractor.getSampleTrackIndex() != trackIndex) {
+                HwLogUtil.w(TAG, "WEIRD: got sample from track " + mExtractor.getSampleTrackIndex() + ", expected "
+                    + trackIndex);
+            }
+
+            long presentationTimeUs = mExtractor.getSampleTime();
+            // After filling a range of the input buffer at the specified index submit it to the decoder
+            codec.queueInputBuffer(index, 0, chunkSize, presentationTimeUs, 0);
+            mExtractor.advance();
+        }
+    }
+
+    private SelectVideoDraw.FrameCallback getFrameCallback() {
+        SelectVideoDraw.SpeedControlCallback callback = new SelectVideoDraw.SpeedControlCallback();
+        // 默认使用视频文件帧速率播放
+        callback.setFixedPlaybackRate(frameRateRaw);
+        return callback;
+    }
+
+    /**
+     * Selects the video track, if any.
+     *
+     * @return the track index, or -1 if no video track is found.
+     */
+    private int selectTrack(MediaExtractor extractor) {
+        // Select the first video track we find, ignore the rest.
+        int numTracks = extractor.getTrackCount();
+        for (int i = 0; i < numTracks; i++) {
+            MediaFormat format = extractor.getTrackFormat(i);
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            if (mime.startsWith("video/")) {
+                HwLogUtil.d(TAG, "Extractor selected track " + i + " (" + mime + "): " + format);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+        if (!ambientMode) {
+            mCodec.reset();
+            isAmbientModeChangedVideo();
+        }else {
+            mCodec.flush();
+            mCodec.stop();
+        }
+    }
+
+    /**
+     * 视频帧回调类
+     *
+     * @since 2019/05/10
+     */
+    private interface FrameCallback {
+        /**
+         * Called immediately before the frame is rendered.
+         *
+         * @param presentationTimeUsec The desired presentation time, in microseconds.
+         */
+        void preRender(long presentationTimeUsec);
+
+        /**
+         * Called after the last frame of a looped movie has been rendered.This allows the callback to adjust its
+         * expectations of the next presentation time stamp.
+         */
+        void loopReset();
+    }
+
+    /**
+     * 本类用于控制帧播放速度
+     *
+     * @since 2019/05/10
+     */
+    private class SpeedControlCallback implements SelectVideoDraw.FrameCallback {
+        private static final String TAG = "SpeedControlCallback";
+
+        private static final boolean CHECK_SLEEP_TIME = false;
+
+        private static final long ONE_MILLION = 1000000L;
+
+        private static final int DEFAULT_FPS = 30;
+
+        private static final int SLEEP_USEC = 500000;
+
+        private static final int CAPPING_SEC = 5;
+
+        private static final int INTER_FRAME_SEC = 10;
+
+        private static final int FRAME_INTERVAL_USEC = 100;
+
+        private long mPrevPresentUsec;
+
+        private long mPrevMonoUsec;
+
+        private long mFixedFrameDurationUsec;
+
+        private boolean mLoopReset;
+
+        /**
+         * Sets a fixed playback rate.If set, this will ignore the presentation time stamp in the video file.Must be
+         * called before playback thread starts
+         */
+        public void setFixedPlaybackRate(int fps) {
+            mFixedFrameDurationUsec = ONE_MILLION / fps;
+        }
+
+        /**
+         * pre Render
+         *
+         * @param presentationTimeUsec The desired presentation time, in microseconds.
+         */
+        @Override
+        public void preRender(long presentationTimeUsec) {
+            // For the first frame, we grab the presentation time from the video
+            // and the current monotonic clock time. For subsequent frames, we
+            // sleep for a bit to try to ensure that we're rendering frames at the
+            // pace dictated by the video stream.
+            //
+            // If the frame rate is faster than vsync we should be dropping frames. On
+            // Android 4.4 this may not be happening.
+
+            if (mPrevMonoUsec == 0) {
+                // Latch current values, then return immediately.
+                mPrevMonoUsec = System.nanoTime() / TIME_TRANS_UNIT;
+                mPrevPresentUsec = presentationTimeUsec;
+            } else {
+                // Compute the desired time delta between the previous frame and this frame.
+                long frameDelta;
+                if (mLoopReset) {
+                    // We don't get an indication of how long the last frame should appear
+                    // on-screen, so we just throw a reasonable value in. We could probably
+                    // do better by using a previous frame duration or some sort of average
+                    // for now we just use 30fps.
+                    mPrevPresentUsec = presentationTimeUsec - ONE_MILLION / DEFAULT_FPS;
+                    mLoopReset = false;
+                }
+                if (mFixedFrameDurationUsec != 0) {
+                    // Caller requested a fixed frame rate. Ignore PTS.
+                    frameDelta = mFixedFrameDurationUsec;
+                } else {
+                    frameDelta = presentationTimeUsec - mPrevPresentUsec;
+                }
+                if (frameDelta < 0) {
+                    HwLogUtil.w(TAG, "Weird, video times went backward");
+                    frameDelta = 0;
+                } else if (frameDelta == 0) {
+                    // This suggests a possible bug in movie generation.
+                    HwLogUtil.w(TAG, "Warning: current frame and previous frame had same timestamp");
+                } else if (frameDelta > (INTER_FRAME_SEC * ONE_MILLION)) {
+                    // Inter-frame times could be arbitrarily long. For this player, we want
+                    // to alert the developer that their movie might have issues (maybe they
+                    // accidentally output timestamps in nsec rather than usec).
+                    HwLogUtil.i(TAG, "Inter-frame pause was " + (frameDelta / ONE_MILLION) + "sec, capping at 5 sec");
+                    frameDelta = CAPPING_SEC * ONE_MILLION;
+                } else {
+                    HwLogUtil.i(TAG, " no operate");
+                }
+                // when we want to wake up
+                long desiredUsec = mPrevMonoUsec + frameDelta;
+                long nowUsec = System.nanoTime() / TIME_TRANS_UNIT;
+                while (nowUsec < (desiredUsec - FRAME_INTERVAL_USEC)) {
+                    // Sleep until it's time to wake up. To be responsive to "stop" commands
+                    // we're going to wake up every half a second even if the sleep is supposed
+                    // to be longer (which should be rare). The alternative would be
+                    // to interrupt the thread, but that requires more work.
+                    //
+                    // The precision of the sleep call varies widely from one device to another
+                    // we may wake early or late. Different devices will have a minimum possible
+                    // sleep time. If we're within 100us of the target time, we'll probably
+                    // overshoot if we try to sleep, so just go ahead and continue on.
+                    long sleepTimeUsec = desiredUsec - nowUsec;
+                    if (sleepTimeUsec > SLEEP_USEC) {
+                        sleepTimeUsec = SLEEP_USEC;
+                    }
+                    checkSleepTime(sleepTimeUsec);
+                    nowUsec = System.nanoTime() / TIME_TRANS_UNIT;
+                }
+
+                // Advance times using calculated time values, not the post-sleep monotonic
+                // clock time, to avoid drifting.
+                mPrevMonoUsec += frameDelta;
+                mPrevPresentUsec += frameDelta;
+            }
+        }
+
+        private void checkSleepTime(long sleepTimeUsec) {
+            try {
+                if (CHECK_SLEEP_TIME) {
+                    long startNsec = System.nanoTime();
+                    Thread.sleep(sleepTimeUsec / TIME_TRANS_UNIT, (int) (sleepTimeUsec % TIME_TRANS_UNIT)
+                        * TIME_TRANS_UNIT);
+                    long actualSleepNsec = System.nanoTime() - startNsec;
+                    HwLogUtil.d(TAG, "sleep=" + sleepTimeUsec + " actual=" + (actualSleepNsec / TIME_TRANS_UNIT)
+                        + " diff=" + (Math.abs(actualSleepNsec / TIME_TRANS_UNIT - sleepTimeUsec)) + " (usec)");
+                } else {
+                    Thread.sleep(sleepTimeUsec / TIME_TRANS_UNIT, (int) (sleepTimeUsec % TIME_TRANS_UNIT)
+                        * TIME_TRANS_UNIT);
+                }
+            } catch (InterruptedException ie) {
+                HwLogUtil.e(TAG, "checkSleepTime() InterruptedException");
+            }
+        }
+
+        @Override
+        public void loopReset() {
+            mLoopReset = true;
+        }
+    }
+
+    @Override
+    public void onClick(int x, int y) {
+        super.onClick(x, y);
+        getNextVideo();
+    }
+
+    private void getNextVideo() {
+        mCodec.flush();
+        mCodec.stop();
+        mIndex = (mVideopahList != null) && (++mIndex >= mVideopahList.size()) ? 0 : mIndex++;
+        videoPath = mVideopahList.get(mIndex);
+        setVideoPath(videoPath);
+        start();
+    }
+
+    private void isAmbientModeChangedVideo(){
+        mIndex = (mVideopahList != null) && (++mIndex >= mVideopahList.size()) ? 0 : mIndex++;
+        videoPath = mVideopahList.get(mIndex);
+        setVideoPath(videoPath);
+        start();
+    }
+}
