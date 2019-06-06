@@ -1,0 +1,1608 @@
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.res.Resources;
+import android.provider.Settings;
+import android.text.TextUtils;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.TimeZone;
+
+/**
+ * 时间日期工具类
+ *
+ * @author m00230717
+ * @version 1.0.0
+ * @since 2018-11-22
+ */
+public class CalendarUtil {
+    /**
+     * 每秒毫秒值
+     */
+    public static final long MILLIS_PER_SECOND = 1000L;
+
+    /**
+     * 每分钟秒数
+     */
+    public static final long SECONDS_PER_MINUTE = 60L;
+
+    /**
+     * 每小时分钟数
+     */
+    public static final long MINUTES_PER_HOUR = 60L;
+
+    /**
+     * 半天的小时数
+     */
+    public static final long HOURS_PER_HALF_DAY = 12L;
+
+    /**
+     * 每周天数
+     */
+    public static final long DAYS_PER_WEEK = 7L;
+
+    /**
+     * 每年月数
+     */
+    public static final long MONTHS_PER_YEAR = 12L;
+
+    private static final String WORD_MONTH_JANUARY = "January";
+
+    private static final String WORD_MONTH_FEBRUARY = "February";
+
+    private static final String WORD_MONTH_MARCH = "March";
+
+    private static final String WORD_MONTH_APRIL = "April";
+
+    private static final String WORD_MONTH_MAY = "May";
+
+    private static final String WORD_MONTH_JUNE = "June";
+
+    private static final String WORD_MONTH_JULY = "July";
+
+    private static final String WORD_MONTH_AUGUST = "August";
+
+    private static final String WORD_MONTH_SEPTEMBER = "September";
+
+    private static final String WORD_MONTH_OCTOBER = "October";
+
+    private static final String WORD_MONTH_NOVEMBER = "November";
+
+    private static final String WORD_MONTH_DECEMBER = "December";
+
+    private static final String WORD_ABBR_MONTH_JANUARY = "Jan";
+
+    private static final String WORD_ABBR_MONTH_FEBRUARY = "Feb";
+
+    private static final String WORD_ABBR_MONTH_MARCH = "Mar";
+
+    private static final String WORD_ABBR_MONTH_APRIL = "Apr";
+
+    private static final String WORD_ABBR_MONTH_MAY = "May";
+
+    private static final String WORD_ABBR_MONTH_JUNE = "Jun";
+
+    private static final String WORD_ABBR_MONTH_JULY = "Jul";
+
+    private static final String WORD_ABBR_MONTH_AUGUST = "Aug";
+
+    private static final String WORD_ABBR_MONTH_SEPTEMBER = "Sep";
+
+    private static final String WORD_ABBR_MONTH_OCTOBER = "Oct";
+
+    private static final String WORD_ABBR_MONTH_NOVEMBER = "Nov";
+
+    private static final String WORD_ABBR_MONTH_DECEMBER = "Dec";
+
+    private static final String WORD_WEEK_MONDAY = "Monday";
+
+    private static final String WORD_WEEK_TUESDAY = "Tuesday";
+
+    private static final String WORD_WEEK_WEDNESDAY = "Wednesday";
+
+    private static final String WORD_WEEK_THURSDAY = "Thursday";
+
+    private static final String WORD_WEEK_FRIDAY = "Friday";
+
+    private static final String WORD_WEEK_SATURDAY = "Saturday";
+
+    private static final String WORD_WEEK_SUNDAY = "Sunday";
+
+    private static final String WORD_ABBR_WEEK_MONDAY = "Mon";
+
+    private static final String WORD_ABBR_WEEK_TUESDAY = "Tue";
+
+    private static final String WORD_ABBR_WEEK_WEDNESDAY = "Wed";
+
+    private static final String WORD_ABBR_WEEK_THURSDAY = "Thu";
+
+    private static final String WORD_ABBR_WEEK_FRIDAY = "Fri";
+
+    private static final String WORD_ABBR_WEEK_SATURDAY = "Sat";
+
+    private static final String WORD_ABBR_WEEK_SUNDAY = "Sun";
+
+    private static final int DAY_HOUR_12 = 12;
+
+    private static final ArrayList<String> MONTH_WORD_LIST = new ArrayList<>(0);
+
+    private static final ArrayList<String> MONTH_WORD_ABBR_LIST = new ArrayList<>(0);
+
+    private static final ArrayList<String> WEEK_WORD_LIST = new ArrayList<>(0);
+
+    private static final ArrayList<String> WEEK_WORD_ABBR_LIST = new ArrayList<>(0);
+
+    private static final ArrayList<String> WEEK_WORD_CN_LIST = new ArrayList<>(0);
+
+    private static final ArrayList<String> WEEK_WORD_CN_1_LIST = new ArrayList<>(0);
+
+    private CalendarUtil() {
+    }
+
+    static {
+        MONTH_WORD_LIST.add(WORD_MONTH_JANUARY);
+        MONTH_WORD_LIST.add(WORD_MONTH_FEBRUARY);
+        MONTH_WORD_LIST.add(WORD_MONTH_MARCH);
+        MONTH_WORD_LIST.add(WORD_MONTH_APRIL);
+        MONTH_WORD_LIST.add(WORD_MONTH_MAY);
+        MONTH_WORD_LIST.add(WORD_MONTH_JUNE);
+        MONTH_WORD_LIST.add(WORD_MONTH_JULY);
+        MONTH_WORD_LIST.add(WORD_MONTH_AUGUST);
+        MONTH_WORD_LIST.add(WORD_MONTH_SEPTEMBER);
+        MONTH_WORD_LIST.add(WORD_MONTH_OCTOBER);
+        MONTH_WORD_LIST.add(WORD_MONTH_NOVEMBER);
+        MONTH_WORD_LIST.add(WORD_MONTH_DECEMBER);
+
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_JANUARY);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_FEBRUARY);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_MARCH);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_APRIL);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_MAY);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_JUNE);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_JULY);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_AUGUST);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_SEPTEMBER);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_OCTOBER);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_NOVEMBER);
+        MONTH_WORD_ABBR_LIST.add(WORD_ABBR_MONTH_DECEMBER);
+
+        WEEK_WORD_LIST.add(WORD_WEEK_SUNDAY);
+        WEEK_WORD_LIST.add(WORD_WEEK_MONDAY);
+        WEEK_WORD_LIST.add(WORD_WEEK_TUESDAY);
+        WEEK_WORD_LIST.add(WORD_WEEK_WEDNESDAY);
+        WEEK_WORD_LIST.add(WORD_WEEK_THURSDAY);
+        WEEK_WORD_LIST.add(WORD_WEEK_FRIDAY);
+        WEEK_WORD_LIST.add(WORD_WEEK_SATURDAY);
+
+        WEEK_WORD_ABBR_LIST.add(WORD_ABBR_WEEK_SUNDAY);
+        WEEK_WORD_ABBR_LIST.add(WORD_ABBR_WEEK_MONDAY);
+        WEEK_WORD_ABBR_LIST.add(WORD_ABBR_WEEK_TUESDAY);
+        WEEK_WORD_ABBR_LIST.add(WORD_ABBR_WEEK_WEDNESDAY);
+        WEEK_WORD_ABBR_LIST.add(WORD_ABBR_WEEK_THURSDAY);
+        WEEK_WORD_ABBR_LIST.add(WORD_ABBR_WEEK_FRIDAY);
+        WEEK_WORD_ABBR_LIST.add(WORD_ABBR_WEEK_SATURDAY);
+
+        WEEK_WORD_CN_LIST.add(getStringFromRes("word_cn_week_sunday"));
+        WEEK_WORD_CN_LIST.add(getStringFromRes("word_cn_week_monday"));
+        WEEK_WORD_CN_LIST.add(getStringFromRes("word_cn_week_tuesday"));
+        WEEK_WORD_CN_LIST.add(getStringFromRes("word_cn_week_wednesday"));
+        WEEK_WORD_CN_LIST.add(getStringFromRes("word_cn_week_thursday"));
+        WEEK_WORD_CN_LIST.add(getStringFromRes("word_cn_week_friday"));
+        WEEK_WORD_CN_LIST.add(getStringFromRes("word_cn_week_saturday"));
+
+        WEEK_WORD_CN_1_LIST.add(getStringFromRes("word_cn_week_sunday_1"));
+        WEEK_WORD_CN_1_LIST.add(getStringFromRes("word_cn_week_monday_1"));
+        WEEK_WORD_CN_1_LIST.add(getStringFromRes("word_cn_week_tuesday_1"));
+        WEEK_WORD_CN_1_LIST.add(getStringFromRes("word_cn_week_wednesday_1"));
+        WEEK_WORD_CN_1_LIST.add(getStringFromRes("word_cn_week_thursday_1"));
+        WEEK_WORD_CN_1_LIST.add(getStringFromRes("word_cn_week_friday_1"));
+        WEEK_WORD_CN_1_LIST.add(getStringFromRes("word_cn_week_saturday_1"));
+    }
+
+    private static String getStringFromRes(String resIdStr) {
+        Context context = ContextUtil.getContext();
+        if (context == null) {
+            return "";
+        }
+        try {
+            return context.getString(context.getResources().getIdentifier(resIdStr, "string", context
+                .getPackageName()));
+        } catch (Resources.NotFoundException exception) {
+            HwLogUtil.e("CalendarUtil", "method getStringFromRes catch Resources.NotFoundException");
+        }
+        return "";
+    }
+
+    /**
+     * 获取月份
+     *
+     * @param isAbbr 是否简写
+     * @return 月份
+     */
+    public static String getWordMonth(boolean isAbbr) {
+        int month = getDigitMonth() - 1;
+        return isAbbr ? (MONTH_WORD_ABBR_LIST.get(month)) : (MONTH_WORD_LIST.get(month));
+    }
+
+    /**
+     * 获取星期
+     *
+     * @param isAbbr 是否简写
+     * @return 周
+     */
+    public static String getWordWeek(boolean isAbbr) {
+        int week = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
+        return isAbbr ? (WEEK_WORD_ABBR_LIST.get(week)) : (WEEK_WORD_LIST.get(week));
+    }
+
+    /**
+     * 获取数字星期
+     *
+     * @return 星期
+     */
+    public static int getDigitWeek() {
+        // the first week of day is SUNDAY, and it's value is 1
+        int week = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        return (week == Calendar.SUNDAY) ? (CommonConstantsUtil.NUMBER_SEVEN) : (week - 1);
+    }
+
+    /**
+     * 获取中文星期
+     *
+     * @return 周
+     */
+    public static String getWordCnWeek() {
+        int week = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
+        return WEEK_WORD_CN_LIST.get(week);
+    }
+
+    /**
+     * 获取中文周
+     *
+     * @return 周
+     */
+    public static String getWordCnWeek1() {
+        int week = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
+        return WEEK_WORD_CN_1_LIST.get(week);
+    }
+
+    /**
+     * 获取数字年
+     *
+     * @return 年
+     */
+    public static int getDigitYear() {
+        return Calendar.getInstance().get(Calendar.YEAR);
+    }
+
+    /**
+     * 获取数字月
+     *
+     * @return 月
+     */
+    public static int getDigitMonth() {
+        // the first MONTH is JANUARY, and it's value is 0
+        return Calendar.getInstance().get(Calendar.MONTH) + CommonConstantsUtil.NUMBER_ONE;
+    }
+
+    /**
+     * 获取数字天
+     *
+     * @return 天
+     */
+    public static int getDigitDay() {
+        return Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * 获取数字天
+     *
+     * @return 前一天
+     */
+    public static int getDigitDayBefore() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -CommonConstantsUtil.NUMBER_ONE);
+        return cal.get(Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * 获取数字天
+     *
+     * @return 前一天
+     */
+    public static int getDigitDayBefore2() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -CommonConstantsUtil.NUMBER_ONE);
+        return cal.get(Calendar.DAY_OF_MONTH) > getDigitDay() ? 0 : cal.get(Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * 获取数字天
+     *
+     * @return 后一天
+     */
+    public static int getDigitDayAfter() {
+        Calendar cl = Calendar.getInstance();
+        cl.add(Calendar.DATE, 1);
+        return cl.get(Calendar.DAY_OF_MONTH);
+    }
+
+    /**
+     * 获取每月天数
+     *
+     * @return 天数
+     */
+    public static int getDaysOfMonth() {
+        int month = Calendar.getInstance().get(Calendar.MONTH);
+        switch (month) {
+            case Calendar.JANUARY:
+            case Calendar.MARCH:
+            case Calendar.MAY:
+            case Calendar.JULY:
+            case Calendar.AUGUST:
+            case Calendar.OCTOBER:
+            case Calendar.DECEMBER:
+                return CommonConstantsUtil.NUMBER_THIRTY_ONE;
+            case Calendar.FEBRUARY:
+                return ((getDigitYear() % (CommonConstantsUtil.NUMBER_FOUR)) == 0)
+                    ? (CommonConstantsUtil.NUMBER_TWENTY_NINE)
+                    : (CommonConstantsUtil.NUMBER_TWENTY_EIGHT);
+            case Calendar.APRIL:
+            case Calendar.JUNE:
+            case Calendar.SEPTEMBER:
+            case Calendar.NOVEMBER:
+            default:
+                return CommonConstantsUtil.NUMBER_THIRTY;
+        }
+    }
+
+    /**
+     * 获取数字小时
+     *
+     * @return 小时
+     */
+    public static int getDigitHour() {
+        if (is24HourTime()) {
+            return Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        } else {
+            int hour = Calendar.getInstance().get(Calendar.HOUR);
+            if (hour == 0) {
+                return DAY_HOUR_12;
+            } else {
+                return Calendar.getInstance().get(Calendar.HOUR);
+            }
+        }
+    }
+
+    /**
+     * 获取数字小时
+     *
+     * @param timeZone 时区
+     * @return 小时
+     */
+    public static int getDigitHour(TimeZone timeZone) {
+        if (is24HourTime()) {
+            return Calendar.getInstance(timeZone).get(Calendar.HOUR_OF_DAY);
+        } else {
+            return Calendar.getInstance(timeZone).get(Calendar.HOUR);
+        }
+    }
+
+    /**
+     * 获取文本小时
+     *
+     * @return 小时
+     */
+    public static String getTextHour() {
+        int hour = getDigitHour();
+        int num = CommonConstantsUtil.NUMBER_ZERO;
+        return (hour < CommonConstantsUtil.NUMBER_TEN) ? (String.valueOf(num) + hour) : ("" + hour);
+    }
+
+    /**
+     * 获取数字分钟
+     *
+     * @return 分钟
+     */
+    public static int getDigitMinute() {
+        return Calendar.getInstance().get(Calendar.MINUTE);
+    }
+
+    /**
+     * 获取数字分钟
+     *
+     * @param timeZone 时区
+     * @return 分钟
+     */
+    public static int getDigitMinute(TimeZone timeZone) {
+        return Calendar.getInstance(timeZone).get(Calendar.MINUTE);
+    }
+
+    /**
+     * 获取文本分钟
+     *
+     * @return 分钟
+     */
+    public static String getTextMinute() {
+        int minute = getDigitMinute();
+        int num = CommonConstantsUtil.NUMBER_ZERO;
+        return (minute < CommonConstantsUtil.NUMBER_TEN) ? (String.valueOf(num) + minute) : ("" + minute);
+    }
+
+    /**
+     * 获取数字秒数
+     *
+     * @return 秒数
+     */
+    public static int getDigitSecond() {
+        return Calendar.getInstance().get(Calendar.SECOND);
+    }
+
+    /**
+     * 获取文本秒数
+     *
+     * @return 秒数
+     */
+    public static String getTextSecond() {
+        int second = getDigitSecond();
+        int num = CommonConstantsUtil.NUMBER_ZERO;
+        return (second < CommonConstantsUtil.NUMBER_TEN) ? (String.valueOf(num) + second) : ("" + second);
+    }
+
+    /**
+     * 获取当前毫秒数
+     *
+     * @return 毫秒数
+     */
+    public static long getCurTimeMillis() {
+        Calendar mCalendar = Calendar.getInstance();
+        return mCalendar.get(Calendar.HOUR) * CalendarUtil.MINUTES_PER_HOUR * CalendarUtil.SECONDS_PER_MINUTE
+            * CalendarUtil.MILLIS_PER_SECOND + mCalendar.get(Calendar.MINUTE) * CalendarUtil.SECONDS_PER_MINUTE
+            * CalendarUtil.MILLIS_PER_SECOND + mCalendar.get(Calendar.SECOND) * CalendarUtil.MILLIS_PER_SECOND
+            + mCalendar.get(Calendar.MILLISECOND);
+    }
+
+    /**
+     * 是否24小时制
+     *
+     * @return boolean
+     */
+    public static boolean is24HourTime() {
+        ContentResolver resolver = ContextUtil.getContext().getContentResolver();
+        String timeFormat = Settings.System.getString(resolver, Settings.System.TIME_12_24);
+        return TextUtils.equals(timeFormat, "24");
+    }
+
+    /**
+     * 获取数字am pm
+     *
+     * @param timeZone 时区ID
+     * @return am pm
+     */
+    public static int getDigitAmPm(TimeZone timeZone) {
+        return Calendar.getInstance(timeZone).get(Calendar.AM_PM);
+    }
+
+    /**
+     * 获取数字am pm
+     *
+     * @return am pm
+     */
+    public static int getDigitAmPm() {
+        return Calendar.getInstance().get(Calendar.AM_PM);
+    }
+
+    /**
+     * 获取文本 am pm
+     *
+     * @return am pm
+     */
+    public static String getWordAmPm() {
+        return (getDigitAmPm() == Calendar.AM) ? "AM" : "PM";
+    }
+
+    /**
+     * 获取文本 am pm
+     *
+     * @param timeZone 时区
+     * @return am pm
+     */
+    public static String getWordAmPm(TimeZone timeZone) {
+        return (getDigitAmPm(timeZone) == Calendar.AM) ? "AM" : "PM";
+    }
+
+    /**
+     * 获取中文 am pm
+     *
+     * @return am pm
+     */
+    public static String getWordCnAmPm() {
+        return (getDigitAmPm() == Calendar.AM) ? "上午" : "下午";
+    }
+}
+
+
+
+
+/**
+ * 项目工具类
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019-01-23
+ */
+public class HwUtil {
+    private static final String TAG = "HwUtil";
+
+    private static final String INTERCEPT_STR_PREFIX = "@R.string.";
+
+    private static final String RES_TYPE = "string";
+
+    private static final String SPLIT_STRING = ",";
+
+    private HwUtil() {
+    }
+
+    /**
+     * 禁用应用
+     *
+     * @param context 上下文
+     * @param packageName 包名
+     * @param enabled 是否禁用
+     * @return int
+     */
+    public static int isPackageEnabled(Context context, String packageName, boolean enabled) {
+        if (context == null) {
+            return 0;
+        }
+        PackageManager pm = context.getPackageManager();
+        pm.setApplicationEnabledSetting(packageName,
+            enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            0);
+
+        return 1;
+    }
+
+    /**
+     * 禁用组件
+     *
+     * @param context 上下文
+     * @param componentName 组件名
+     * @param enabled 是否禁用
+     * @return int
+     */
+    public static int isComponentEnabled(Context context, String componentName, boolean enabled) {
+        if (context == null) {
+            return 0;
+        }
+        PackageManager pm = context.getPackageManager();
+        pm.setComponentEnabledSetting(new ComponentName(context, componentName),
+            enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            0);
+        return 1;
+    }
+
+    /**
+     * 获取像素值
+     *
+     * @param context 上下文
+     * @return 像素
+     */
+    public static int getDisplayMetrics(Context context) {
+        if (context == null) {
+            return 0;
+        }
+        DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        return dm.widthPixels;
+    }
+
+    /**
+     * 获取数字
+     *
+     * @param value 数字
+     * @param pos 指数
+     * @return 数字
+     */
+    public static int getDigit(String value, int pos) {
+        int length = value.length();
+        if ((0 > pos) || (length <= pos)) {
+            return 0;
+        }
+        int max = ((Double) Math.pow(CommonConstantsUtil.NUMBER_TEN, length - pos)).intValue();
+        int min = ((Double) Math.pow(CommonConstantsUtil.NUMBER_TEN, length - pos - 1)).intValue();
+        long valueLong = 0L;
+        try {
+            valueLong = Long.valueOf(value);
+        } catch (NumberFormatException e) {
+            HwLogUtil.e(TAG, "method getDigit() catch NumberFormatException");
+            valueLong = 0;
+        }
+        return (int) (valueLong % max / min);
+    }
+
+    /**
+     * 获取数字
+     *
+     * @param value 数字
+     * @param pos 指数
+     * @return 数字
+     */
+    public static int getDigit(int value, int pos) {
+        int length = String.valueOf(value).length();
+        if ((0 > pos) || (length <= pos)) {
+            return 0;
+        }
+        int max = ((Double) Math.pow(CommonConstantsUtil.NUMBER_TEN, length - pos)).intValue();
+        int min = ((Double) Math.pow(CommonConstantsUtil.NUMBER_TEN, length - pos - 1)).intValue();
+
+        return (value % max) / min;
+    }
+
+    /**
+     * 获取角度
+     *
+     * @param max 最大值
+     * @param value 当前值
+     * @return 角度
+     */
+    public static float getAngel(long max, long value) {
+        if ((0 >= max) || (0 >= value)) {
+            return 0F;
+        }
+        float unit = CommonConstantsUtil.NUMBER_THREE_HUNDRED_AND_SIX / max;
+        return (value % max) * unit;
+    }
+
+    /**
+     * 获取角度
+     *
+     * @param startAngel 起始角度
+     * @param endAngel 终止角度
+     * @param max 最大值
+     * @param min 最小值
+     * @param value 当前值
+     * @return 角度
+     */
+    public static float getAngel(float startAngel, float endAngel, int max, int min, int value) {
+        if ((min > max) || (min > value) || (startAngel == endAngel)) {
+            return 0F;
+        }
+        int range = max - min;
+        if (range == 0) {
+            return endAngel;
+        }
+        int relative = value - min;
+        float rangeAngel = (startAngel < endAngel) ? (endAngel - startAngel) : (startAngel - endAngel);
+        float relativeAngel = relative * (rangeAngel / range);
+        float angel = (startAngel < endAngel) ? (startAngel + relativeAngel) : (startAngel - relativeAngel);
+        return angel;
+    }
+
+    /**
+     * 获取进度
+     *
+     * @param startPoint 起始点
+     * @param endPoint 终止点
+     * @param max 最大值
+     * @param min 最小值
+     * @param value 当前值
+     * @return 坐标点
+     */
+    public static float[] getValuePoint(float[] startPoint, float[] endPoint, int max, int min, int value) {
+        if ((min >= max) || (min > value)) {
+            return startPoint;
+        }
+        if ((startPoint == null) || (endPoint == null)) {
+            return startPoint;
+        }
+        int range = max - min;
+        int relative = value - min;
+        float rangeX = endPoint[0] - startPoint[0];
+        float rangeY = endPoint[1] - startPoint[1];
+        float relativeX = (relative % range) * (rangeX / range);
+        float relativeY = (relative % range) * (rangeY / range);
+        return new float[] {startPoint[0] + relativeX, startPoint[1] + relativeY};
+    }
+
+    /**
+     * 获取偏移量
+     *
+     * @param startPoint 起始点
+     * @param endPoint 终止点
+     * @param max 最大值
+     * @param min 最小值
+     * @param value 当前值
+     * @return 偏移量
+     */
+    public static float[] getValueRelative(float[] startPoint, float[] endPoint, int max, int min, int value) {
+        if ((min >= max) || (min > value)) {
+            return new float[0];
+        }
+        if ((startPoint == null) || (endPoint == null)) {
+            return new float[0];
+        }
+        int range = max - min;
+        int relative = value - min;
+        float rangeX = endPoint[0] - startPoint[0];
+        float rangeY = endPoint[1] - startPoint[1];
+        float relativeX = relative * (rangeX / range);
+        float relativeY = relative * (rangeY / range);
+        return new float[] {relativeX, relativeY};
+    }
+
+    /**
+     * 获取boolean
+     *
+     * @param info 资源信息
+     * @return boolean
+     */
+    public static boolean getBoolValue(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getBoolValue(), info: null");
+            return false;
+        }
+        return info.trim().toLowerCase(Locale.ENGLISH).equals("true");
+    }
+
+    /**
+     * 获取boolean
+     *
+     * @param info 资源信息
+     * @param def 默认值
+     * @return boolean
+     */
+    public static boolean getBoolValue(String info, boolean def) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getBoolValue(), info: null");
+            return def;
+        }
+        return info.trim().toLowerCase(Locale.ENGLISH).equals("true");
+    }
+
+    /**
+     * 获取String
+     *
+     * @param info 资源信息
+     * @return string
+     */
+    public static String getStringValue(String info) {
+        String value = "";
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getStringValue()  info: null");
+            return value;
+        }
+        if (info.startsWith(INTERCEPT_STR_PREFIX)) {
+            try {
+                String resIdStr =
+                    info.substring(info.lastIndexOf(INTERCEPT_STR_PREFIX) + INTERCEPT_STR_PREFIX.length());
+                int resId = ContextUtil.getContext().getResources().getIdentifier(resIdStr, RES_TYPE,
+                    ContextUtil.getContext().getPackageName());
+                value = ContextUtil.getContext().getString(resId);
+            } catch (Resources.NotFoundException exception) {
+                HwLogUtil.e(TAG, "getStringValue catch Resources.NotFoundException");
+            }
+        } else {
+            value = info.trim();
+        }
+        return value;
+    }
+
+    /**
+     * 获取strings
+     *
+     * @param info 资源信息
+     * @return strings
+     */
+    public static List<String> getStringValues(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getStringValues(), info: null");
+            return Collections.emptyList();
+        }
+        List<String> tempList = Arrays.asList(info.split(SPLIT_STRING));
+        List<String> values = new ArrayList<>(tempList.size());
+        for (String value : tempList) {
+            String tempValue = value.trim();
+            values.add(tempValue);
+        }
+        return values;
+    }
+
+    /**
+     * 获取int值
+     *
+     * @param info 资源信息
+     * @return int
+     */
+    public static int getIntValue(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getIntValue() label: info: null");
+            return 0;
+        }
+        return Integer.valueOf(info.trim());
+    }
+
+    /**
+     * 获取long值
+     *
+     * @param info 资源信息
+     * @return long
+     */
+    public static long getLongValue(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getLongValue() label: info: null");
+            return 0;
+        }
+        return Long.valueOf(info.trim());
+    }
+
+    /**
+     * 获取float
+     *
+     * @param info 资源信息
+     * @return float
+     */
+    public static float getFloatValue(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getFloatValue(), info: null");
+            return 0;
+        }
+        return Float.valueOf(info.trim());
+    }
+
+    /**
+     * 获取float
+     *
+     * @param info 资源信息
+     * @param def 默认值
+     * @return float
+     */
+    public static float getFloatValue(String info, float def) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getFloatValue(), info: null");
+            return def;
+        }
+        return Float.valueOf(info.trim());
+    }
+
+    /**
+     * 获取floats
+     *
+     * @param info 资源信息
+     * @return floats
+     */
+    public static float[] getFloatValues(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getFloatValues() info: null");
+            return new float[0];
+        }
+        List<String> values = Arrays.asList(info.split(SPLIT_STRING));
+        float[] floatValues = new float[values.size()];
+        int i = 0;
+        for (String value : values) {
+            floatValues[i] = Float.valueOf(value.trim());
+            i++;
+        }
+        return floatValues;
+    }
+
+    /**
+     * 获取Point
+     *
+     * @param info 资源信息
+     * @return point
+     */
+    public static float[] getPoint(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getPoint() info: null");
+            return new float[]{0,0};
+        }
+        List<String> values = Arrays.asList(info.trim().split(SPLIT_STRING));
+        if (values.size() != CommonConstantsUtil.NUMBER_TWO) {
+            HwLogUtil.i(TAG, "getPoint() info: " + info + ", info format error");
+            return new float[]{0,0};
+        }
+        float x = Float.valueOf(values.get(0).trim());
+        float y = Float.valueOf(values.get(1).trim());
+        return new float[] {x, y};
+    }
+
+    /**
+     * 获取rect
+     *
+     * @param info 资源信息
+     * @return rect
+     */
+    public static Rect getRect(String info) {
+        Rect rect = null;
+        if (!TextUtils.isEmpty(info)) {
+            List<String> values = Arrays.asList(info.trim().split(SPLIT_STRING));
+            if (values.size() == CommonConstantsUtil.NUMBER_FOUR) {
+                rect = new Rect(Integer.valueOf(values.get(0).trim()), Integer.valueOf(values.get(1).trim()),
+                    Integer.valueOf(values.get(CommonConstantsUtil.NUMBER_TWO).trim()),
+                    Integer.valueOf(values.get(CommonConstantsUtil.NUMBER_THREE).trim()));
+            } else {
+                HwLogUtil.i(TAG, "getRect() label, info format error");
+            }
+        } else {
+            HwLogUtil.i(TAG, "getRect(), info: null");
+        }
+        return rect;
+    }
+
+    /**
+     * 获取rect
+     *
+     * @param info 资源信息
+     * @return rect
+     */
+    public static RectF getRectF(String info) {
+        RectF rectF = null;
+        if (!TextUtils.isEmpty(info)) {
+            List<String> values = Arrays.asList(info.trim().split(SPLIT_STRING));
+            if (values.size() == CommonConstantsUtil.NUMBER_FOUR) {
+                rectF = new RectF(Float.valueOf(values.get(0).trim()), Float.valueOf(values.get(1).trim()),
+                    Float.valueOf(values.get(CommonConstantsUtil.NUMBER_TWO).trim()),
+                    Float.valueOf(values.get(CommonConstantsUtil.NUMBER_THREE).trim()));
+            } else {
+                HwLogUtil.i(TAG, "getRectF() label, info format error");
+            }
+        } else {
+            HwLogUtil.i(TAG, "getRectF(), info: null");
+        }
+        return rectF;
+    }
+
+    /**
+     * 获取color
+     *
+     * @param info 资源信息
+     * @return color
+     */
+    public static @ColorInt int getColor(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getColor() label: info: null");
+            return 0;
+        }
+        return Color.parseColor(info.trim());
+    }
+
+    /**
+     * 获取color
+     *
+     * @param info 资源信息
+     * @return color
+     */
+    public static @ColorInt int[] getColors(String info) {
+        if (TextUtils.isEmpty(info)) {
+            HwLogUtil.i(TAG, "getColor() label: info: null");
+            return new int[0];
+        }
+        List<String> values = Arrays.asList(info.split(SPLIT_STRING));
+        @ColorInt
+        int[] colors = new int[values.size()];
+        int i = 0;
+        for (String value : values) {
+            colors[i] = Color.parseColor(value.trim());
+            i++;
+        }
+        return colors;
+    }
+
+    /**
+     * 判断坐标是否在矩形之中
+     *
+     * @param x x坐标
+     * @param y y坐标
+     * @param rect 矩形
+     * @return bool
+     */
+    public static boolean isInBound(int x, int y, Rect rect) {
+        if (rect == null) {
+            return false;
+        }
+        if ((x < rect.left) || (x > rect.right)) {
+            return false;
+        }
+        if ((y < rect.top) || (y > rect.bottom)) {
+            return false;
+        }
+        return true;
+    }
+}
+
+
+
+
+
+
+/**
+ * Element接口
+ *
+ * @author swx405947
+ * @version 1.0.0
+ * @since 2019/1/24
+ */
+public interface IDrawElement {
+    /**
+     * 绘制
+     * @param canvas 画笔
+     * @param isAmbientMode 是否是半亮模式
+     */
+    void onDraw(Canvas canvas, boolean isAmbientMode);
+
+    /**
+     * 点击事件
+     * @param x x坐标
+     * @param y y坐标
+     * @return 是否响应click
+     */
+    boolean onClick(int x, int y);
+
+    /**
+     * 资源重构
+     * @param assetPackage 资源包对象
+     */
+    void onReconstruct(AssetPackage assetPackage);
+
+    /**
+     * 资源销毁
+     */
+    void onDestroy();
+
+    /**
+     * 亮暗模式是否改变
+     * @param ambientMode 是否半亮
+     */
+    void isAmbientModeChanged(boolean ambientMode);
+
+    /**
+     * 显示模式是否改变
+     * @param visible 是否显示
+     */
+    void onVisibilityChanged(boolean visible);
+}
+
+
+
+
+import android.graphics.Canvas;
+import android.text.TextUtils;
+
+/**
+ * 所有Element的基类
+ *
+ * @author swx405947
+ * @version 1.0.0
+ * @since 2019/01/31
+ */
+public abstract class BaseElement implements IDrawElement {
+    private static final String TAG = "BaseElement";
+
+    /** 绘制图层列表 */
+    private List<IDrawUnit> mDrawUnits;
+
+    private AssetPackage mAssetPackage;
+
+    private String mLabel;
+
+    /**
+     * 构造方法
+     * @param assetPackage 资源包对象
+     */
+    BaseElement(String label, AssetPackage assetPackage) {
+        mLabel = label;
+        mAssetPackage = assetPackage;
+        mDrawUnits = new ArrayList<>(0);
+        addUnit();
+    }
+
+    /**
+     * 获取Element对象
+     * @return Element对象
+     */
+    protected Optional<Element> getElement() {
+        return mAssetPackage.getElementsProvider().getElement(mLabel);
+    }
+
+    /**
+     * 获取Styles对象
+     * @return Styles对象
+     */
+    protected Optional<Styles> getStyles() {
+        return mAssetPackage.getElementsProvider().getStyles();
+    }
+
+    /**
+     * 获取图层集合
+     * @return 图层集合
+     */
+    public List<IDrawUnit> getDrawUnits() {
+        return mDrawUnits;
+    }
+
+    /**
+     * 获取资源包
+     * @return 资源包
+     */
+    public AssetPackage getAssetPackage() {
+        return mAssetPackage;
+    }
+
+    /**
+     * 添加绘制单元
+     */
+    protected void addUnit() {
+        Optional<Element> element = getElement();
+        if (!element.isPresent()) {
+            HwLogUtil.w(TAG, "addUnit(), element is null, label = " + mLabel);
+            return;
+        }
+        if (HwUtil.getBoolValue(element.get().getIsSupportOption())) {
+            Optional<Option> option = element.get().getOption(element.get().getSelectedOption());
+            if (!option.isPresent()) {
+                return;
+            }
+            List<Layer> layers = option.get().getLayers();
+            if ((layers == null) || (layers.size() <= 0)) {
+                HwLogUtil.w(TAG, "addUnit(), layers is null, label = " + mLabel);
+                return;
+            }
+            for (Layer layer : layers) {
+                if (layer == null) {
+                    continue;
+                }
+                String drawType = layer.getDrawType();
+                // 每个layer必需配置绘制方式draw_type
+                if (TextUtils.isEmpty(drawType)) {
+                    HwLogUtil.w(TAG, "addUnit(), layer must have draw_type value");
+                    continue;
+                }
+                mDrawUnits.add(UnitFactoryUtil.createDrawUnit(mAssetPackage, layer));
+            }
+        } else {
+            List<Layer> layers = element.get().getLayers();
+            if ((layers == null) || (layers.size() <= 0)) {
+                HwLogUtil.w(TAG, "addUnit(), layers is null, label = " + mLabel);
+                return;
+            }
+            for (Layer layer : layers) {
+                if (layer == null) {
+                    continue;
+                }
+                String drawType = layer.getDrawType();
+                // 每个layer必需配置绘制方式draw_type
+                if (TextUtils.isEmpty(drawType)) {
+                    HwLogUtil.w(TAG, "addUnit(), layer must have draw_type value");
+                    continue;
+                }
+                mDrawUnits.add(UnitFactoryUtil.createDrawUnit(mAssetPackage, layer));
+            }
+        }
+    }
+
+    private void clearUnit() {
+        for (IDrawUnit unit : mDrawUnits) {
+            if (unit != null) {
+                unit.destroy();
+            }
+        }
+        mDrawUnits.clear();
+    }
+
+    @Override
+    public void onVisibilityChanged(boolean visible) {
+        for (IDrawUnit unit : mDrawUnits) {
+            if (unit != null) {
+                unit.onVisibilityChanged(visible);
+            }
+        }
+    }
+
+    @Override
+    public void onDraw(Canvas canvas, boolean isAmbientMode) {
+        for (IDrawUnit unit : mDrawUnits) {
+            if (unit != null) {
+                unit.preDraw(canvas,isAmbientMode);
+                unit.draw(canvas, isAmbientMode);
+            }
+        }
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+        for (IDrawUnit unit : mDrawUnits) {
+            if (unit != null) {
+                unit.isAmbientModeChanged(ambientMode);
+            }
+        }
+    }
+
+    @Override
+    public boolean onClick(int x, int y) {
+        return false;
+    }
+
+    @Override
+    public void onReconstruct(AssetPackage assetPackage) {
+        mAssetPackage = assetPackage;
+        clearUnit();
+        addUnit();
+    }
+
+    @Override
+    public void onDestroy() {
+        clearUnit();
+    }
+}
+
+
+
+
+
+
+import android.graphics.Canvas;
+import android.text.TextUtils;
+
+/**
+ * 控件Element
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/21
+ */
+public class WidgetElement extends BaseElement {
+    private List<String> mSelectedContainerIndexs;
+
+    /**
+     * 构造方法
+     *
+     * @param assetPackage 资源包对象
+     */
+    public WidgetElement(AssetPackage assetPackage) {
+        super(UnitConstants.LABEL_WIDGET, assetPackage);
+    }
+
+    @Override
+    public void addUnit() {
+        Optional<Element> element = getElement();
+        if (!element.isPresent()) {
+            return;
+        }
+
+        Layer linearLayer = null;
+        List<Layer> layerList = element.get().getLayers();
+        if ((layerList != null) && (layerList.size()) > 0) {
+            for (Layer layer : layerList) {
+                String selectedContainer = layer.getArcLinearSelectedContainer();
+                if (!TextUtils.isEmpty(selectedContainer)) {
+                    linearLayer = layer;
+                    mSelectedContainerIndexs = HwUtil.getStringValues(selectedContainer);
+                    break;
+                }
+            }
+        }
+
+        if (mSelectedContainerIndexs == null) {
+            mSelectedContainerIndexs = new ArrayList<>(0);
+        }
+
+        List<Container> containers = element.get().getContainers();
+        if ((containers == null) || (containers.size() <= 0)) {
+            return;
+        }
+        addContainerUnit(element, linearLayer, containers);
+    }
+
+    private void addContainerUnit(Optional<Element> element, Layer linearLayer, List<Container> containers) {
+        for (Container container : containers) {
+            if (container == null) {
+                continue;
+            }
+
+            String index = container.getIndex();
+
+            if ((mSelectedContainerIndexs.contains(index)) && (linearLayer != null)) {
+                IDrawUnit unit = UnitFactoryUtil.createDrawUnit(getAssetPackage(), linearLayer);
+                getDrawUnits().add(unit);
+            } else {
+                if (TextUtils.equals(container.getIsAvailable(), "false")) {
+                    continue;
+                }
+                if (HwUtil.getBoolValue(container.getIsSupportOption())) {
+                    Optional<Option> option = element.get().getOption(container.getSelectedOption());
+                    if (!option.isPresent()) {
+                        continue;
+                    }
+                    List<Layer> layers = option.get().getLayers();
+                    for (Layer layer : layers) {
+                        IDrawUnit unit = UnitFactoryUtil.createDrawUnit(getAssetPackage(), layer);
+                        // 需要根据控件位置和图层相对坐标重新计算图层的绝对坐标
+                        unit.setWidgetRect(HwUtil.getRectF(container.getRect()));
+                        getDrawUnits().add(unit);
+                    }
+                } else {
+                    List<Layer> layers = container.getLayers();
+                    if ((layers != null) && (layers.size() != 0)) {
+                        for (Layer layer : layers) {
+                            IDrawUnit unit = UnitFactoryUtil.createDrawUnit(getAssetPackage(), layer);
+                            // 需要根据控件位置和图层相对坐标重新计算图层的绝对坐标
+                            unit.setWidgetRect(HwUtil.getRectF(container.getRect()));
+                            getDrawUnits().add(unit);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean onClick(int x, int y) {
+        Optional<Element> element = getElement();
+        if (!element.isPresent()) {
+            return false;
+        }
+
+        List<String> indexList = obtainContainerIndexWithStyles();
+        List<Container> containers = element.get().getContainers();
+        if ((containers == null) || (containers.size() <= 0)) {
+            return false;
+        }
+
+        boolean isContain;
+        for (Container container : containers) {
+            if (container == null) {
+                continue;
+            }
+
+            String currIndex = container.getIndex();
+
+            if ((Objects.isNull(indexList)) || (indexList.size() == 0)) {
+                isContain = true;
+            } else {
+                isContain = indexList.contains(currIndex);
+            }
+
+            if (HwUtil.isInBound(x, y, HwUtil.getRect(container.getRect())) && isContain) {
+                if (HwUtil.getBoolValue(container.getIsSupportOption())) {
+                    Optional<Option> option = element.get().getOption(container.getSelectedOption());
+                    if (option.isPresent()) {
+                        DataAdapter.getInstance().doClick(option.get().getDataType());
+                        return true;
+                    }
+                    break;
+                } else {
+                    DataAdapter.getInstance().doClick(container.getDataType());
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<String> obtainContainerIndexWithStyles() {
+        String currStyleIndex = null;
+        List<String> results = null;
+        Optional<Styles> styles = getStyles();
+        if (styles.isPresent()) {
+            currStyleIndex = styles.get().getSelectedStyle();
+        }
+        if (!TextUtils.isEmpty(currStyleIndex)) {
+            Optional<Style> currStyle = styles.get().getStyle(currStyleIndex);
+            if (currStyle.isPresent()) {
+                String availableContainer = currStyle.get().getWidgetAvailableContainers();
+                results = HwUtil.getStringValues(availableContainer);
+            }
+        }
+        return results;
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+        super.isAmbientModeChanged(ambientMode);
+    }
+
+    @Override
+    public void onDraw(Canvas canvas, boolean isAmbientMode) {
+        if (!isAmbientMode) {
+            super.onDraw(canvas, false);
+        }
+    }
+}
+
+
+
+
+
+import android.graphics.Canvas;
+import android.support.wearable.complications.ComplicationData;
+import android.util.SparseArray;
+
+/**
+ * 该类进行了Complication控件的封装，适用于所有complication表盘：
+ * 1.使用complicationDrawable进行complication控件的绘制
+ * 2.外部调用构造方法获取该wrapper对象时须传入provider，用于xml配置数据的获取
+ * 3.该类封装了complicationIDs的初始化，即确定了表盘上complication的个数以及id
+ * 4.表盘服务可调用getComplicationIDs进行complicationIDs的获取，获取到该IDs集合后用于complication的激活
+ * 5.表盘服务可调用updateComplicationData方法进行实时数据更新
+ * 6.该类封装了complication的绘制（draw）以及点击事件（onTapCommand），外部调用接口即可
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/20
+ */
+
+public class ComplicationElement extends BaseElement {
+    private static final String TAG = "ComplicationElement";
+
+    private static ComplicationElement instance;
+
+    private SparseArray<ComplicationDraw> mComplicationDraws;
+
+    /**
+     * 构造方法
+     * @param assetPackage 资源包对象
+     */
+    private ComplicationElement(AssetPackage assetPackage) {
+        super(UnitConstants.LABEL_COMPLICATION, assetPackage);
+    }
+
+    /**
+     * 获取ComplicationElement单例对象
+     * @param assetPackage 资源包对象
+     * @return ComplicationElement单例对象
+     */
+    public static ComplicationElement getInstance(AssetPackage assetPackage) {
+        if (instance == null) {
+            synchronized (ComplicationElement.class) {
+                if (instance == null) {
+                    instance = new ComplicationElement(assetPackage);
+                }
+            }
+        }
+        return instance;
+    }
+
+    @Override
+    protected void addUnit() {
+        mComplicationDraws = new SparseArray<>();
+        int complicationCnt = 0;
+        Optional<Element> element = getElement();
+        if (!element.isPresent()) {
+            return;
+        }
+        List<Layer> layers = element.get().getLayers();
+        if ((layers == null) || (layers.size() <= 0)) {
+            HwLogUtil.w(TAG, "ComplicationElement(), containers is null, label = complication");
+            return;
+        }
+        for (Layer layer : layers) {
+            if (layer == null) {
+                continue;
+            }
+            IDrawUnit drawUnit = UnitFactoryUtil.createDrawUnit(getAssetPackage(), layer);
+            if (drawUnit instanceof ComplicationDraw) {
+                ComplicationDraw unit = (ComplicationDraw) drawUnit;
+                mComplicationDraws.put(complicationCnt++, unit);
+            }
+        }
+    }
+
+    @Override
+    public void onDraw(Canvas canvas, boolean isAmbientMode) {
+        if (isAmbientMode) {
+            return;
+        }
+        // 遍历集合进行element的绘制
+        for (int i = 0; i < mComplicationDraws.size(); i++) {
+            mComplicationDraws.get(i).draw(canvas, false);
+        }
+    }
+
+    @Override
+    public boolean onClick(int x, int y) {
+        for (int i = 0; i < mComplicationDraws.size(); i++) {
+            if (mComplicationDraws.get(i).onTapCommand(x, y)) {
+                HwLogUtil.d(TAG, "onTapCommand tap successful");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void onDestroy() {
+        // 遍历集合进行资源的释放
+        for (int i = 0; i < mComplicationDraws.size(); i++) {
+            mComplicationDraws.get(i).destroy();
+        }
+        mComplicationDraws.clear();
+        mComplicationDraws.clear();
+        instance = null;
+    }
+
+    /**
+     * 对外提供接口进行complication数据的更新
+     * @param complicationData 外部传入的最新的complication数据
+     * @param complicationId complication数据对应的表盘id
+     */
+    public void updateComplicationData(ComplicationData complicationData, int complicationId) {
+        // 通过complicationId找到对应的complication组件并进行数据更新
+        mComplicationDraws.get(complicationId).updateComplicationData(complicationData);
+    }
+
+    /**
+     * 对外提供接口用于获取complicationIDs
+     * @return complicationID的数组
+     */
+    public int[] getComplicationIDs() {
+        int count = mComplicationDraws.size();
+        int[] complicationIDs = new int[count];
+        for (int i = 0; i < count; i++) {
+            complicationIDs[i] = mComplicationDraws.keyAt(i);
+        }
+        HwLogUtil.d(TAG, "getComplicationIDs(),ids=" + Arrays.toString(complicationIDs));
+        return complicationIDs;
+    }
+
+    /**
+     * 对外提供接口获取Complication控件的集合
+     * @return 表盘complication控件的集合
+     */
+    public SparseArray<ComplicationDraw> getComplications() {
+        return mComplicationDraws;
+    }
+}
+
+
+
+
+import android.view.Surface;
+
+/**
+ * 背景Element
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/20
+ */
+
+public class BackgroundElement extends BaseElement {
+    /**
+     * 构造方法
+     * @param assetPackage 资源包对象
+     */
+    public BackgroundElement(AssetPackage assetPackage) {
+        super(UnitConstants.LABEL_BACKGROUND, assetPackage);
+    }
+
+    /**
+     * 主要针对video类型的绘制
+     * @param surface surface
+     */
+    public void setSurface(Surface surface) {
+        for (IDrawUnit unit : getDrawUnits()) {
+            if (unit instanceof VideoDraw) {
+                VideoDraw videoDraw = (VideoDraw)unit;
+                videoDraw.setSurface(surface);
+            }
+
+            if (unit instanceof SelectVideoDraw) {
+                SelectVideoDraw videoDraw = (SelectVideoDraw) unit;
+                videoDraw.setSurface(surface);
+            }
+        }
+    }
+
+    @Override
+    public boolean onClick(int x, int y) {
+        for (IDrawUnit unit : getDrawUnits()) {
+            if (unit instanceof SelectVideoDraw) {
+                unit.onClick(x,y);
+            }
+            if (unit instanceof VideoDraw) {
+                unit.onClick(x,y);
+            }
+        }
+        return false;
+    }
+}
+
