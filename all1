@@ -1,0 +1,1694 @@
+model
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2019-2019. All rights reserved.
+ */
+
+import java.util.List;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * xml数据配置model类，提供给手机APP
+ *
+ * @author swx405947
+ * @since 2019/04/22
+ */
+public class Config {
+    @SerializedName("position")
+    private List<Position> positions;
+
+    /**
+     * svg的绘制位置，提供给手机APP
+     * @since 2019/04/22
+     */
+    public class Position {
+        @SerializedName("@position_label")
+        private String positionLabel;
+
+        @SerializedName("@position_rect")
+        private String positionRect;
+
+        public String getPositionLabel() {
+            return positionLabel;
+        }
+
+        public void setPositionLabel(String positionLabel) {
+            this.positionLabel = positionLabel;
+        }
+
+        public String getPositionRect() {
+            return positionRect;
+        }
+
+        public void setPositionRect(String positionRect) {
+            this.positionRect = positionRect;
+        }
+
+        @Override
+        public String toString() {
+            return "Position{" + "positionLabel='" + positionLabel + '\'' + ", positionRect='" + positionRect + '\''
+                + '}';
+        }
+    }
+
+    public List<Position> getPositions() {
+        return positions;
+    }
+
+    public void setPositions(List<Position> positions) {
+        this.positions = positions;
+    }
+
+    @Override
+    public String toString() {
+        return "Config{" + "positions=" + positions + '}';
+    }
+}
+
+
+
+
+
+import java.util.List;
+import java.util.Optional;
+
+import com.google.gson.annotations.SerializedName;
+
+import android.text.TextUtils;
+
+/**
+ * xml文件中container标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Container {
+    @SerializedName("layer")
+    private List<Layer> layers;
+
+    @SerializedName("@index")
+    private String index;
+
+    @SerializedName("@rect")
+    private String rect;
+
+    @SerializedName("@is_support_option")
+    private String isSupportOption;
+
+    @SerializedName("@res_preview")
+    private String resPreview;
+
+    @SerializedName("@selected_option")
+    private String selectedOption;
+
+    @SerializedName("@available_option")
+    private String availableOption;
+
+    @SerializedName("@data_type")
+    private String dataType;
+
+    @SerializedName("@is_available")
+    private String isAvailable;
+
+    @SerializedName("@rotate_degree")
+    private String rotateDegree;
+
+    @SerializedName("@center_degree")
+    private String centerDegree;
+
+    @SerializedName("@res_rotate_preview")
+    private String resRotatePreview;
+
+    @SerializedName("@res_radian")
+    private String resRadian;
+
+    @SerializedName("@is_arc_linear")
+    private String isArcLinear;
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public String getRect() {
+        return rect;
+    }
+
+    public String getIsSupportOption() {
+        return isSupportOption;
+    }
+
+    public String getResPreview() {
+        return resPreview;
+    }
+
+    public String getSelectedOption() {
+        return selectedOption;
+    }
+
+    public String getAvailableOption() {
+        return availableOption;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public String getIsAvailable() {
+        return isAvailable;
+    }
+
+    public void setIsAvailable(String isAvailable) {
+        this.isAvailable = isAvailable;
+    }
+
+    public void setSelectedOption(String selectedOption) {
+        this.selectedOption = selectedOption;
+    }
+
+    public String getRotateDegree() {
+        return rotateDegree;
+    }
+
+    public void setRotateDegree(String rotateDegree) {
+        this.rotateDegree = rotateDegree;
+    }
+
+    public String getResRotatePreview() {
+        return resRotatePreview;
+    }
+
+    public void setResRotatePreview(String resRotatePreview) {
+        this.resRotatePreview = resRotatePreview;
+    }
+
+    public String getCenterDegree() {
+        return centerDegree;
+    }
+
+    public void setCenterDegree(String centerDegree) {
+        this.centerDegree = centerDegree;
+    }
+
+    public String getResRadian() {
+        return resRadian;
+    }
+
+    public void setResRadian(String resRadian) {
+        this.resRadian = resRadian;
+    }
+
+    public String getIsArcLinear() {
+        return isArcLinear;
+    }
+
+    public void setIsArcLinear(String isArcLinear) {
+        this.isArcLinear = isArcLinear;
+    }
+
+    /**
+     * 获取指定layer
+     * @param i layer索引
+     * @return layer对象
+     */
+    public Optional<Layer> getLayer(String i) {
+        if ((layers == null) || (layers.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Layer layer : layers) {
+            if (layer == null) {
+                continue;
+            }
+            if (TextUtils.equals(layer.getIndex().trim(), i.trim())) {
+                return Optional.of(layer);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public String toString() {
+        return " Container { layers=" + layers + " , index=" + index + " , rect=" + rect + " , isSupportOption="
+            + isSupportOption + " , selectedOption=" + selectedOption + " , availableOption=" + availableOption
+            + " , dataType=" + dataType + " } ";
+    }
+}
+
+
+import android.text.TextUtils;
+
+/**
+ * xml中element标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Element {
+    @SerializedName("option")
+    private List<Option> options;
+
+    @SerializedName("container")
+    private List<Container> containers;
+
+    @SerializedName("layer")
+    private List<Layer> layers;
+
+    @SerializedName("@label")
+    private String label;
+
+    @SerializedName("@is_support_option")
+    private String isSupportOption;
+
+    @SerializedName("@selected_option")
+    private String selectedOption;
+
+    @SerializedName("@res_preview")
+    private String resPreview;
+
+    public List<Option> getOptions() {
+        return options;
+    }
+
+    public List<Container> getContainers() {
+        return containers;
+    }
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getIsSupportOption() {
+        return isSupportOption;
+    }
+
+    public String getSelectedOption() {
+        return selectedOption;
+    }
+
+    public void setSelectedOption(String index) {
+        selectedOption = index;
+    }
+
+    public String getResPreview() {
+        return resPreview;
+    }
+
+    /**
+     * 获取指定option
+     * @param optionIndexStr option索引
+     * @return option对象
+     */
+    public Optional<Option> getOption(String optionIndexStr) {
+        // 修复样式中选择无的时候崩溃的bug
+        if (TextUtils.isEmpty(optionIndexStr)) {
+            return Optional.empty();
+        }
+        if ((options == null) || (options.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Option option : options) {
+            if (option == null) {
+                continue;
+            }
+            if (TextUtils.equals(option.getIndex().trim(), optionIndexStr.trim())) {
+                return Optional.of(option);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * 获取指定container
+     * @param i container索引
+     * @return container对象
+     */
+    public Optional<Container> getContainer(String i) {
+        if ((containers == null) || (containers.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Container container : containers) {
+            if (container == null) {
+                continue;
+            }
+            if (TextUtils.equals(container.getIndex().trim(), i.trim())) {
+                return Optional.of(container);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * 获取指定layer
+     * @param i layer索引
+     * @return layer对象
+     */
+    public Optional<Layer> getLayer(String i) {
+        if ((layers == null) || (layers.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Layer layer : layers) {
+            if (layer == null) {
+                continue;
+            }
+            if (TextUtils.equals(layer.getIndex().trim(), i.trim())) {
+                return Optional.of(layer);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * 获取预览图
+     * @return 预览图名称
+     */
+    public String getPreview() {
+        if (HwUtil.getBoolValue(getIsSupportOption())) {
+            Optional<Option> option = getOption(getSelectedOption());
+            if (!option.isPresent()) {
+                return "";
+            }
+            return option.get().getResPreview();
+        } else {
+            return getResPreview();
+        }
+    }
+
+    /**
+     * 获取预览图
+     * @param i container索引
+     * @return 预览图名称
+     */
+    public String getPreview(String i) {
+        Optional<Container> container = getContainer(i);
+        if (!container.isPresent()) {
+            return "";
+        }
+        if (HwUtil.getBoolValue(container.get().getIsSupportOption())) {
+            Optional<Option> option = getOption(container.get().getSelectedOption());
+            if (!option.isPresent()) {
+                return "";
+            }
+            return option.get().getResPreview();
+        } else {
+            return container.get().getResPreview();
+        }
+    }
+
+    /**
+     * 获取蓝色异形预览图
+     *
+     * @param i container索引
+     * @return 蓝色异形预览图名称
+     */
+    public String getBorderPreview(String i) {
+        Optional<Container> container = getContainer(i);
+        if (!container.isPresent()) {
+            return "";
+        }
+        if (HwUtil.getBoolValue(container.get().getIsSupportOption())) {
+            Optional<Option> option = getOption(container.get().getSelectedOption());
+            if (!option.isPresent()) {
+                return "";
+            }
+            return option.get().getResBorderPreview();
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * 获取蓝色异形预览图(健康三环)
+     *
+     * @param i container索引
+     * @return 蓝色异形预览图名称
+     */
+    public String getContainerPreview(String i) {
+        Optional<Container> container = getContainer(i);
+        if (!container.isPresent()) {
+            return "";
+        }
+        if (HwUtil.getBoolValue(container.get().getIsSupportOption())) {
+            return container.get().getResRotatePreview();
+        } else {
+            return "";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return " Element { options=" + options + " , containers=" + containers + " , layers=" + layers + " , label="
+            + label + " , isSupportOption=" + isSupportOption + " , selectedOption=" + selectedOption + " } ";
+    }
+}
+
+
+
+
+/**
+ * xml文件中providers标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class HwTheme {
+    @SerializedName("title")
+    private String title;
+
+    @SerializedName("title-cn")
+    private String titleCn;
+
+    @SerializedName("author")
+    private String author;
+
+    @SerializedName("designer")
+    private String designer;
+
+    @SerializedName("screen")
+    private String screen;
+
+    @SerializedName("version")
+    private String version;
+
+    @SerializedName("font")
+    private String font;
+
+    @SerializedName("font-cn")
+    private String fontCn;
+
+    @SerializedName("briefinfo")
+    private String briefinfo;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getTitleCn() {
+        return titleCn;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    @Override
+    public String toString() {
+        return " providers { " + title + " , " + titleCn + " , " + author + " , " + designer + " , " + screen + " , "
+            + version + " , " + font + " , " + fontCn + " , " + briefinfo + " } ";
+    }
+}
+
+
+
+
+import java.util.List;
+
+/**
+ * xml文件中layer标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Layer {
+    @SerializedName("@index")
+    private String index;
+
+    @SerializedName("@draw_type")
+    private String drawType;
+
+    /**
+     * select layer
+     */
+    @SerializedName("layer")
+    private List<Layer> layers;
+
+    /**
+     * text
+     */
+    @SerializedName("@text_content")
+    private String textContent;
+
+    @SerializedName("@text_active_color")
+    private String textActiveColor;
+
+    @SerializedName("@text_ambient_color")
+    private String textAmbientColor;
+
+    @SerializedName("@text_font")
+    private String textFont;
+
+    @SerializedName("@text_size")
+    private String textSize;
+
+    @SerializedName("@text_align")
+    private String textAlign;
+
+    @SerializedName("@text_position")
+    private String textPosition;
+
+    @SerializedName("@text_position_relative")
+    private String textPositionRelative;
+
+    @SerializedName("@word_support_cn")
+    private String wordSupportCN;
+
+    @SerializedName("@word_is_abbr")
+    private String wordIsAbbr;
+
+    @SerializedName("@word_capital_type")
+    private String wordCapitalType;
+
+    @SerializedName("@text_is_bold")
+    private String textIsBold;
+
+    @SerializedName("@arc_linear_margin")
+    private String arcLinearMargin;
+
+    @SerializedName("@arc_linear_bitmap_rotate")
+    private String arcLinearBitmapRotate;
+
+    @SerializedName("@arc_linear_selected_container")
+    private String arcLinearSelectedContainer;
+
+    /**
+     * res
+     */
+    @SerializedName("@res_active")
+    private String resActive;
+
+    @SerializedName("@res_active_left")
+    private String resActiveLeft;
+
+    @SerializedName("@res_active_right")
+    private String resActiveRight;
+
+    @SerializedName("@res_active_dot")
+    private String resActiveDot;
+
+    @SerializedName("@res_active_scale")
+    private String resActiveScale;
+
+    @SerializedName("@res_ambient")
+    private String resAmbient;
+
+    @SerializedName("@res_ambient_left")
+    private String resAmbientLeft;
+
+    @SerializedName("@res_ambient_right")
+    private String resAmbientRight;
+
+    @SerializedName("@res_ambient_dot")
+    private String resAmbientDot;
+
+    @SerializedName("@res_ambient_scale")
+    private String resAmbientScale;
+
+    @SerializedName("@res_shadow")
+    private String resShadow;
+
+    @SerializedName("@res_shadow_is_only_show_active")
+    private String resShadowIsOnlyShowActive;
+
+    @SerializedName("@res_dot_shadow")
+    private String resDotShadow;
+
+    @SerializedName("@res_interval")
+    private String resInterval;
+
+    @SerializedName("@res_align")
+    private String resAlign;
+
+    @SerializedName("@res_position")
+    private String resPosition;
+
+    @SerializedName("@res_position_relative")
+    private String resPositionRelative;
+
+    @SerializedName("@res_ordered_is_play_once")
+    private String resOrderedIsPlayOnce;
+
+    @SerializedName("@rotate_point_hand")
+    private String rotatePointHand;
+
+    @SerializedName("@rotate_point_face")
+    private String rotatePointFace;
+
+    @SerializedName("@rotate_point_face_relative")
+    private String rotatePointFaceRelative;
+
+    @SerializedName("@rotate_start_angel")
+    private String rotateStartAngel;
+
+    @SerializedName("@rotate_end_angel")
+    private String rotateEndAngel;
+
+    /**
+     * shape
+     */
+    @SerializedName("@primary_color")
+    private String primaryColor;
+
+    @SerializedName("@secondary_color")
+    private String secondaryColor;
+
+    @SerializedName("@line_width")
+    private String lineWidth;
+
+    @SerializedName("@line_cap")
+    private String lineCap;
+
+    @SerializedName("@start_point")
+    private String startPoint;
+
+    @SerializedName("@end_point")
+    private String endPoint;
+
+    @SerializedName("@start_point_relative")
+    private String startPointRelative;
+
+    @SerializedName("@end_point_relative")
+    private String endPointRelative;
+
+    @SerializedName("@start_angle")
+    private String startAngle;
+
+    @SerializedName("@end_angle")
+    private String endAngle;
+
+    @SerializedName("@rect")
+    private String rect;
+
+    @SerializedName("@rect_relative")
+    private String rectRelative;
+
+    @SerializedName("@arc_ambient_draw")
+    private String arcAmbientDraw;
+
+    /**
+     * complication
+     */
+    @SerializedName("@background_color")
+    private String backgroundColor;
+
+    @SerializedName("@background_drawable")
+    private String backgroundDrawable;
+
+    @SerializedName("@border_color")
+    private String borderColor;
+
+    @SerializedName("@highlight_color")
+    private String highlightColor;
+
+    @SerializedName("@icon_color")
+    private String iconColor;
+
+    @SerializedName("@text_color")
+    private String textColor;
+
+    @SerializedName("@title_color")
+    private String titleColor;
+
+    @SerializedName("@title_font")
+    private String titleFont;
+
+    @SerializedName("@title_size")
+    private String titleSize;
+
+    @SerializedName("@range_primary_color")
+    private String rangePrimaryColor;
+
+    @SerializedName("@range_secondary_color")
+    private String rangeSecondaryColor;
+
+    @SerializedName("@bounds_rect")
+    private String boundsRect;
+
+    /**
+     * rotate
+     */
+    @SerializedName("@rotate_type")
+    private String rotateType;
+
+    @SerializedName("@rotate_fixed_degree")
+    private String rotateFixedDegree;
+
+    @SerializedName("@rotate_center_point")
+    private String rotateCenterPoint;
+
+    @SerializedName("@rotate_center_point_relative")
+    private String rotateCenterPointRelative;
+
+    @SerializedName("@rotate_degree")
+    private String rotateDegree;
+
+    @SerializedName("@rotate_time")
+    private String rotateTime;
+
+    @SerializedName("@rotate_motion_type")
+    private String rotateMotionType;
+
+    /**
+     * scale
+     */
+    @SerializedName("@scale_type")
+    private String scaleType;
+
+    @SerializedName("@scale_center_point")
+    private String scaleCenterPoint;
+
+    @SerializedName("@scale_center_point_relative")
+    private String scaleCenterPointRelative;
+
+    @SerializedName("@scale_amount")
+    private String scaleAmount;
+
+    @SerializedName("@scale_time")
+    private String scaleTime;
+
+    @SerializedName("@scale_motion_type")
+    private String scaleMotionType;
+
+    /**
+     * translate
+     */
+    @SerializedName("@translate_type")
+    private String translateType;
+
+    @SerializedName("@translate_end_position")
+    private String translateEndPosition;
+
+    @SerializedName("@translate_end_position_relative")
+    private String translateEndPositionRelative;
+
+    /**
+     * value
+     */
+    @SerializedName("@value_type")
+    private String valueType;
+
+    /**
+     * 相册表盘自定义新增
+     */
+    @SerializedName("@text_font_options")
+    private String textFontOptions;
+
+    @SerializedName("@text_position_label")
+    private String textPositionLabel;
+
+    @SerializedName("@text_position_options")
+    private String textPositionOptions;
+
+    @SerializedName("@text_position_labels")
+    private String textPositionLabels;
+
+    @SerializedName("@shadow_offset")
+    private String shadowOffSet;
+
+    @SerializedName("@text_shadow_position")
+    private String textShadowPosition;
+
+    @SerializedName("@text_shadow_color")
+    private String textShadowColor;
+
+    @SerializedName("@text_shadow_radius")
+    private String textShadowRadius;
+
+    @SerializedName("@is_support_text_shadow")
+    private String isSupportTextShadow;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public String getDrawType() {
+        return drawType;
+    }
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public String getTextContent() {
+        return textContent;
+    }
+
+    public String getTextActiveColor() {
+        return textActiveColor;
+    }
+
+    public String getTextAmbientColor() {
+        return textAmbientColor;
+    }
+
+    public String getTextFont() {
+        return textFont;
+    }
+
+    public String getTextSize() {
+        return textSize;
+    }
+
+    public String getTextAlign() {
+        return textAlign;
+    }
+
+    public String getTextPosition() {
+        return textPosition;
+    }
+
+    public String getTextPositionRelative() {
+        return textPositionRelative;
+    }
+
+    public String getTextIsBold() {
+        return textIsBold;
+    }
+
+    public String getWordSupportCN() {
+        return wordSupportCN;
+    }
+
+    public String getWordIsAbbr() {
+        return wordIsAbbr;
+    }
+
+    public String getWordCapitalType() {
+        return wordCapitalType;
+    }
+
+    public String getResActive() {
+        return resActive;
+    }
+
+    public String getResActiveLeft() {
+        return resActiveLeft;
+    }
+
+    public String getResActiveRight() {
+        return resActiveRight;
+    }
+
+    public String getResActiveDot() {
+        return resActiveDot;
+    }
+
+    public String getResActiveScale() {
+        return resActiveScale;
+    }
+
+    public String getResAmbient() {
+        return resAmbient;
+    }
+
+    public String getResAmbientLeft() {
+        return resAmbientLeft;
+    }
+
+    public String getResAmbientRight() {
+        return resAmbientRight;
+    }
+
+    public String getResAmbientDot() {
+        return resAmbientDot;
+    }
+
+    public String getResAmbientScale() {
+        return resAmbientScale;
+    }
+
+    public String getResShadow() {
+        return resShadow;
+    }
+
+    public String getResShadowIsOnlyShowActive() {
+        return resShadowIsOnlyShowActive;
+    }
+
+    public String getResDotShadow() {
+        return resDotShadow;
+    }
+
+    public String getResInterval() {
+        return resInterval;
+    }
+
+    public String getResAlign() {
+        return resAlign;
+    }
+
+    public String getResPosition() {
+        return resPosition;
+    }
+
+    public String getResPositionRelative() {
+        return resPositionRelative;
+    }
+
+    public String getResOrderedIsPlayOnce() {
+        return resOrderedIsPlayOnce;
+    }
+
+    public String getRotatePointHand() {
+        return rotatePointHand;
+    }
+
+    public String getRotatePointFace() {
+        return rotatePointFace;
+    }
+
+    public String getRotatePointFaceRelative() {
+        return rotatePointFaceRelative;
+    }
+
+    public String getRotateStartAngel() {
+        return rotateStartAngel;
+    }
+
+    public String getRotateEndAngel() {
+        return rotateEndAngel;
+    }
+
+    public String getPrimaryColor() {
+        return primaryColor;
+    }
+
+    public String getSecondaryColor() {
+        return secondaryColor;
+    }
+
+    public String getLineWidth() {
+        return lineWidth;
+    }
+
+    public String getLineCap() {
+        return lineCap;
+    }
+
+    public String getStartPoint() {
+        return startPoint;
+    }
+
+    public String getEndPoint() {
+        return endPoint;
+    }
+
+    public String getStartPointRelative() {
+        return startPointRelative;
+    }
+
+    public String getEndPointRelative() {
+        return endPointRelative;
+    }
+
+    public String getStartAngle() {
+        return startAngle;
+    }
+
+    public String getEndAngle() {
+        return endAngle;
+    }
+
+    public String getRect() {
+        return rect;
+    }
+
+    public String getRectRelative() {
+        return rectRelative;
+    }
+
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public String getBackgroundDrawable() {
+        return backgroundDrawable;
+    }
+
+    public String getBorderColor() {
+        return borderColor;
+    }
+
+    public String getHighlightColor() {
+        return highlightColor;
+    }
+
+    public String getIconColor() {
+        return iconColor;
+    }
+
+    public String getTextColor() {
+        return textColor;
+    }
+
+    public String getTitleColor() {
+        return titleColor;
+    }
+
+    public String getTitleFont() {
+        return titleFont;
+    }
+
+    public String getTitleSize() {
+        return titleSize;
+    }
+
+    public String getRangePrimaryColor() {
+        return rangePrimaryColor;
+    }
+
+    public String getRangeSecondaryColor() {
+        return rangeSecondaryColor;
+    }
+
+    public String getBoundsRect() {
+        return boundsRect;
+    }
+
+    public String getRotateType() {
+        return rotateType;
+    }
+
+    public String getRotateFixedDegree() {
+        return rotateFixedDegree;
+    }
+
+    public String getRotateCenterPoint() {
+        return rotateCenterPoint;
+    }
+
+    public String getRotateCenterPointRelative() {
+        return rotateCenterPointRelative;
+    }
+
+    public String getRotateDegree() {
+        return rotateDegree;
+    }
+
+    public String getRotateTime() {
+        return rotateTime;
+    }
+
+    public String getRotateMotionType() {
+        return rotateMotionType;
+    }
+
+    public String getScaleType() {
+        return scaleType;
+    }
+
+    public String getScaleCenterPoint() {
+        return scaleCenterPoint;
+    }
+
+    public String getScaleCenterPointRelative() {
+        return scaleCenterPointRelative;
+    }
+
+    public String getScaleAmount() {
+        return scaleAmount;
+    }
+
+    public String getScaleTime() {
+        return scaleTime;
+    }
+
+    public String getScaleMotionType() {
+        return scaleMotionType;
+    }
+
+    public String getTranslateType() {
+        return translateType;
+    }
+
+    public String getTranslateEndPosition() {
+        return translateEndPosition;
+    }
+
+    public String getTranslateEndPositionRelative() {
+        return translateEndPositionRelative;
+    }
+
+    public String getValueType() {
+        return valueType;
+    }
+
+    public String getTextFontOptions() {
+        return textFontOptions;
+    }
+
+    public String getTextPositionLabel() {
+        return textPositionLabel;
+    }
+
+    public String getTextPositionOptions() {
+        return textPositionOptions;
+    }
+
+    public String getTextPositionLabels() {
+        return textPositionLabels;
+    }
+
+    public String getShadowOffSet() {
+        return shadowOffSet;
+    }
+
+    public void setTextFontOptions(String textFontOptions) {
+        this.textFontOptions = textFontOptions;
+    }
+
+    public void setTextPositionLabel(String textPositionLabel) {
+        this.textPositionLabel = textPositionLabel;
+    }
+
+    public void setTextPositionOptions(String textPositionOptions) {
+        this.textPositionOptions = textPositionOptions;
+    }
+
+    public void setTextPositionLabels(String textPositionLabels) {
+        this.textPositionLabels = textPositionLabels;
+    }
+
+    public void setTextFont(String textFont) {
+        this.textFont = textFont;
+    }
+
+    public void setTextPosition(String textPosition) {
+        this.textPosition = textPosition;
+    }
+
+    public void setTextPositionRelative(String textPositionRelative) {
+        this.textPositionRelative = textPositionRelative;
+    }
+
+    public String getTextShadowPosition() {
+        return textShadowPosition;
+    }
+
+    public void setTextShadowPosition(String textShadowPosition) {
+        this.textShadowPosition = textShadowPosition;
+    }
+
+    public String getTextShadowColor() {
+        return textShadowColor;
+    }
+
+    public void setTextShadowColor(String textShadowColor) {
+        this.textShadowColor = textShadowColor;
+    }
+
+    public String getTextShadowRadius() {
+        return textShadowRadius;
+    }
+
+    public void setTextShadowRadius(String textShadowRadius) {
+        this.textShadowRadius = textShadowRadius;
+    }
+
+    public String getIsSupportTextShadow() {
+        return isSupportTextShadow;
+    }
+
+    public String getArcLinearMargin() {
+        return arcLinearMargin;
+    }
+
+    public String getArcLinearBitmapRotate() {
+        return arcLinearBitmapRotate;
+    }
+
+    public String getArcLinearSelectedContainer() {
+        return arcLinearSelectedContainer;
+    }
+
+    public void setArcLinearSelectedContainer(String arcLinearSelectedContainer) {
+        this.arcLinearSelectedContainer = arcLinearSelectedContainer;
+    }
+
+    public String getArcAmbientDraw() {
+        return arcAmbientDraw;
+    }
+
+    public void setArcAmbientDraw(String arcAmbientDraw) {
+        this.arcAmbientDraw = arcAmbientDraw;
+    }
+
+    @Override
+    public String toString() {
+        return "Layer{" + "index='" + index + '\'' + ", drawType='" + drawType + '\'' + ", layers=" + layers
+            + ", textContent='" + textContent + '\'' + ", textActiveColor='" + textActiveColor + '\''
+            + ", textAmbientColor='" + textAmbientColor + '\'' + ", textFont='" + textFont + '\'' + ", textSize='"
+            + textSize + '\'' + ", textAlign='" + textAlign + '\'' + ", textPosition='" + textPosition + '\''
+            + ", textPositionRelative='" + textPositionRelative + '\'' + ", wordSupportCN='" + wordSupportCN + '\''
+            + ", wordIsAbbr='" + wordIsAbbr + '\'' + ", wordCapitalType='" + wordCapitalType + '\'' + ", textIsBold='"
+            + textIsBold + '\'' + ", resActive='" + resActive + '\'' + ", resActiveLeft='" + resActiveLeft + '\''
+            + ", resActiveRight='" + resActiveRight + '\'' + ", resActiveDot='" + resActiveDot + '\''
+            + ", resActiveScale='" + resActiveScale + '\'' + ", resAmbient='" + resAmbient + '\'' + ", resAmbientLeft='"
+            + resAmbientLeft + '\'' + ", resAmbientRight='" + resAmbientRight + '\'' + ", resAmbientDot='"
+            + resAmbientDot + '\'' + ", resAmbientScale='" + resAmbientScale + '\'' + ", resShadow='" + resShadow + '\''
+            + ", resShadowIsOnlyShowActive='" + resShadowIsOnlyShowActive + '\'' + ", resDotShadow='" + resDotShadow
+            + '\'' + ", resInterval='" + resInterval + '\'' + ", resAlign='" + resAlign + '\'' + ", resPosition='"
+            + resPosition + '\'' + ", resPositionRelative='" + resPositionRelative + '\'' + ", resOrderedIsPlayOnce='"
+            + resOrderedIsPlayOnce + '\'' + ", rotatePointHand='" + rotatePointHand + '\'' + ", rotatePointFace='"
+            + rotatePointFace + '\'' + ", rotatePointFaceRelative='" + rotatePointFaceRelative + '\''
+            + ", rotateStartAngel='" + rotateStartAngel + '\'' + ", rotateEndAngel='" + rotateEndAngel + '\''
+            + ", primaryColor='" + primaryColor + '\'' + ", secondaryColor='" + secondaryColor + '\'' + ", lineWidth='"
+            + lineWidth + '\'' + ", lineCap='" + lineCap + '\'' + ", startPoint='" + startPoint + '\'' + ", endPoint='"
+            + endPoint + '\'' + ", startPointRelative='" + startPointRelative + '\'' + ", endPointRelative='"
+            + endPointRelative + '\'' + ", startAngle='" + startAngle + '\'' + ", endAngle='" + endAngle + '\''
+            + ", rect='" + rect + '\'' + ", rectRelative='" + rectRelative + '\'' + ", backgroundColor='"
+            + backgroundColor + '\'' + ", backgroundDrawable='" + backgroundDrawable + '\'' + ", borderColor='"
+            + borderColor + '\'' + ", highlightColor='" + highlightColor + '\'' + ", iconColor='" + iconColor + '\''
+            + ", textColor='" + textColor + '\'' + ", titleColor='" + titleColor + '\'' + ", titleFont='" + titleFont
+            + '\'' + ", titleSize='" + titleSize + '\'' + ", rangePrimaryColor='" + rangePrimaryColor + '\''
+            + ", rangeSecondaryColor='" + rangeSecondaryColor + '\'' + ", boundsRect='" + boundsRect + '\''
+            + ", rotateType='" + rotateType + '\'' + ", rotateFixedDegree='" + rotateFixedDegree + '\''
+            + ", rotateCenterPoint='" + rotateCenterPoint + '\'' + ", rotateCenterPointRelative='"
+            + rotateCenterPointRelative + '\'' + ", rotateDegree='" + rotateDegree + '\'' + ", rotateTime='"
+            + rotateTime + '\'' + ", rotateMotionType='" + rotateMotionType + '\'' + ", scaleType='" + scaleType + '\''
+            + ", scaleCenterPoint='" + scaleCenterPoint + '\'' + ", scaleCenterPointRelative='"
+            + scaleCenterPointRelative + '\'' + ", scaleAmount='" + scaleAmount + '\'' + ", scaleTime='" + scaleTime
+            + '\'' + ", scaleMotionType='" + scaleMotionType + '\'' + ", translateType='" + translateType + '\''
+            + ", translateEndPosition='" + translateEndPosition + '\'' + ", translateEndPositionRelative='"
+            + translateEndPositionRelative + '\'' + ", valueType='" + valueType + '\'' + ", textFontOptions='"
+            + textFontOptions + '\'' + ", textPositionLabel='" + textPositionLabel + '\'' + ", textPositionOptions='"
+            + textPositionOptions + '\'' + ", textPositionLabels='" + textPositionLabels + '\'' + ", shadowOffSet='"
+            + shadowOffSet + '\'' + ", textShadowPosition='" + textShadowPosition + '\'' + ", textShadowColor='"
+            + textShadowColor + '\'' + ", textShadowRadius='" + textShadowRadius + '\'' + ", isSupportTextShadow='"
+            + isSupportTextShadow + '\'' + '}';
+    }
+}
+
+
+
+
+
+import java.util.List;
+import java.util.Optional;
+
+import com.google.gson.annotations.SerializedName;
+
+import android.text.TextUtils;
+
+/**
+ * xml文件中option标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Option {
+    @SerializedName("layer")
+    private List<Layer> layers;
+
+    @SerializedName("@index")
+    private String index;
+
+    @SerializedName("@res_preview")
+    private String resPreview;
+
+    @SerializedName("@res_border_preview")
+    private String resBorderPreview;
+
+    @SerializedName("@data_type")
+    private String dataType;
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public String getResPreview() {
+        return resPreview;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public String getResBorderPreview() {
+        return resBorderPreview;
+    }
+
+    /**
+     * 获取指定layer
+     * @param i layer索引
+     * @return layer对象
+     */
+    public Optional<Layer> getLayer(String i) {
+        if ((layers == null) || (layers.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Layer layer : layers) {
+            if (layer == null) {
+                continue;
+            }
+            if (TextUtils.equals(layer.getIndex().trim(), i.trim())) {
+                return Optional.of(layer);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public String toString() {
+        return " Option { layers=" + layers + " , index=" + index + " , resPreview=" + resPreview + " , dataType="
+            + dataType + " ,resBoredrPreview=" + resBorderPreview + " } ";
+    }
+}
+
+
+
+
+
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * xml文件中provider标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Provider {
+    @SerializedName("@dpi")
+    private String dpi;
+
+    @SerializedName("element")
+    private List<Element> elements;
+
+    @SerializedName("styles")
+    private Styles styles;
+
+    @SerializedName("config")
+    private Config configs;
+
+    public List<Element> getElements() {
+        return elements;
+    }
+
+    public Styles getStyles() {
+        return styles;
+    }
+
+    public Config getConfigs() {
+        return configs;
+    }
+
+    public String getDpi() {
+        return dpi;
+    }
+
+    public void setDpi(String dpi) {
+        this.dpi = dpi;
+    }
+
+    public void setElements(List<Element> elements) {
+        this.elements = elements;
+    }
+
+    @Override
+    public String toString() {
+        return " provider { dpi=" + dpi + " , elements=" + elements + " } ";
+    }
+}
+
+
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * xml文件中providers标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Providers {
+    @SerializedName("provider")
+    private List<Provider> providers;
+
+    public List<Provider> getProviders() {
+        return providers;
+    }
+
+    @Override
+    public String toString() {
+        return " providers { providers=" + providers + " } ";
+    }
+}
+
+
+
+
+
+/**
+ * xml中的style对象
+ *
+ * @author swx405947
+ * @version 1.0.0
+ * @since 2019/03/12
+ */
+public class Style {
+    @SerializedName("@index")
+    private String index;
+
+    @SerializedName("@background_available_option")
+    private String backgroundAvailableOption;
+
+    @SerializedName("@background_selected_option")
+    private String backgroundSelectedOption;
+
+    @SerializedName("@color_available_option")
+    private String colorAvailableOption;
+
+    @SerializedName("@color_selected_option")
+    private String colorSelectedOption;
+
+    @SerializedName("@dial_available_option")
+    private String dialAvailableOption;
+
+    @SerializedName("@dial_selected_option")
+    private String dialSelectedOption;
+
+    @SerializedName("@date_available_option")
+    private String dateAvailableOption;
+
+    @SerializedName("@date_selected_option")
+    private String dateSelectedOption;
+
+    @SerializedName("@time_available_option")
+    private String timeAvailableOption;
+
+    @SerializedName("@time_selected_option")
+    private String timeSelectedOption;
+
+    @SerializedName("@widget_available_containers")
+    private String widgetAvailableContainers;
+
+    @SerializedName("@container_selected_options")
+    private String containerSelectedOptions;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+
+    public String getBackgroundSelectedOption() {
+        return backgroundSelectedOption;
+    }
+
+    public void setBackgroundSelectedOption(String backgroundSelectedOption) {
+        this.backgroundSelectedOption = backgroundSelectedOption;
+    }
+
+    public String getColorSelectedOption() {
+        return colorSelectedOption;
+    }
+
+    public void setColorSelectedOption(String colorSelectedOption) {
+        this.colorSelectedOption = colorSelectedOption;
+    }
+
+    public String getDialSelectedOption() {
+        return dialSelectedOption;
+    }
+
+    public void setDialSelectedOption(String dialSelectedOption) {
+        this.dialSelectedOption = dialSelectedOption;
+    }
+
+    public String getDateSelectedOption() {
+        return dateSelectedOption;
+    }
+
+    public void setDateSelectedOption(String dateSelectedOption) {
+        this.dateSelectedOption = dateSelectedOption;
+    }
+
+    public String getTimeSelectedOption() {
+        return timeSelectedOption;
+    }
+
+    public void setTimeSelectedOption(String timeSelectedOption) {
+        this.timeSelectedOption = timeSelectedOption;
+    }
+
+    public String getWidgetAvailableContainers() {
+        return widgetAvailableContainers;
+    }
+
+    public void setWidgetAvailableContainers(String widgetAvailableContainers) {
+        this.widgetAvailableContainers = widgetAvailableContainers;
+    }
+
+    public String getContainerSelectedOptions() {
+        return containerSelectedOptions;
+    }
+
+    public void setContainerSelectedOptions(String containerSelectedOptions) {
+        this.containerSelectedOptions = containerSelectedOptions;
+    }
+
+    public String getBackgroundAvailableOption() {
+        return backgroundAvailableOption;
+    }
+
+    public String getDialAvailableOption() {
+        return dialAvailableOption;
+    }
+
+    public String getColorAvailableOption() {
+        return colorAvailableOption;
+    }
+
+    public String getDateAvailableOption() {
+        return dateAvailableOption;
+    }
+
+    public String getTimeAvailableOption() {
+        return timeAvailableOption;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Style style = (Style) o;
+        return Objects.equals(index, style.index);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(index);
+    }
+
+    @Override
+    public String toString() {
+        return "Style{" + "index='" + index + '\'' + ", backgroundSelectedOption='" + backgroundSelectedOption + '\''
+            + ", colorSelectedOption='" + colorSelectedOption + '\'' + ", dialSelectedOption='" + dialSelectedOption
+            + '\'' + ", dateSelectedOption='" + dateSelectedOption + '\'' + ", timeSelectedOption='"
+            + timeSelectedOption + '\'' + ", widgetAvailableContainers='" + widgetAvailableContainers + '\''
+            + ", containerSelectedOptions='" + containerSelectedOptions + '\'' + '}';
+    }
+}
+
+
+
+
+
+/**
+ * xml中styles标签对应对象
+ *
+ * @author swx405947
+ * @version 1.0.0
+ * @since 2019/3/12
+ */
+
+public class Styles {
+    @SerializedName("style")
+    private List<Style> styles;
+
+    @SerializedName("@selected_style")
+    private String selectedStyle;
+
+    @SerializedName("@style_count")
+    private String styleCount;
+
+    public List<Style> getStyles() {
+        return styles;
+    }
+
+    /**
+     * 获取指定style
+     * @param i style索引
+     * @return style对象
+     */
+    public Optional<Style> getStyle(String i) {
+        if ((styles == null) || (styles.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Style style : styles) {
+            if (style == null) {
+                continue;
+            }
+            if (TextUtils.equals(style.getIndex().trim(), i.trim())) {
+                return Optional.of(style);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public void setStyles(List<Style> styles) {
+        this.styles = styles;
+    }
+
+    public String getSelectedStyle() {
+        return selectedStyle;
+    }
+
+    public void setSelectedStyle(String selectedStyle) {
+        this.selectedStyle = selectedStyle;
+    }
+
+    public String getStyleCount() {
+        return styleCount;
+    }
+
+    public void setStyleCount(String styleCount) {
+        this.styleCount = styleCount;
+    }
+
+    @Override
+    public String toString() {
+        return "Styles{" + "styles=" + styles + ", selectedStyle='" + selectedStyle + '\'' + ", styleCount='"
+            + styleCount + '\'' + '}';
+    }
+}
