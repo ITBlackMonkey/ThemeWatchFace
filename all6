@@ -1,0 +1,1052 @@
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+/**
+ * Created by swx405947 on 2018/12/06.
+ * 所有Complication表盘的控件选择界面的基类：若有特殊需求可继承扩展
+ * 1.此界面可以动态适配控件的个数以及控件的位置
+ * 2.Complication表盘服务需要在请单文件中配置该界面的Action即可使用
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019-01-23
+ */
+public abstract class BaseComplicationConfigActivity extends Activity implements View.OnClickListener {
+    private static final String TAG = "BaseComplConf";
+
+    private static final int PROVIDER_CHOOSER_REQUEST_CODE = 0;
+
+    private static final int COLOR = 0xff4DBBFF;
+
+    private static final int WIDTH = 3;
+
+    private static final int RADIUS = 50;
+
+    private static final int MAX_SIZE = 90;
+
+    private static final float HALF = 0.5F;
+
+    private static final int INVALID_COMPLICATION_ID = -1;
+
+    private ConfigView mConfigView;
+
+    private ProviderInfoRetriever mRetriever;
+
+    private int mSelectedComplicationId = 0;
+
+    private int[] mComplicationIds;
+
+    private SparseArray<Bitmap> mConfigBitmaps;
+
+    private SparseArray<Rect> mConfigOutlines;
+
+    private Drawable mComplicationBgDrawable;
+
+    private Drawable mComplicationMaskBgDrawable;
+
+    /**
+     * 数据提供者的数据回调接口，在首次进入或者用户选择改变后会进行回调将数据返回该页面
+     */
+    private ProviderInfoRetriever.OnProviderInfoReceivedCallback mCallback =
+        new ProviderInfoRetriever.OnProviderInfoReceivedCallback() {
+            @Override
+            public void onProviderInfoReceived(int id, @Nullable ComplicationProviderInfo complicationProviderInfo) {
+                Bitmap bitmap = getComplicationBitmap(complicationProviderInfo);
+                mConfigBitmaps.put(id, bitmap);
+                mConfigView.invalidate();
+            }
+        };
+
+    /**
+     * 获取AssetPackage对象抽象方法
+     * @return AssetPackage对象
+     */
+    protected abstract AssetPackage getAssetPackage();
+
+    /**
+     * 获取具体表盘服务的组件名抽象方法
+     * @return ComponentName具体表盘服务的组件名
+     */
+    protected abstract ComponentName getConcreteWatchFaceService();
+
+    /**
+     * 获取具体表盘自定义背景
+     * @return Drawable 背景图片
+     */
+    protected abstract Drawable getComplicationDrawable();
+
+    /**
+     * 获取每个Id支持的complication类型抽象方法
+     * @param complicationId complication Id
+     * @return complication类型数组
+     */
+    protected abstract int[] getComplicationSupportedTypes(int complicationId);
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_watch_face_complication);
+        ComplicationElement element = ComplicationElement.getInstance(getAssetPackage());
+        mComplicationIds = element.getComplicationIDs();
+        SparseArray<ComplicationDraw> complications = element.getComplications();
+        mConfigOutlines = new SparseArray<>();
+        for (int i = 0; i < complications.size(); i++) {
+            mConfigOutlines.put(complications.keyAt(i), complications.get(i).getRect());
+        }
+
+        int displaySize = HwUtil.getDisplayMetrics(this);
+        mComplicationBgDrawable = getComplicationDrawable();
+        mComplicationMaskBgDrawable = getDrawable(R.drawable.clock_widget_mask_bg);
+        if ((mComplicationBgDrawable != null) && (mComplicationMaskBgDrawable != null)) {
+            Rect bound = new Rect(0, 0, displaySize, displaySize);
+            mComplicationBgDrawable.setBounds(bound);
+            mComplicationMaskBgDrawable.setBounds(bound);
+        }
+        mConfigBitmaps = new SparseArray<>();
+        FrameLayout frameLayout = findViewById(R.id.vp_customize_layout);
+        mConfigView = new ConfigView(this);
+        frameLayout.addView(mConfigView);
+        findViewById(R.id.bt_submit).setOnClickListener(this);
+
+        retrieveProviders();
+    }
+
+    private void retrieveProviders() {
+        Executor executor = Executors.newSingleThreadExecutor();
+        mRetriever = new ProviderInfoRetriever(this, executor);
+        mRetriever.init();
+        mRetriever.retrieveProviderInfo(mCallback, getConcreteWatchFaceService(), mComplicationIds);
+    }
+
+    /**
+     * 配置界面自定义view，用于选择界面的绘制
+     *
+     * @author sWX405947
+     * @version 1.0.0
+     * @since 2019-01-23
+     */
+    class ConfigView extends View {
+        private static final int SCREEN_SIZE = 454;
+
+        /**
+         * 此处不需要精确计算，可以使用float
+         */
+        private static final float SCALE_CENTER = SCREEN_SIZE * 0.5f;
+
+        private static final float SCALE_AMOUNT = 0.65f;
+
+        ConfigView(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            canvas.scale(SCALE_AMOUNT, SCALE_AMOUNT, SCALE_CENTER, SCALE_CENTER);
+            if ((mComplicationBgDrawable != null) && (mComplicationMaskBgDrawable != null)) {
+                mComplicationBgDrawable.draw(canvas);
+                mComplicationMaskBgDrawable.draw(canvas);
+            }
+
+            for (int id : mComplicationIds) {
+                Rect rect = mConfigOutlines.get(id);
+                // 先画轮廓和背景
+                drawOutLineCircle(canvas, rect);
+                // 再画icon
+                drawConfigBitmap(canvas, rect, id);
+            }
+        }
+
+        private void drawOutLineCircle(Canvas canvas, Rect rect) {
+            // 用于画轮廓区域
+            Paint paintOutLine = new Paint();
+            paintOutLine.setStyle(Paint.Style.STROKE);
+            paintOutLine.setColor(COLOR);
+            paintOutLine.setStrokeWidth(WIDTH);
+            paintOutLine.setAntiAlias(true);
+            // 用于画背景区域
+            Paint paintBackGround = new Paint();
+            paintBackGround.setColor(Color.BLACK);
+
+            float cx = rect.left + rect.width() * HALF;
+            float cy = rect.top + rect.height() * HALF;
+            canvas.drawCircle(cx, cy, RADIUS, paintBackGround);
+            canvas.drawCircle(cx, cy, RADIUS, paintOutLine);
+        }
+
+        private void drawConfigBitmap(Canvas canvas, Rect rect, int id) {
+            if (mConfigBitmaps.get(id) == null) {
+                return;
+            }
+            float left = rect.left + rect.width() * HALF - mConfigBitmaps.get(id).getWidth() * HALF;
+            float top = rect.top + rect.height() * HALF - mConfigBitmaps.get(id).getHeight() * HALF;
+            canvas.drawBitmap(mConfigBitmaps.get(id), left, top, null);
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            // 此处返回true即可监听到ACTION_UP事件，可以避免用户划掉界面时触发控件的点击事件，造成的体验差问题
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                int x = (int) event.getX();
+                int y = (int) event.getY();
+                onComplicationClick(x, y);
+            }
+            return true;
+        }
+
+        private void onComplicationClick(int x, int y) {
+            int complicationId = INVALID_COMPLICATION_ID;
+            for (int id : mComplicationIds) {
+                if (HwUtil.isInBound(x, y, mConfigOutlines.get(id))) {
+                    complicationId = id;
+                    break;
+                }
+            }
+            if (complicationId >= 0) {
+                mSelectedComplicationId = complicationId;
+                HwLogUtil.d(TAG, "onComplicationClick() mSelectedComplicationId=" + mSelectedComplicationId);
+
+                Intent intent = ComplicationHelperActivity.createProviderChooserHelperIntent(getApplicationContext(),
+                    getConcreteWatchFaceService(), mSelectedComplicationId,
+                    getComplicationSupportedTypes(mSelectedComplicationId));
+
+                startActivityForResult(intent, PROVIDER_CHOOSER_REQUEST_CODE);
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if ((requestCode == PROVIDER_CHOOSER_REQUEST_CODE) && (resultCode == RESULT_OK) && (data != null)) {
+            ComplicationProviderInfo complicationProviderInfo =
+                data.getParcelableExtra(ProviderChooserIntent.EXTRA_PROVIDER_INFO);
+            Bitmap bitmap = getComplicationBitmap(complicationProviderInfo);
+            mConfigBitmaps.put(mSelectedComplicationId, bitmap);
+            mConfigView.invalidate();
+        }
+    }
+
+    private Bitmap getComplicationBitmap(ComplicationProviderInfo complicationProviderInfo) {
+        HwLogUtil.d(TAG, "getComplicationBitmap() enter!");
+        Icon icon = null;
+        if (complicationProviderInfo != null) {
+            icon = complicationProviderInfo.providerIcon;
+        }
+        if (icon == null) {
+            HwLogUtil.i(TAG, "getComplicationBitmap() icon is null !");
+            icon = Icon.createWithResource(this, R.drawable.clock_complication_ic_add);
+        }
+        Drawable drawable = icon.loadDrawable(this);
+        int width = drawable.getMinimumWidth();
+        int height = drawable.getMinimumHeight();
+        width = (width > MAX_SIZE) ? RADIUS : width;
+        height = (height > MAX_SIZE) ? RADIUS : height;
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, width, height);
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mRetriever != null) {
+            mRetriever.release();
+        }
+        for (int id : mComplicationIds) {
+            Bitmap bitmap = mConfigBitmaps.get(id);
+            if ((bitmap != null) && (!bitmap.isRecycled())) {
+                bitmap.recycle();
+            }
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.bt_submit) {
+            finish();
+        }
+    }
+}
+
+
+
+
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 表盘编辑界面基础fragment
+ *
+ * @author m00230717
+ * @version 1.0.0
+ * @since 2019-02-26
+ */
+public abstract class BaseCustomizeFragment extends Fragment implements Comparable<BaseCustomizeFragment> {
+    private static final String TAG = "BaseCustomizeFragment";
+    private static final int INVALID_STYLE = -1;
+    private String mLabel;
+
+    private AssetPackage mAssetPackage;
+
+    private BaseCustomizeRecyclerView mElementOptionListView;
+
+    private ElementOptionListAdapter mAdapter;
+
+    private PagerSnapHelper mPagerSnapHelper;
+
+    private TextView mTvTitle;
+
+    private int currentItemPosition;
+    private RelativeLayout blueBorderBg;
+
+    /** 构造方法 */
+    public BaseCustomizeFragment() {
+        mLabel = getLabel();
+    }
+
+    /**
+     * 获取标签，区别fragment的类型
+     * @return 标签
+     */
+    public abstract String getLabel();
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mAssetPackage = AssetPackageHolder.getInstance().getAssetPackage();
+        if (mAssetPackage == null) {
+            HwLogUtil.e(TAG, "onAttach(), mAssetPackage == null");
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_base_customize, container, false);
+        mTvTitle = view.findViewById(R.id.tv_element_title);
+        mElementOptionListView = view.findViewById(R.id.rv_element_option_selector);
+        blueBorderBg = view.findViewById(R.id.rv_blue_border_bg);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // use a linear layout manager
+        final LinearLayoutManager layoutManager =
+            new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        mTvTitle.setText(CustomizeUtil.getTabNameByLabel(getActivity(), mLabel));
+        mElementOptionListView.setLayoutManager(layoutManager);
+        mElementOptionListView.setNestedScrollingEnabled(false);
+        // specify an adapter (see also next example)
+        mAdapter = new ElementOptionListAdapter(getContext(), mLabel, mAssetPackage,blueBorderBg);
+        mElementOptionListView.setAdapter(mAdapter);
+        mPagerSnapHelper = new WatchFacePagerSnapHelper();
+        mPagerSnapHelper.attachToRecyclerView(mElementOptionListView);
+        mElementOptionListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    // 获取最后一个完全显示的ItemPosition，这个用来动态添加和删除fragment，因为滚动到中间时，这个值为-1；视为无效值，避免recyclerview停顿在中间
+                    int lastVisibleItem = manager.findLastCompletelyVisibleItemPosition();
+                    setPosition(lastVisibleItem);
+                    if (TextUtils.equals(getLabel(), UnitConstants.STYLES)) {
+                        ModuleBus.emit(new FragmentScrollEvent(lastVisibleItem, getLabel()));
+                    }
+                    // 这个用来更新选项，这个值没有负数，所以混动到中间也能返回一个整数，导致recyclerview停顿在中间，不能用来动态添加和删除fragment，可以用来更新option
+                    int position = recyclerView.getChildLayoutPosition(mPagerSnapHelper.findSnapView(layoutManager));
+                    mAdapter.updateSelectedOption(position);
+                }
+            }
+        });
+        mElementOptionListView.scrollToPosition(obtainCurrentStyle());
+    }
+
+    private void setPosition(int lastVisibleItem) {
+        if (lastVisibleItem < 0) {
+            return;
+        }
+        this.currentItemPosition = lastVisibleItem;
+    }
+
+    private int obtainCurrentStyle() {
+        ElementsProvider provider = mAssetPackage.getElementsProvider();
+        Optional<Styles> styles = provider.getStyles();
+        if (!styles.isPresent()) {
+            return INVALID_STYLE;
+        }
+        List<Style> styleList = styles.get().getStyles();
+        String indexStyle = styles.get().getSelectedStyle();
+        if (TextUtils.isEmpty(indexStyle)) {
+            return INVALID_STYLE;
+        }
+        Optional<Style> currStyle = styles.get().getStyle(indexStyle);
+        if (!currStyle.isPresent()) {
+            return INVALID_STYLE;
+        }
+        return styleList.indexOf(currStyle.get());
+    }
+
+    /**
+     * 更新数据
+     */
+    public void notifyDataChanged() {
+        if (isVisible()) {
+            mAdapter.notifyDataChanged();
+        }
+    }
+
+    public int getCurrentPosition() {
+        return currentItemPosition;
+    }
+
+    /**
+     * 用于对自定义frgment进行排序
+     * @return 排序码，
+     */
+    protected abstract int getSortNum();
+
+    @Override
+    public int compareTo(@NonNull BaseCustomizeFragment o) {
+        if (getSortNum() == o.getSortNum()) {
+            return 0;
+        } else if (getSortNum() > o.getSortNum()) {
+            return 1;
+        } else {
+            return INVALID_STYLE;
+        }
+    }
+}
+
+
+
+
+
+
+
+/**
+ * 刻度编辑
+ * @author zwx697580
+ * @version 1.0.0
+ * @since 2019-03-20
+ */
+public class DialFragment extends BaseCustomizeFragment {
+    @Override
+    public String getLabel() {
+        return UnitConstants.LABEL_DIAL;
+    }
+
+    @Override
+    protected int getSortNum() {
+        return UnitConstants.LABEL_DIAL_SORT_NUM;
+    }
+}
+
+
+
+
+
+
+
+import android.content.ComponentName;
+import android.support.wearable.complications.ComplicationData;
+import android.view.SurfaceHolder;
+
+/**
+ * 所有Complication表盘的基类
+ * 1.该类封装了complication初始化，如支持类型，id激活，默认数据提供者的设置等，基类继承即可
+ * 2.该类封装了complicationWrapper对象的所有操作，例如数据更新，绘制，点击等，基类继承即可
+ * 3.当前表盘为Complication表盘时对外提供接口获取界面的控件列表信息以及ids信息
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/22
+ */
+
+public abstract class BaseHwComplicationWatchFaceService extends BaseHwCanvasWatchFaceService {
+    private static final String TAG = "BaseHwComplicationWatchFaceService";
+
+    /**
+     * 获取具体表盘服务组件名的抽象方法
+     * @return ComponentName具体表盘服务组件名
+     */
+    protected abstract ComponentName getConcreteWatchFaceService();
+
+    /**
+     * 获取complicationId对应的默认provider组件名的抽象方法
+     * @param complicationId complication Id
+     * @return provider组件名
+     */
+    protected abstract ComponentName getComplicationDefaultProvider(int complicationId);
+
+    /**
+     * 获取complicationId对应的默认complication类型的抽象方法
+     * @param complicationId complication Id
+     * @return 默认complication类型
+     */
+    protected abstract int getComplicationDefaultType(int complicationId);
+
+    /**
+     * 表盘引擎内部类
+     * @since 2019/1/22
+     */
+    public abstract class Engine extends BaseHwCanvasWatchFaceService.Engine {
+        private ComplicationElement mComplicationElement;
+
+        @Override
+        public void onCreate(SurfaceHolder holder) {
+            super.onCreate(holder);
+            initComplication();
+        }
+
+        @Override
+        protected IDrawElement getOtherElement(AssetPackage assetPackage) {
+            mComplicationElement = ComplicationElement.getInstance(assetPackage);
+            return mComplicationElement;
+        }
+
+        private void initComplication() {
+            ComplicationPermissionActivity.requestPermission(BaseHwComplicationWatchFaceService.this,
+                getConcreteWatchFaceService());
+            int[] complicationIDs = mComplicationElement.getComplicationIDs();
+            setActiveComplications(complicationIDs);
+            for (int complicationId : complicationIDs) {
+                setDefaultComplicationProvider(complicationId,
+                    getComplicationDefaultProvider(complicationId),
+                    getComplicationDefaultType(complicationId));
+            }
+        }
+
+        @Override
+        public void onComplicationDataUpdate(int watchFaceComplicationId, ComplicationData data) {
+            long currentTimeMillis = System.currentTimeMillis();
+            if ((data != null) && (data.isActive(currentTimeMillis))) {
+                HwLogUtil.i(TAG,"id:" + watchFaceComplicationId + ",data:" + data.toString());
+                mComplicationElement.updateComplicationData(data, watchFaceComplicationId);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.os.Handler;
+import android.os.Message;
+import android.support.wearable.watchface.WatchFaceStyle;
+import android.view.SurfaceHolder;
+
+/**
+ * 所有canvas表盘的基类
+ * 此类封装了表盘界面的基础数据以及刷新逻辑，子类直接继承即可实现表盘刷新
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/23
+ */
+public abstract class BaseHwCanvasWatchFaceService extends HwCanvasWatchFaceService {
+    private static final String TAG = "BaseHwCanvasWatchFaceService";
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
+    /**
+     * 表盘引擎基类
+     *
+     * @author sWX405947
+     * @version 1.0.0
+     * @since 2019/1/23
+     */
+    protected abstract class Engine extends HwCanvasWatchFaceService.Engine {
+        /**
+         * 界面刷新事件
+         */
+        private static final int MSG_UPDATE_TIME = 0;
+
+        /**
+         * 资源包
+         */
+        private AssetPackage mAssetPackage;
+
+        /**
+         * 元素绘制序列
+         */
+        private List<IDrawElement> mElementDrawList;
+
+        /**
+         * 元素点击响应序列
+         */
+        private List<IDrawElement> mElementClickList;
+
+        /**
+         * 表盘/控件切换后，表盘各元素需要重新构造，重构过程中，停止绘制表盘
+         */
+        private boolean mIsDrawStopped = false;
+
+        /**
+         * 界面刷新处理者
+         */
+        private Handler mHandler;
+
+        /**
+         * 背景元素
+         */
+        private BackgroundElement mBackgroundElement;
+
+        private EventReceiver receiver;
+
+        /**
+         * 获取子类控件元素的抽象方法
+         * @param assetPackage 资源包对象
+         * @return 子类控件元素
+         */
+        protected abstract IDrawElement getOtherElement(AssetPackage assetPackage);
+
+        /**
+         * 获取AssetPackage对象的抽象方法
+         * @return AssetPackage对象
+         */
+        protected abstract AssetPackage getAssetPackage();
+
+        @Override
+        public void onCreate(SurfaceHolder holder) {
+            super.onCreate(holder);
+            setWatchFaceStyle(new WatchFaceStyle.Builder(BaseHwCanvasWatchFaceService.this)
+                    .setViewProtectionMode(PROTECT_STATUS_BAR).setAcceptsTapEvents(true).build());
+            mHandler = new EngineHandler();
+            mAssetPackage = getAssetPackage();
+
+            mElementDrawList = new ArrayList<>(0);
+            mElementClickList = new ArrayList<>(0);
+
+            mBackgroundElement = new BackgroundElement(mAssetPackage);
+            TimeElement timeElement = new TimeElement(mAssetPackage);
+            DateElement dateElement = new DateElement(mAssetPackage);
+            DialElement dialElement = new DialElement(mAssetPackage);
+            IDrawElement otherElement = getOtherElement(mAssetPackage);
+            mElementDrawList.add(mBackgroundElement);
+            mElementDrawList.add(dialElement);
+            mElementDrawList.add(otherElement);
+            mElementDrawList.add(dateElement);
+            mElementDrawList.add(timeElement);
+            mElementClickList.add(otherElement);
+            mElementClickList.add(dialElement);
+            mElementClickList.add(dateElement);
+            mElementClickList.add(timeElement);
+            mElementClickList.add(mBackgroundElement);
+
+            receiver = new EventReceiver();
+            ModuleBus.register(receiver);
+        }
+
+        /**
+         * 重构表盘元素
+         */
+        protected void reconstructElement() {
+            mIsDrawStopped = true;
+            FpsUtil.resetUpdateInterval();
+            if (mAssetPackage != null) {
+                mAssetPackage.onDestroy();
+            }
+            mAssetPackage = getAssetPackage();
+            for (IDrawElement element : mElementDrawList) {
+                if (element != null) {
+                    element.onReconstruct(mAssetPackage);
+                }
+            }
+            mIsDrawStopped = false;
+        }
+
+        @Override
+        public void onSurfaceCreated(SurfaceHolder surfaceHolder) {
+            super.onSurfaceCreated(surfaceHolder);
+            // 设置窗口支持透明度
+            surfaceHolder.setFormat(PixelFormat.TRANSLUCENT);
+            // 使用硬件绘制
+            useHardware(true);
+        }
+
+        @Override
+        protected void onSecondSurfaceCreated(SurfaceHolder surfaceHolder) {
+            super.onSecondSurfaceCreated(surfaceHolder);
+            mBackgroundElement.setSurface(surfaceHolder.getSurface());
+        }
+
+        @Override
+        public void onAmbientModeChanged(boolean inAmbientMode) {
+            super.onAmbientModeChanged(inAmbientMode);
+            updateTimer();
+            for (IDrawElement element : mElementDrawList) {
+                if (element != null) {
+                    element.isAmbientModeChanged(inAmbientMode);
+                }
+            }
+        }
+
+        @Override
+        public void onVisibilityChanged(boolean visible) {
+            super.onVisibilityChanged(visible);
+            updateTimer();
+            for (IDrawElement element : mElementDrawList) {
+                if (element != null) {
+                    element.onVisibilityChanged(visible);
+                }
+            }
+        }
+
+        @Override
+        public void onTimeTick() {
+            super.onTimeTick();
+            invalidate();
+        }
+
+        @Override
+        public void onDraw(Canvas canvas, Rect bounds) {
+            for (IDrawElement element : mElementDrawList) {
+                if (element != null) {
+                    element.onDraw(canvas, isInAmbientMode());
+                }
+            }
+        }
+
+        @Override
+        public void onTapCommand(int tapType, int x, int y, long eventTime) {
+            switch (tapType) {
+                case TAP_TYPE_TAP:
+                    for (IDrawElement element : mElementClickList) {
+                        if (element != null) {
+                            element.onClick(x, y);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            mHandler.removeMessages(MSG_UPDATE_TIME);
+            for (IDrawElement element : mElementDrawList) {
+                if (element != null) {
+                    element.onDestroy();
+                }
+            }
+            mElementDrawList.clear();
+            mElementClickList.clear();
+            mAssetPackage.onDestroy();
+            ModuleBus.unregister(receiver);
+            FpsUtil.resetUpdateInterval();
+        }
+
+        private void updateTimer() {
+            mHandler.removeMessages(MSG_UPDATE_TIME);
+            if (shouldTimerRunning()) {
+                mHandler.sendEmptyMessage(MSG_UPDATE_TIME);
+            }
+        }
+
+        private boolean shouldTimerRunning() {
+            return isVisible() && !isInAmbientMode();
+        }
+
+        private void handleUpdateTimeMessage() {
+            invalidate(); // 触发onDraw调用
+            if (shouldTimerRunning()) {
+                long curTimeMs = System.currentTimeMillis();
+                long updateIntervalMs = FpsUtil.getUpdateInterval();
+                long delayMs = updateIntervalMs - (curTimeMs % updateIntervalMs);
+                mHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
+            }
+        }
+
+        /**
+         * 表盘引擎内部Handler，用于处理刷新表盘等事件
+         * @since 2019/1/23
+         */
+        private class EngineHandler extends Handler {
+            private EngineHandler() {
+            }
+
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case MSG_UPDATE_TIME:
+                        handleUpdateTimeMessage();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        /**
+         * 事件接收器，用于接收外部的event事件
+         * @version 1.0.0
+         * @since 2019/1/23
+         */
+        private class EventReceiver {
+            /**
+             * 接收表盘编辑完成的事件并进行表盘重绘
+             * @param event 编辑完成事件
+             */
+            @Subscribe
+            public void onWatchFaceEditCompleteEvent(WatchFaceEditCompleteEvent event) {
+                if (event == null) {
+                    return;
+                }
+                HwLogUtil.i(TAG, "onWatchFaceEditCompleteEvent()");
+                reconstructElement();
+            }
+
+            /**
+             * 模块改变事件接收器
+             * @param event 事件
+             */
+            @Subscribe
+            public void onWidgetChangeEvent(WatchFaceModuleChangeEvent event) {
+                reconstructElement();
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.view.SurfaceHolder;
+
+/**
+ * 所有Complication表盘的基类
+ * 1.该类封装了complication初始化，如支持类型，id激活，默认数据提供者的设置等，基类继承即可
+ * 2.该类封装了complicationWrapper对象的所有操作，例如数据更新，绘制，点击等，基类继承即可
+ * 3.当前表盘为Complication表盘时对外提供接口获取界面的控件列表信息以及ids信息
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/22
+ */
+
+public abstract class BaseHwWidgetWatchFaceService extends BaseHwCanvasWatchFaceService {
+    private static final String TAG = "BaseHwWidgetWatchFaceService";
+
+    /**
+     * 表盘引擎内部类
+     * @since 2019/1/22
+     */
+    public abstract class Engine extends BaseHwCanvasWatchFaceService.Engine {
+        @Override
+        public void onCreate(SurfaceHolder holder) {
+            super.onCreate(holder);
+        }
+
+        @Override
+        protected IDrawElement getOtherElement(AssetPackage assetPackage) {
+            return new WidgetElement(assetPackage);
+        }
+
+        @Override
+        public void onDraw(Canvas canvas, Rect bounds) {
+            super.onDraw(canvas, bounds);
+        }
+    }
+}
+
+
+
+
+
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.util.AttributeSet;
+import android.view.View;
+
+
+
+/**
+ * 蓝色圈
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019-01-21
+ */
+public class BlueCircleView extends View {
+    private static final String TAG = "BlueCircleView";
+
+    private static final int STROKE_WIDTH = 6;
+
+    private static final int COLOR = 0xff4DBBFF;
+
+    private RectF mBound;
+
+    private Paint mPaint = new Paint();
+
+    /**
+     * 构造方法
+     * @param context 上下文对象
+     * @param rect 绘制区域
+     */
+    public BlueCircleView(Context context, Rect rect) {
+        super(context);
+        if (rect == null) {
+            HwLogUtil.e(TAG, "BlueCircleView() error");
+        }
+        mBound = new RectF(rect.left, rect.top, rect.right, rect.bottom);
+    }
+
+    /**
+     * 构造方法
+     * @param context 上下文对象
+     * @param attrs 属性
+     */
+    public BlueCircleView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setAntiAlias(true);
+        mPaint.setColor(COLOR);
+        mPaint.setStrokeWidth(STROKE_WIDTH);
+        canvas.drawOval(mBound, mPaint);
+    }
+}
+
+
+
+
+
+
+
+
+/**
+ * 随机背景包括文字
+ *
+ * @author zwx697580
+ * @version 1.0.0
+ * @since 2019-04-01
+ */
+
+public class RandomBackgroundView extends View {
+    private static final int TEXT_SIZE = 60;
+
+    private static final int DIVISOR = 2;
+
+    private String mRandomString;
+
+    private RectF mBound;
+
+    private Bitmap mBgBitmap;
+
+    private Paint mPaint = new Paint();
+
+    /**
+     * 构造方法
+     * @param context context对象
+     * @param rect rect对象
+     * @param randomString 随机文字
+     */
+    public RandomBackgroundView(Context context, Rect rect, int randomString) {
+        super(context);
+        mRandomString = context.getString(randomString);
+        mBound = new RectF(rect.left, rect.top, rect.right, rect.bottom);
+        mPaint.setAntiAlias(true);
+        mPaint.setTextSize(TEXT_SIZE);
+        mPaint.setColor(Color.WHITE);
+        mBgBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.random_bg);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        canvas.drawBitmap(mBgBitmap, null, mBound, null);
+
+        float left = (mBound.right - mBound.left - mPaint.measureText(mRandomString)) / DIVISOR;
+        float top = (mBound.bottom - mBound.top + TEXT_SIZE) / DIVISOR;
+        canvas.drawText(mRandomString, left, top, mPaint);
+    }
+}
+
+
+
+
+
+
+/**
+ * 属性传递实体类
+ *
+ * @author wwx706176
+ * @version 1.0.0
+ * @since 2019-05-10
+ */
+public class AttributeBean {
+
+    private float mPositionX;
+
+    private float mPositionY;
+
+    private float mRotateAngle;
+
+    private float mAngleStart;
+
+    private float mAngleSeep;
+
+    public AttributeBean(float positionX,float positionY,float rotateAngle) {
+        mPositionX = positionX;
+        mPositionY = positionY;
+        mRotateAngle = rotateAngle;
+    }
+
+    public AttributeBean(float angleStart,float angleSweep) {
+        mAngleStart = angleStart;
+        mAngleSeep = angleSweep;
+    }
+
+    public float getPositionX() {
+        return mPositionX;
+    }
+
+    public float getPositionY() {
+        return mPositionY;
+    }
+
+    public float getRotateAngle() {
+        return mRotateAngle;
+    }
+
+    public float getAngleStart() {
+        return mAngleStart;
+    }
+
+    public float getAngleSeep() {
+        return mAngleSeep;
+    }
+}
+
+
+
