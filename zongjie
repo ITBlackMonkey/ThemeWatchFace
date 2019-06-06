@@ -1,0 +1,44 @@
+表盘绘制分为两部分：
+
+                                       Draw
+                                          |
+                                      IDrawUnit
+                                           |
+  BaseDraw       BaseResDraw   ArcLinearLayer   LinearLayer   RandomSelectLayer    SelecLayer
+                                         
+BaseDraw和BaseResDraw   都需要实现IDrawUnit接口，若有新的绘制类型可按此实现IDrawUnit。
+
+                                    BaseDraw
+
+ArcDraw     TextDraw   ArcTextDraw  IntelligentTextDraw
+  ComplicationDraw    HandDraw     LineDraw
+
+                               BaseResDraw
+CombinedResDraw  GifDraw  IntelligentResDraw  OrderResDraw  RandomResDraw   SelectResDraw   SelectVideoDraw  SingleResDraw   VideoDraw
+
+总结：IDrawUnit作为所有绘制类型接口，所有绘制都必须实现此接口，而BaseDraw和BaseResDraw作为两大基本绘制类型，BaseDraw功能为线性绘制，如弧形绘制、文字绘制等，主要描述绘制的动态属性；而BaseResDraw只要功能为图形绘制，选图绘制，如单图绘制，组合图绘制和视频绘制等
+1、	ArcDraw：弧形绘制，用来绘制弧形图案，通过定义弧形的外切矩形来确定弧的位置和形状，当定义为正方形时，弧形为圆弧；定义为长方形时，弧形为椭圆弧，定义格式 "left, top, right, bottom"
+2、	TextDraw  ：文本绘制类，绘制单文本
+3、	ArcTextDraw  ：继承与TextDraw，绘制弧形文本
+4、	IntelligentTextDraw：继承与TextDraw，智能取色的文本绘制类
+5、	ComplicationDraw   ：绘制Complication
+6、	HandDraw：指针绘制类，绘制表盘指针旋转类，可设置res_active_left：全亮模式指针在左半边（6点~12点）的资源；res_active_right：全亮模式指针在右半边（0点~6点）的资源，可选
+res_ambient_left：半量模式、res_ambient_right、res_shadow：指针影子
+rotate_start_angel：指针起始角度，rotate_end_angel：指针终止角度rotate_point_hand：指针资源上的旋转坐标（指针上的旋转点以指针资源左上角为原点的相对坐标）
+7、	LineDraw：直线绘制
+8、	CombinedResDraw  ：组合图绘制，如可将1、2、3这三张图片组合在一起为123
+9、	GifDraw  ：动图绘制
+10、	IntelligentResDraw：支持智能选色的图片绘制
+11、	OrderResDraw：序列帧绘制，如帧动画
+12、	RandomResDraw   ：随机单图绘制
+13、	SelectResDraw ：选图绘制，如在多张图片中选一个进行绘制
+14、	SelectVideoDraw ：多个视频选择播放
+15、	VideoDraw：视频绘制类
+16、	ArcLinearLayer  ：弧形绘制类，在弧形绘制内获取每个元素
+17、	LinearLayer  ：直线组合绘制，获取直线绘制内的每个元素
+18、	RandomSelectLayer   ：随机选择的layer
+19、	SelectLayer:选择Layer，根据ValueType选择绘制哪个Layer的元素
+
+
+
+
