@@ -1,0 +1,1505 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 表盘style预览列表界面适配器
+ *
+ * @author m00230717
+ * @version 1.0.0
+ * @since 2019-02-26
+ */
+
+public class ElementOptionListAdapter extends WearableRecyclerView.Adapter {
+    private static final String TAG = "ElementOptionListAdapter";
+
+    private static final String SPLIT_COMMA = ",";
+
+    private Context mContext;
+
+    private AssetPackage mAssetPackage;
+
+    private String mLabel;
+
+    private List<ItemView> mItemViews;
+
+    private List<String> mOptionIndexList;
+
+    private List<String> mContainerIndexList;
+
+    private List<String> mStyleIndexList;
+
+    private Drawable mWidgetMaskBg;
+
+    private Bitmap mArcBackgroundPreview;
+
+    /**
+     * 构造方法
+     *
+     * @param context 上下文对象
+     * @param label 列表对应的元素标签
+     * @param assetPackage 资源包对象
+     * @param blueBorder 蓝色背景圈
+     */
+    public ElementOptionListAdapter(Context context, String label, AssetPackage assetPackage,
+        RelativeLayout blueBorder) {
+        mContext = context;
+        mAssetPackage = assetPackage;
+        mLabel = label;
+        mItemViews = new ArrayList<>(0);
+        mWidgetMaskBg = context.getResources().getDrawable(R.drawable.clock_widget_mask_bg);
+        showBlueBg(label, blueBorder);
+        if (TextUtils.equals(mLabel, UnitConstants.STYLES)) {
+            initStyleIndexList();
+            initContainerIndexList();
+            // 根据选择的style更新element的配置
+        } else if (TextUtils.equals(mLabel, UnitConstants.LABEL_WIDGET)) {
+            initContainerIndexList();
+        } else {
+            initContainerIndexList();
+            initOptionIndexList();
+        }
+    }
+
+    /** 根据选择的style更新element的数据 */
+    private void updateElementDataBySelectedStyle() {
+        Optional<Styles> styles = mAssetPackage.getElementsProvider().getStyles();
+        if (!styles.isPresent()) {
+            return;
+        }
+        Optional<Style> style = styles.get().getStyle(styles.get().getSelectedStyle());
+        if (!style.isPresent()) {
+            return;
+        }
+        if (!TextUtils.isEmpty(style.get().getBackgroundSelectedOption())) {
+            Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_BACKGROUND);
+            element.ifPresent(element1 -> element1.setSelectedOption(style.get().getBackgroundSelectedOption()));
+        }
+        if (!TextUtils.isEmpty(style.get().getColorSelectedOption())) {
+            Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_COLOR);
+            element.ifPresent(element1 -> element1.setSelectedOption(style.get().getColorSelectedOption()));
+        }
+        if (!TextUtils.isEmpty(style.get().getDateSelectedOption())) {
+            Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_DATE);
+            element.ifPresent(element1 -> element1.setSelectedOption(style.get().getDateSelectedOption()));
+        }
+        if (!TextUtils.isEmpty(style.get().getTimeSelectedOption())) {
+            Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_TIME);
+            element.ifPresent(element1 -> element1.setSelectedOption(style.get().getTimeSelectedOption()));
+        }
+        if (!TextUtils.isEmpty(style.get().getDialSelectedOption())) {
+            Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_DIAL);
+            element.ifPresent(element1 -> element1.setSelectedOption(style.get().getDialSelectedOption()));
+        }
+        updateWidgetDataBySelectedStyle();
+    }
+
+    /** 根据选择的style更新widget的数据 */
+    private void updateWidgetDataBySelectedStyle() {
+        Optional<Styles> styles = mAssetPackage.getElementsProvider().getStyles();
+        if (!styles.isPresent()) {
+            return;
+        }
+        Optional<Style> style = styles.get().getStyle(styles.get().getSelectedStyle());
+        if (!style.isPresent()) {
+            return;
+        }
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET);
+        if (!element.isPresent()) {
+            HwLogUtil.e(TAG, "updateElementDataBySelectedStyle() no widget element");
+            return;
+        }
+        List<Container> containers = element.get().getContainers();
+        if ((containers == null) || (containers.size() == 0)) {
+            HwLogUtil.e(TAG, "updateElementDataBySelectedStyle() no containers");
+            return;
+        }
+        if (!TextUtils.isEmpty(style.get().getWidgetAvailableContainers())) {
+            List<String> availableContainers =
+                Arrays.asList(style.get().getWidgetAvailableContainers().split(SPLIT_COMMA));
+            List<String> containerSelects = Arrays.asList(style.get().getContainerSelectedOptions().split(SPLIT_COMMA));
+            if (availableContainers.size() != containerSelects.size()) {
+                HwLogUtil.e(TAG, "updateElementDataBySelectedStyle() error");
+                return;
+            }
+            int i = 0;
+            for (Container container : containers) {
+                if (availableContainers.contains(container.getIndex())) {
+                    container.setIsAvailable(String.valueOf(true));
+                    container.setSelectedOption(containerSelects.get(i));
+                    i++;
+                } else {
+                    container.setIsAvailable(String.valueOf(false));
+                }
+            }
+        } else {
+            for (Container container : containers) {
+                container.setIsAvailable(String.valueOf(false));
+            }
+        }
+    }
+
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        ItemView itemView = new ItemView(mContext);
+        mItemViews.add(itemView);
+        return new WearableRecyclerViewHolder(itemView);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder.itemView instanceof ItemView) {
+            ItemView itemView = (ItemView) (holder.itemView);
+            updateItemView(itemView, position);
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        if (TextUtils.equals(mLabel, UnitConstants.LABEL_WIDGET)) {
+            return 1;
+        } else if (TextUtils.equals(mLabel, UnitConstants.STYLES)) {
+            return mStyleIndexList.size();
+        } else {
+            return mOptionIndexList.size();
+        }
+    }
+
+    /**
+     * 更新选择的option
+     *
+     * @param position 位置
+     */
+    public void updateSelectedOption(int position) {
+        if (TextUtils.equals(mLabel, UnitConstants.LABEL_WIDGET)) {
+            return;
+        }
+        if (TextUtils.equals(mLabel, UnitConstants.STYLES)) {
+            String index = mStyleIndexList.get(position);
+            HwLogUtil.i(TAG, "updateSelectedOption() mLabel=" + mLabel + " setSelectedStyle=" + index);
+            Optional<Styles> styles = mAssetPackage.getElementsProvider().getStyles();
+            if (styles.isPresent()) {
+                styles.get().setSelectedStyle(index);
+                // 根据选择的style更新element的配置
+                updateElementDataBySelectedStyle();
+            }
+        } else {
+            String index = mOptionIndexList.get(position);
+            HwLogUtil.i(TAG, "updateSelectedOption() mLabel=" + mLabel + " setSelectedOption=" + index);
+            Optional<Element> element = mAssetPackage.getElementsProvider().getElement(mLabel);
+            if (element.isPresent()) {
+                element.get().setSelectedOption(index);
+                // 根据选择的option更新style的配置
+                updateStyleDataBySelectOption(position);
+            }
+        }
+    }
+
+    /** 根据选择的Option更新style的数据 */
+    private void updateStyleDataBySelectOption(int position) {
+        Optional<Styles> styles = mAssetPackage.getElementsProvider().getStyles();
+        if ((!styles.isPresent()) || (styles.get().getStyles() == null)) {
+            return;
+        }
+        Optional<Style> style = styles.get().getStyle(styles.get().getSelectedStyle());
+        if (!style.isPresent()) {
+            return;
+        }
+        String index = mOptionIndexList.get(position);
+        switch (mLabel) {
+            case UnitConstants.LABEL_BACKGROUND:
+                style.get().setBackgroundSelectedOption(index);
+                break;
+            case UnitConstants.LABEL_DATE:
+                style.get().setDateSelectedOption(index);
+                break;
+            case UnitConstants.LABEL_TIME:
+                style.get().setTimeSelectedOption(index);
+                break;
+            case UnitConstants.LABEL_COLOR:
+                style.get().setColorSelectedOption(index);
+                break;
+            case UnitConstants.LABEL_DIAL:
+                style.get().setDialSelectedOption(index);
+                break;
+            case UnitConstants.LABEL_WIDGET:
+                style.get().setContainerSelectedOptions(index);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void initStyleIndexList() {
+        mStyleIndexList = new ArrayList<>(0);
+        Optional<Styles> style = mAssetPackage.getElementsProvider().getStyles();
+        if (!style.isPresent()) {
+            return;
+        }
+        List<Style> styles = style.get().getStyles();
+        if ((styles == null) || (styles.size() <= 0)) {
+            return;
+        }
+        for (Style sty : styles) {
+            if (sty == null) {
+                continue;
+            }
+            mStyleIndexList.add(HwUtil.getStringValue(sty.getIndex()));
+        }
+    }
+
+    private void initOptionIndexList() {
+        if (TextUtils.equals(mLabel, UnitConstants.LABEL_WIDGET)) {
+            return;
+        }
+        mOptionIndexList = new ArrayList<>(0);
+        Optional<Styles> styles = mAssetPackage.getElementsProvider().getStyles();
+        if (styles.isPresent()) {
+            String optionIndex = "";
+            Optional<Style> style = styles.get().getStyle(styles.get().getSelectedStyle());
+
+            switch (mLabel) {
+                case UnitConstants.LABEL_BACKGROUND:
+                    optionIndex = style.get().getBackgroundAvailableOption();
+                    break;
+                case UnitConstants.LABEL_DATE:
+                    optionIndex = style.get().getDateAvailableOption();
+                    break;
+                case UnitConstants.LABEL_TIME:
+                    optionIndex = style.get().getTimeAvailableOption();
+                    break;
+                case UnitConstants.LABEL_COLOR:
+                    optionIndex = style.get().getColorAvailableOption();
+                    break;
+                case UnitConstants.LABEL_DIAL:
+                    optionIndex = style.get().getDialAvailableOption();
+                    break;
+                default:
+                    break;
+            }
+            if (optionIndex.contains(SPLIT_COMMA)) {
+                List<String> optionIndexList = Arrays.asList(optionIndex.split(SPLIT_COMMA));
+                mOptionIndexList.addAll(optionIndexList);
+            }
+        } else {
+            Optional<Element> element = mAssetPackage.getElementsProvider().getElement(mLabel);
+
+            if (!element.isPresent()) {
+                return;
+            }
+
+            List<Option> options = element.get().getOptions();
+            if ((options == null) || (options.size() <= 0)) {
+                return;
+            }
+            for (Option option : options) {
+                if (option == null) {
+                    continue;
+                }
+                mOptionIndexList.add(HwUtil.getStringValue(option.getIndex()));
+            }
+        }
+
+        HwLogUtil.i(TAG, "initOptionIndexList() mOptionIndex.size=" + mOptionIndexList.size() + ",mLabel=" + mLabel);
+    }
+
+    private void initContainerIndexList() {
+        mContainerIndexList = new ArrayList<>(0);
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(mLabel);
+
+        if (!element.isPresent()) {
+            return;
+        }
+
+        List<Container> containers = element.get().getContainers();
+        if ((containers == null) || (containers.size() <= 0)) {
+            return;
+        }
+        for (Container container : containers) {
+            if (container == null) {
+                continue;
+            }
+            mContainerIndexList.add(HwUtil.getStringValue(container.getIndex()));
+        }
+        HwLogUtil.i(TAG, "initOptionIndexList() mContainerIndex.size=" + mContainerIndexList.size() + ",mLabel="
+            + mLabel);
+    }
+
+    private HashMap<String, Bitmap> getWidgetPreviewMap() {
+        if ((mContainerIndexList == null) || (mContainerIndexList.size() <= 0)) {
+            return new HashMap<>(0);
+        }
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET);
+
+        if (!element.isPresent()) {
+            return new HashMap<>(0);
+        }
+        HashMap<String, Bitmap> bitmapMap = new HashMap<>(0);
+        for (String index : mContainerIndexList) {
+            Optional<Container> container = element.get().getContainer(index);
+
+            if (!container.isPresent()) {
+                continue;
+            }
+            // 判断控件是否可用
+            if (HwUtil.getBoolValue(container.get().getIsAvailable(), true)) {
+                bitmapMap.put(index, mAssetPackage.getBitmap(element.get().getPreview(container.get().getIndex())));
+            }
+        }
+        return bitmapMap;
+    }
+
+    private Optional<Bitmap> getPreview(String label) {
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(label);
+
+        if (!element.isPresent()) {
+            return Optional.empty();
+        }
+
+        Bitmap resultBitmap = mAssetPackage.getBitmap(element.get().getPreview());
+        if (resultBitmap == null) {
+            return Optional.empty();
+        }
+        return Optional.of(resultBitmap);
+    }
+
+    private Optional<Bitmap> getPreview(String label, int position) {
+        String index;
+        if (TextUtils.equals(mLabel, UnitConstants.STYLES)) {
+            if ((mStyleIndexList == null) || (mStyleIndexList.size() <= 0)) {
+                return Optional.empty();
+            }
+            Optional<Styles> styles = mAssetPackage.getElementsProvider().getStyles();
+
+            if (!styles.isPresent()) {
+                return Optional.empty();
+            }
+            Optional<Style> style = styles.get().getStyle(mStyleIndexList.get(position));
+
+            if (!style.isPresent()) {
+                return Optional.empty();
+            }
+            switch (label) {
+                case UnitConstants.LABEL_BACKGROUND:
+                    index = style.get().getBackgroundSelectedOption();
+                    break;
+                case UnitConstants.LABEL_TIME:
+                    index = style.get().getTimeSelectedOption();
+                    break;
+                case UnitConstants.LABEL_DATE:
+                    index = style.get().getDateSelectedOption();
+                    break;
+                case UnitConstants.LABEL_DIAL:
+                    index = style.get().getDialSelectedOption();
+                    break;
+                default:
+                    return Optional.empty();
+            }
+        } else {
+            if ((mOptionIndexList == null) || (mOptionIndexList.size() <= 0)) {
+                return Optional.empty();
+            }
+            index = mOptionIndexList.get(position);
+        }
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(label);
+
+        if ((!element.isPresent()) || (index == null)) {
+            return Optional.empty();
+        }
+        Optional<Option> option = element.get().getOption(index);
+
+        if (!option.isPresent()) {
+            return Optional.empty();
+        }
+        Bitmap resultBitmap = mAssetPackage.getBitmap(option.get().getResPreview());
+        if (resultBitmap == null) {
+            return Optional.empty();
+        }
+        return Optional.of(resultBitmap);
+    }
+
+    /**
+     * 获取异形边框的map
+     *
+     * @return 返回边框的map
+     */
+    private HashMap<String, Bitmap> getBorderPreviewMap() {
+        if ((mContainerIndexList == null) || (mContainerIndexList.size() <= 0)) {
+            return new HashMap<>(0);
+        }
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET);
+
+        if (!element.isPresent()) {
+            return new HashMap<>(0);
+        }
+        HashMap<String, Bitmap> bitmapMap = new HashMap<>(0);
+        for (String index : mContainerIndexList) {
+            Optional<Container> container = element.get().getContainer(index);
+
+            if (!container.isPresent()) {
+                continue;
+            }
+            // 判断控件是否可用
+            if (HwUtil.getBoolValue(container.get().getIsAvailable(), true)) {
+                bitmapMap.put(index, mAssetPackage.getBitmap(element.get().getBorderPreview(container.get()
+                    .getIndex())));
+            }
+        }
+        return bitmapMap;
+    }
+
+    private HashMap<String, Bitmap> getContainerRotateBitmap() {
+        if ((mContainerIndexList == null) || (mContainerIndexList.size() <= 0)) {
+            return new HashMap<>(0);
+        }
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET);
+
+        if (!element.isPresent()) {
+            return new HashMap<>(0);
+        }
+
+        HashMap<String, Bitmap> bitmapMap = new HashMap<>(0);
+        for (String index : mContainerIndexList) {
+            Optional<Container> container = element.get().getContainer(index);
+
+            if (!container.isPresent()) {
+                continue;
+            }
+            // 判断控件是否可用
+            if (HwUtil.getBoolValue(container.get().getIsAvailable(), true)) {
+                bitmapMap.put(index, mAssetPackage.getBitmap(element.get().getContainerPreview(container.get()
+                    .getIndex())));
+            }
+        }
+        return bitmapMap;
+    }
+
+    private boolean isHaveRandomBackground(String label, int position) {
+        boolean isRandomOption = false;
+
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(label);
+        String index = mOptionIndexList.get(position);
+        if (!element.isPresent()) {
+            return false;
+        }
+        Optional<Option> option = element.get().getOption(index);
+        if (!option.isPresent()) {
+            return false;
+        }
+
+        List<Layer> layerList = option.get().getLayers();
+        for (Layer layer : layerList) {
+            if (TextUtils.equals(layer.getDrawType(), UnitConstants.VALUE_DRAW_TYPE_RANDOM_RES)) {
+                isRandomOption = true;
+                break;
+            }
+        }
+        return isRandomOption;
+    }
+
+    private void updateItemView(ItemView itemView, int position) {
+        switch (mLabel) {
+            case UnitConstants.LABEL_BACKGROUND:
+                getPreview(UnitConstants.LABEL_BACKGROUND, position).ifPresent(itemView::setBgBitmap);
+                itemView.setDrawRandomBackground(isHaveRandomBackground(UnitConstants.LABEL_BACKGROUND, position));
+                getPreview(UnitConstants.LABEL_TIME).ifPresent(itemView::setTimeBitmap);
+                getPreview(UnitConstants.LABEL_DATE).ifPresent(itemView::setDateBitmap);
+                itemView.setWidgetBitmapMap(getWidgetPreviewMap());
+                break;
+            case UnitConstants.LABEL_TIME:
+                getPreview(UnitConstants.LABEL_BACKGROUND).ifPresent(itemView::setBgBitmap);
+                getPreview(UnitConstants.LABEL_TIME, position).ifPresent(itemView::setTimeBitmap);
+                getPreview(UnitConstants.LABEL_DATE).ifPresent(itemView::setDateBitmap);
+                itemView.setWidgetBitmapMap(getWidgetPreviewMap());
+                break;
+            default:
+                updateItemViewByLabel(itemView, position);
+                break;
+        }
+        itemView.invalidate();
+    }
+
+    private void updateItemViewByLabel(ItemView itemView, int position) {
+        switch (mLabel) {
+            case UnitConstants.LABEL_DATE:
+                getPreview(UnitConstants.LABEL_BACKGROUND).ifPresent(itemView::setBgBitmap);
+                getPreview(UnitConstants.LABEL_TIME).ifPresent(itemView::setTimeBitmap);
+                getPreview(UnitConstants.LABEL_DATE, position).ifPresent(itemView::setDateBitmap);
+                itemView.setWidgetBitmapMap(getWidgetPreviewMap());
+                break;
+            case UnitConstants.LABEL_WIDGET:
+                getPreview(UnitConstants.LABEL_BACKGROUND).ifPresent(itemView::setBgBitmap);
+                getPreview(UnitConstants.LABEL_DIAL).ifPresent(itemView::setDialBitmap);
+                getPreview(UnitConstants.LABEL_TIME).ifPresent(itemView::setTimeBitmap);
+                itemView.setBorderBitmapMap(getBorderPreviewMap());
+                itemView.setWidgetBitmapMap(getWidgetPreviewMap());
+                itemView.setContainerRotateBitmap(getContainerRotateBitmap());
+                break;
+            case UnitConstants.STYLES:
+                getPreview(UnitConstants.LABEL_BACKGROUND, position).ifPresent(itemView::setBgBitmap);
+                getPreview(UnitConstants.LABEL_DIAL, position).ifPresent(itemView::setDialBitmap);
+                getPreview(UnitConstants.LABEL_TIME, position).ifPresent(itemView::setTimeBitmap);
+                getPreview(UnitConstants.LABEL_DATE, position).ifPresent(itemView::setDateBitmap);
+                itemView.setWidgetBitmapMap(getWidgetPreviewMap());
+                break;
+            case UnitConstants.LABEL_COLOR:
+                getPreview(UnitConstants.LABEL_COLOR, position).ifPresent(itemView::setBgBitmap);
+                getPreview(UnitConstants.LABEL_TIME).ifPresent(itemView::setTimeBitmap);
+                getPreview(UnitConstants.LABEL_DATE).ifPresent(itemView::setDateBitmap);
+                itemView.setWidgetBitmapMap(getWidgetPreviewMap());
+                break;
+            case UnitConstants.LABEL_DIAL:
+                getPreview(UnitConstants.LABEL_BACKGROUND).ifPresent(itemView::setBgBitmap);
+                getPreview(UnitConstants.LABEL_DIAL, position).ifPresent(itemView::setDialBitmap);
+                getPreview(UnitConstants.LABEL_TIME).ifPresent(itemView::setTimeBitmap);
+                getPreview(UnitConstants.LABEL_DATE).ifPresent(itemView::setDateBitmap);
+                itemView.setWidgetBitmapMap(getWidgetPreviewMap());
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 界面刷新
+     */
+    public void notifyDataChanged() {
+        mItemViews.clear();
+        initOptionIndexList();
+        notifyDataSetChanged();
+    }
+
+    /**
+     * ViewHolder
+     *
+     * @since 2019-01-16
+     */
+    private class WearableRecyclerViewHolder extends WearableRecyclerView.ViewHolder {
+        WearableRecyclerViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+    }
+
+    /**
+     * ItemView
+     *
+     * @since 2019-01-16
+     */
+    private class ItemView extends View {
+        private static final int SCREEN_SIZE = 454;
+
+        /**
+         * 此处不需要精确计算，可以使用float
+         */
+        private static final float SCALE_CENTER = SCREEN_SIZE * 0.5f;
+
+        private static final float SCALE_AMOUNT = 0.65f;
+
+        private static final float SCALE_HALF = 0.5f;
+
+        private BlueCircleView mBackgroundCircle;
+
+        private RandomBackgroundView mRandomBackgroundView;
+
+        private Bitmap mBgBitmap;
+
+        private Bitmap mTimeBitmap;
+
+        private Bitmap mDateBitmap;
+
+        private Bitmap mDialBitmap;
+
+        private HashMap<String, Bitmap> mWidgetBitmapMap;
+
+        private HashMap<String, Rect> mWidgetRectMap;
+
+        private HashMap<String, Bitmap> mBorderBitmapMap;
+
+        private HashMap<String, BlueCircleView> mWidgetCircles;
+
+        private boolean mIsDrawRandomBackground;
+
+        private Paint mPaint;
+
+        private Rect mWidgetMaskBgBound;
+
+        private PaintFlagsDrawFilter mPaintFlagsDrawFilter;
+
+        private HashMap<String, Float> mRotateDegree;
+
+        private HashMap<String, Float> mCenterDegree;
+
+        private HashMap<String, Bitmap> mContainerRotateBitmap;
+
+        private HashMap<String, Float> mResRadians;
+
+        private HashMap<String, String> mIsArcLinear;
+
+        ItemView(Context context) {
+            super(context);
+            mRotateDegree = new HashMap<>(0);
+            mCenterDegree = new HashMap<>(0);
+            mResRadians = new HashMap<>(0);
+            mIsArcLinear = new HashMap<>(0);
+            int size = HwUtil.getDisplayMetrics(mContext);
+            mWidgetMaskBgBound = new Rect(0, 0, size, size);
+            mBackgroundCircle = new BlueCircleView(mContext, new Rect(0, 0, size, size));
+            mRandomBackgroundView = new RandomBackgroundView(mContext, new Rect(0, 0, size, size),
+                R.string.random_background);
+
+            int bits = Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG;
+            mPaintFlagsDrawFilter = new PaintFlagsDrawFilter(0, bits);
+            mPaint = new Paint();
+            mPaint.setAntiAlias(true);
+
+            if ((mContainerIndexList == null) || (mContainerIndexList.size() <= 0)) {
+                return;
+            }
+            Optional<Element> widget = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET);
+            if (!widget.isPresent()) {
+                return;
+            }
+            mWidgetRectMap = new HashMap<>(0);
+            mWidgetCircles = new HashMap<>(0);
+            for (String index : mContainerIndexList) {
+                Optional<Container> optionalContainer = widget.get().getContainer(index);
+                if (!optionalContainer.isPresent()) {
+                    continue;
+                }
+                // 判断控件是否可用
+                Container container = optionalContainer.get();
+                if (TextUtils.isEmpty(container.getIsAvailable()) || HwUtil.getBoolValue(container.getIsAvailable())) {
+                    mWidgetCircles.put(index, new BlueCircleView(mContext, HwUtil.getRect(container.getRect())));
+                    mWidgetRectMap.put(index, HwUtil.getRect(container.getRect()));
+                    mRotateDegree.put(index, HwUtil.getFloatValue(container.getRotateDegree()));
+                    mCenterDegree.put(index, HwUtil.getFloatValue(container.getCenterDegree()));
+                    mResRadians.put(index, HwUtil.getFloatValue(container.getResRadian()));
+                    mIsArcLinear.put(index, container.getIsArcLinear());
+                }
+            }
+        }
+
+        public void setBgBitmap(Bitmap bgBitmap) {
+            mBgBitmap = bgBitmap;
+        }
+
+        public void setTimeBitmap(Bitmap timeBitmap) {
+            mTimeBitmap = timeBitmap;
+        }
+
+        public void setDateBitmap(Bitmap dateBitmap) {
+            mDateBitmap = dateBitmap;
+        }
+
+        public void setDialBitmap(Bitmap dialBitmap) {
+            mDialBitmap = dialBitmap;
+        }
+
+        public void setWidgetBitmapMap(HashMap<String, Bitmap> widgetBitmapMap) {
+            mWidgetBitmapMap = widgetBitmapMap;
+        }
+
+        public void setBorderBitmapMap(HashMap<String, Bitmap> borderBitmapMap) {
+            mBorderBitmapMap = borderBitmapMap;
+        }
+
+        public void setDrawRandomBackground(boolean isDrawRandomBackground) {
+            mIsDrawRandomBackground = isDrawRandomBackground;
+        }
+
+        public void setContainerRotateBitmap(HashMap<String, Bitmap> containerRotateBitmap) {
+            mContainerRotateBitmap = containerRotateBitmap;
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            setMeasuredDimension(SCREEN_SIZE, SCREEN_SIZE);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            canvas.save();
+            canvas.scale(SCALE_AMOUNT, SCALE_AMOUNT, SCALE_CENTER, SCALE_CENTER);
+            canvas.setDrawFilter(mPaintFlagsDrawFilter);
+            // 绘制背景
+            if (mBgBitmap != null) {
+                canvas.drawBitmap(mBgBitmap, 0, 0, mPaint);
+            }
+
+            if (mArcBackgroundPreview != null) {
+                canvas.drawBitmap(mArcBackgroundPreview, 0, 0, mPaint);
+            }
+
+            // 绘制刻度
+            if (mDialBitmap != null) {
+                canvas.drawBitmap(mDialBitmap, 0, 0, mPaint);
+            }
+
+            // 绘制时间
+            if (mTimeBitmap != null) {
+                canvas.drawBitmap(mTimeBitmap, 0, 0, mPaint);
+            }
+
+            // 绘制日期
+            if (mDateBitmap != null) {
+                canvas.drawBitmap(mDateBitmap, 0, 0, mPaint);
+            }
+
+            // 绘制功能模块
+            drawWidget(canvas);
+            if (mIsDrawRandomBackground) {
+                mRandomBackgroundView.draw(canvas);
+            }
+            canvas.restore();
+        }
+
+        private void drawWidget(Canvas canvas) {
+            if ((mContainerIndexList != null) && (mContainerIndexList.size() > 0)) {
+                mWidgetMaskBg.setBounds(mWidgetMaskBgBound);
+                mWidgetMaskBg.draw(canvas);
+                int count = 0;
+                for (String index : mContainerIndexList) {
+                    Rect rect = mWidgetRectMap.get(index);
+                    Bitmap bitmap = mWidgetBitmapMap.get(index);
+                    String isArcLinear = mIsArcLinear.get(index);
+
+                    if ((rect != null) && (!HwUtil.getBoolValue(isArcLinear))) {
+                        // 绘制图片
+                        if (bitmap != null) {
+                            int viewPointX = getCoordinateValues(bitmap, rect).x;
+                            int viewPointY = getCoordinateValues(bitmap, rect).y;
+                            canvas.drawBitmap(bitmap, viewPointX, viewPointY, mPaint);
+                        }
+                        // 绘制边框
+                        Bitmap borderBitMap = mBorderBitmapMap.get(index);
+                        if (borderBitMap != null) {
+                            int borderPointX = getCoordinateValues(borderBitMap, rect).x;
+                            int borderPointY = getCoordinateValues(borderBitMap, rect).y;
+                            canvas.drawBitmap(borderBitMap, borderPointX, borderPointY, mPaint);
+                        } else {
+                            mWidgetCircles.get(index).draw(canvas);
+                        }
+                    } else if ((rect != null) && (HwUtil.getBoolValue(isArcLinear))) {
+                        if (bitmap != null) {
+                            Bitmap containerRotateBitmap = mContainerRotateBitmap.get(index);
+                            if ((containerRotateBitmap != null) && (count == 0)) {
+                                canvas.drawBitmap(containerRotateBitmap, 0, 0, mPaint);
+                            }
+                            if (containerRotateBitmap != null) {
+                                count++;
+                            }
+                            drawRotateBitmap(canvas, index, bitmap);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void drawRotateBitmap(Canvas canvas, String index, Bitmap bitmap) {
+            float degree = mRotateDegree.get(index);
+            float centerDegree = mCenterDegree.get(index);
+            float r = mResRadians.get(index) * SCALE_HALF;
+            float startAngle = CalculateRadianUtils.calculateStartAngle(centerDegree, bitmap
+                .getWidth());
+            float containerCenterDegree = startAngle + CalculateRadianUtils.calculateSweepDegree(bitmap
+                .getWidth()) * SCALE_HALF;
+            Point startPoint = CalculateRadianUtils.calculateStartPoint(containerCenterDegree, r, bitmap
+                .getWidth());
+            canvas.save();
+            canvas.rotate(degree, startPoint.x + bitmap.getWidth() * SCALE_HALF, startPoint.y + bitmap
+                .getHeight() * SCALE_HALF);
+            canvas.drawBitmap(bitmap, startPoint.x, startPoint.y, mPaint);
+            canvas.restore();
+        }
+
+        /**
+         * 根据要绘制的Bitmap和绘制区域Rect，计算绘制左上角坐标
+         *
+         * @param bitmap 要绘制的图片
+         * @param rect 绘图区域位置
+         * @return 返回坐标值
+         */
+        private Point getCoordinateValues(Bitmap bitmap, Rect rect) {
+            Point point = new Point();
+            double middlex = rect.left + SCALE_HALF * (rect.right - rect.left);
+            double middley = rect.top + SCALE_HALF * (rect.bottom - rect.top);
+            // 获取绘制的bitmap的宽度和高度
+            int bitmapHeight = bitmap.getHeight();
+            int bitmapWidth = bitmap.getWidth();
+            // 计算出绘图左上角的坐标值
+            int pointX = (int) (middlex - SCALE_HALF * bitmapWidth);
+            int pointY = (int) (middley - SCALE_HALF * bitmapHeight);
+            point.x = pointX;
+            point.y = pointY;
+            return point;
+        }
+
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            if (!TextUtils.equals(mLabel, UnitConstants.LABEL_WIDGET)) {
+                return true;
+            }
+            if ((mContainerIndexList == null) || (mContainerIndexList.size() <= 0)) {
+                return true;
+            }
+            if (event.getAction() != MotionEvent.ACTION_UP) {
+                return true;
+            }
+            int x = (int) event.getX();
+            int y = (int) event.getY();
+            for (String index : mContainerIndexList) {
+                Rect rect = mWidgetRectMap.get(index);
+                if (HwUtil.isInBound(x, y, rect)) {
+                    Optional<Element> element = mAssetPackage.getElementsProvider().getElement(
+                        UnitConstants.LABEL_WIDGET);
+                    Optional<Container> container;
+                    if (element.isPresent()) {
+                        container = element.get().getContainer(index);
+                    } else {
+                        return true;
+                    }
+                    if ((container.isPresent()) && (HwUtil.getBoolValue(container.get().getIsSupportOption()))) {
+                        Intent intent = new Intent();
+                        intent.setPackage(mContext.getPackageName());
+                        intent.setAction(CommonConstantsUtil.ACTION_START_WIDGET_OPTION_LIST);
+                        intent.putExtra(CommonConstantsUtil.EXTRA_CONTAINER_INDEX, index);
+                        mContext.startActivity(intent);
+                        break;
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    private void showBlueBg(String label, RelativeLayout blueBorder) {
+        switch (label) {
+            case UnitConstants.STYLES:
+            case UnitConstants.LABEL_BACKGROUND:
+            case UnitConstants.LABEL_DIAL:
+                blueBorder.setVisibility(View.VISIBLE);
+                break;
+            default:
+                blueBorder.setVisibility(View.GONE);
+        }
+    }
+}
+
+
+
+
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 表盘自定义界面基类
+ *
+ * @author m00230717
+ * @version 1.0.0
+ * @since 2019-02-26
+ */
+public abstract class BaseWatchFaceCustomizeActivity extends FragmentActivity
+    implements ViewPager.OnPageChangeListener, Button.OnClickListener {
+    private static final String TAG = "BaseWatchFaceCustomizeActivity";
+    private static final int INVALID_VALUE = -1;
+    private List<String> mAllElements;
+
+    private ViewPager mViewPager;
+
+    private ImageButton mButton;
+
+    private PageIndicator mPageIndicator;
+
+    private WatchFaceCustomPagerAdapter mPagerAdapter;
+
+    private List<BaseCustomizeFragment> mFragmentList;
+
+    private AssetPackage mAssetPackage;
+
+    private List<ArrayList<Boolean>> mAvailableValues;
+
+    private BackgroundFragment backgroundFragment;
+
+    private TimeFragment timeFragment;
+
+    private DateFragment dateFragment;
+
+    private DialFragment dialFragment;
+
+    private WidgetFragment widgetFragment;
+
+    private FragmentScrollEventReceiver mReceiver;
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null) {
+                HwLogUtil.i(TAG, "onReceive() intent is null!");
+                return;
+            }
+            String action = intent.getAction();
+            if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)) {
+                String reason = intent.getStringExtra(CommonConstantsUtil.ACTION_HOME_KEY_REASON);
+                if (CommonConstantsUtil.ACTION_HOME_KEY.equals(reason)) {
+                    HwLogUtil.i(TAG, "onReceive() HOME_KEY!");
+                    BaseWatchFaceCustomizeActivity.this.finish();
+                }
+            } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                HwLogUtil.i(TAG, "onReceive() SCREEN_OFF!");
+                BaseWatchFaceCustomizeActivity.this.finish();
+            } else {
+                HwLogUtil.i(TAG, "onReceive() action:" + action);
+            }
+        }
+    };
+
+    /**
+     * 资源包获取，需要子类实现
+     *
+     * @return 资源包
+     */
+    public abstract AssetPackage getAssetPackage();
+
+    private void registerReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mBroadcastReceiver, filter, CommonConstantsUtil.WATCH_FACE_CONTACT_PERMISSION, null);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mReceiver = new FragmentScrollEventReceiver();
+        ModuleBus.register(mReceiver);
+        setContentView(R.layout.activity_watch_face_customize);
+        mViewPager = findViewById(R.id.vp_customize_page);
+        mButton = findViewById(R.id.bt_submit);
+        mPageIndicator = new PageIndicator(this, (LinearLayout) findViewById(R.id.dot_indicator));
+        mFragmentList = new ArrayList<>(0);
+        initFragmentList();
+        mPagerAdapter = new WatchFaceCustomPagerAdapter(getSupportFragmentManager(), mFragmentList);
+        mViewPager.setAdapter(mPagerAdapter);
+        mViewPager.addOnPageChangeListener(this);
+        mButton.setOnClickListener(this);
+
+        initAllElementStings();
+        initAvailableValues();
+        initViewPagerIndicator();
+        registerReceiver();
+    }
+
+    private void initAllElementStings() {
+        mAllElements = new ArrayList<>(0);
+        mAllElements.add(UnitConstants.LABEL_BACKGROUND);
+        mAllElements.add(UnitConstants.LABEL_DIAL);
+        mAllElements.add(UnitConstants.LABEL_DATE);
+        mAllElements.add(UnitConstants.LABEL_TIME);
+        mAllElements.add(UnitConstants.LABEL_WIDGET);
+    }
+
+    private void initAvailableValues() {
+        ArrayList<Boolean> values = null;
+        ElementsProvider provider = mAssetPackage.getElementsProvider();
+        Optional<Styles> styles = provider.getStyles();
+        if (!styles.isPresent()) {
+            return;
+        }
+        List<Style> styleList = styles.get().getStyles();
+        mAvailableValues = new ArrayList<>(styleList.size());
+        for (Style style : styleList) {
+            String optionStr = null;
+            values = new ArrayList<>(mAllElements.size());
+            boolean isCurrValue = false;
+            for (String elementStr : mAllElements) {
+                optionStr = null;
+                switch (elementStr) {
+                    case UnitConstants.LABEL_BACKGROUND:
+                        optionStr = style.getBackgroundAvailableOption();
+                        break;
+                    case UnitConstants.LABEL_DATE:
+                        optionStr = style.getDateAvailableOption();
+                        break;
+                    case UnitConstants.LABEL_TIME:
+                        optionStr = style.getTimeAvailableOption();
+                        break;
+                    case UnitConstants.LABEL_DIAL:
+                        optionStr = style.getDialAvailableOption();
+                        break;
+                    case UnitConstants.LABEL_WIDGET:
+                        optionStr = style.getWidgetAvailableContainers();
+                        break;
+                    default:
+                        break;
+                }
+                if (TextUtils.equals(elementStr, UnitConstants.LABEL_WIDGET)) {
+                    isCurrValue = optionStr != null;
+                } else {
+                    List<String> optionList = HwUtil.getStringValues(optionStr);
+                    isCurrValue = (optionStr != null) && (optionList.size() > 1);
+                }
+                values.add(isCurrValue);
+            }
+            mAvailableValues.add(values);
+        }
+    }
+
+    private void initViewPagerIndicator() {
+        if (mFragmentList.size() > 1) {
+            mPageIndicator.updateDotCount(mFragmentList.size());
+        } else {
+            mPageIndicator.setDotCount(0);
+        }
+    }
+
+    private boolean isShowFragment(String label, Optional<Styles> styles) {
+        boolean isShow = false;
+        String optionStr = "";
+        if (!styles.isPresent()) {
+            return true;
+        }
+        List<Style> styleList = styles.get().getStyles();
+        int currentStyleIndex = obtainCurrentStyle();
+        Style style = styleList.get(currentStyleIndex);
+        switch (label) {
+            case UnitConstants.LABEL_BACKGROUND:
+                optionStr = style.getBackgroundAvailableOption();
+                break;
+            case UnitConstants.LABEL_DATE:
+                optionStr = style.getDateAvailableOption();
+                break;
+            case UnitConstants.LABEL_TIME:
+                optionStr = style.getTimeAvailableOption();
+                break;
+            case UnitConstants.LABEL_COLOR:
+                optionStr = style.getColorAvailableOption();
+                break;
+            case UnitConstants.LABEL_DIAL:
+                optionStr = style.getDialAvailableOption();
+                break;
+            default:
+                break;
+        }
+        if (!TextUtils.isEmpty(optionStr)) {
+            isShow |= optionStr.contains(",");
+        } else {
+            isShow |= false;
+        }
+        return isShow;
+    }
+
+    /**
+     * 初始化自定义界面fragment集合
+     */
+    protected void initFragmentList() {
+        mAssetPackage = getAssetPackage();
+        AssetPackageHolder.getInstance().setAssetPackage(mAssetPackage);
+        ElementsProvider provider = mAssetPackage.getElementsProvider();
+        Optional<Styles> styles = provider.getStyles();
+        if ((styles.isPresent()) && (styles.get().getStyles() != null)) {
+            HwLogUtil.i(TAG, "initFragmentList() styleFragment　!= null");
+            StyleFragment styleFragment = new StyleFragment();
+            mFragmentList.add(styleFragment);
+        }
+        Optional<Element> backgroundElement = provider.getElement(UnitConstants.LABEL_BACKGROUND);
+        if ((backgroundElement.isPresent()) && (isShowFragment(UnitConstants.LABEL_BACKGROUND, styles))) {
+            if (HwUtil.getBoolValue(backgroundElement.get().getIsSupportOption())) {
+                HwLogUtil.i(TAG, "initFragmentList() backgroundElement　!= null");
+                backgroundFragment = new BackgroundFragment();
+                mFragmentList.add(backgroundFragment);
+            }
+        }
+
+        Optional<Element> timeElement = provider.getElement(UnitConstants.LABEL_TIME);
+        if ((timeElement.isPresent()) && (isShowFragment(UnitConstants.LABEL_TIME, styles))) {
+            if (HwUtil.getBoolValue(timeElement.get().getIsSupportOption())) {
+                HwLogUtil.i(TAG, "initFragmentList() timeElement　!= null");
+                timeFragment = new TimeFragment();
+                mFragmentList.add(timeFragment);
+            }
+        }
+
+        Optional<Element> dateElement = provider.getElement(UnitConstants.LABEL_DATE);
+        if ((dateElement.isPresent()) && (isShowFragment(UnitConstants.LABEL_DATE, styles))) {
+            if (HwUtil.getBoolValue(dateElement.get().getIsSupportOption())) {
+                HwLogUtil.i(TAG, "initFragmentList() dateElement　!= null");
+                dateFragment = new DateFragment();
+                mFragmentList.add(dateFragment);
+            }
+        }
+
+        Optional<Element> dialElement = provider.getElement(UnitConstants.LABEL_DIAL);
+        if (dialElement.isPresent() && (isShowFragment(UnitConstants.LABEL_DIAL, styles))) {
+            if (HwUtil.getBoolValue(dialElement.get().getIsSupportOption())) {
+                dialFragment = new DialFragment();
+                mFragmentList.add(dialFragment);
+            }
+        }
+
+        Optional<Element> widgetElement = provider.getElement(UnitConstants.LABEL_WIDGET);
+        if (widgetElement.isPresent()) {
+            if (HwUtil.getBoolValue(widgetElement.get().getIsSupportOption())) {
+                widgetFragment = new WidgetFragment();
+                HwLogUtil.i(TAG, "initFragmentList() widgetElement　!= null");
+                mFragmentList.add(widgetFragment);
+            }
+        }
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        mPageIndicator.setSelectedPosition(position);
+    }
+
+    /**
+     * fragment滚动事件接收器
+     *
+     * @version 1.0.0
+     * @since 2019-04-09
+     */
+    private class FragmentScrollEventReceiver {
+        /**
+         * fragment滚动事件监听
+         *
+         * @param event 滚动事件
+         */
+        @Subscribe
+        public void onFragmentScrollEvent(FragmentScrollEvent event) {
+            if ((event == null) || (event.getItemIndex() < 0)) {
+                return;
+            }
+            updateFragment();
+        }
+    }
+
+    /**
+     * 更新fragment
+     */
+    public void updateFragment() {
+        ElementsProvider provider = mAssetPackage.getElementsProvider();
+        Optional<Styles> styles = provider.getStyles();
+        if ((styles.isPresent()) && (mViewPager.getCurrentItem() == 0)) {
+            removeNoUseFragment();
+        }
+        mPagerAdapter.notifyDataSetChanged();
+        mViewPager.setAdapter(mPagerAdapter);
+        if (mFragmentList.size() > 1) {
+            mPageIndicator.updateDotCount(mFragmentList.size());
+        } else {
+            mPageIndicator.updateDotCount(mFragmentList.size());
+            mPageIndicator.setDotCount(0);
+        }
+    }
+
+    private void removeNoUseFragment() {
+        BaseCustomizeFragment styleFragment = mFragmentList.get(0);
+        int position = styleFragment.getCurrentPosition();
+        if (position > mAvailableValues.size()) {
+            return;
+        }
+        int size = mAllElements.size();
+        for (int i = 0; i < size; i++) {
+            boolean isShow = mAvailableValues.get(position).get(i);
+            BaseCustomizeFragment fragment = findFragmentWithLabel(mAllElements.get(i));
+            if (!isShow) {
+                if (fragment != null) {
+                    mFragmentList.remove(fragment);
+                }
+            } else {
+                if (fragment == null) {
+                    addFragmentToList(mAllElements.get(i));
+                }
+            }
+        }
+    }
+
+    private void addFragmentToList(String label) {
+        BaseCustomizeFragment fragment = null;
+        switch (label) {
+            case UnitConstants.LABEL_BACKGROUND:
+                if (backgroundFragment == null) {
+                    fragment = new BackgroundFragment();
+                } else {
+                    fragment = backgroundFragment;
+                }
+                break;
+            case UnitConstants.LABEL_DATE:
+                if (dateFragment == null) {
+                    fragment = new DateFragment();
+                } else {
+                    fragment = dateFragment;
+                }
+                break;
+            case UnitConstants.LABEL_TIME:
+                if (timeFragment == null) {
+                    fragment = new TimeFragment();
+                } else {
+                    fragment = timeFragment;
+                }
+                break;
+            case UnitConstants.LABEL_DIAL:
+                if (dialFragment == null) {
+                    fragment = new DialFragment();
+                } else {
+                    fragment = dialFragment;
+                }
+                break;
+            case UnitConstants.LABEL_WIDGET:
+                if (widgetFragment == null) {
+                    fragment = new WidgetFragment();
+                } else {
+                    fragment = widgetFragment;
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (fragment != null) {
+            mFragmentList.add(fragment);
+        }
+        // 将fragment按照样式、背景、刻度盘、日期、时间、widget的顺序排序
+        Collections.sort(mFragmentList);
+    }
+
+    private int obtainCurrentStyle() {
+        ElementsProvider provider = mAssetPackage.getElementsProvider();
+        Optional<Styles> styles = provider.getStyles();
+        if (!styles.isPresent()) {
+            return INVALID_VALUE;
+        }
+        List<Style> styleList = styles.get().getStyles();
+        String indexStyle = styles.get().getSelectedStyle();
+        if (TextUtils.isEmpty(indexStyle)) {
+            return INVALID_VALUE;
+        }
+        Optional<Style> currStyle = styles.get().getStyle(indexStyle);
+        if (!currStyle.isPresent()) {
+            return INVALID_VALUE;
+        }
+        return styleList.indexOf(currStyle.get());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ModuleBus.unregister(mReceiver);
+        unregisterReceiver(mBroadcastReceiver);
+    }
+
+    private BaseCustomizeFragment findFragmentWithLabel(String label) {
+        BaseCustomizeFragment resultFragment = null;
+        for (BaseCustomizeFragment fragment : mFragmentList) {
+            if (TextUtils.equals(fragment.getLabel(), label)) {
+                resultFragment = fragment;
+                break;
+            }
+        }
+        return resultFragment;
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+        if (state == ViewPager.SCROLL_STATE_IDLE) {
+            for (BaseCustomizeFragment fragment : mFragmentList) {
+                fragment.notifyDataChanged();
+            }
+        }
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.bt_submit) {
+            mAssetPackage.getElementsProvider().saveProviders();
+            ModuleBus.emit(new WatchFaceEditCompleteEvent(""));
+            finish();
+        }
+    }
+}
+
+
+
+
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 功能选择界面
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019-01-21
+ */
+public abstract class BaseWidgetOptionListActivity extends WearableActivity implements OnItemClickListener {
+    private static final String TAG = "BaseWidgetOptionListActivity";
+
+    private AssetPackage mAssetPackage;
+
+    private String containerIndex;
+
+    private ArrayList<Option> options;
+
+    private ArrayList<WidgetOptionBean> widgetOptionBeans;
+
+    private ArrayList<String> types;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_widget_option_list);
+        Intent mIntent = getIntent();
+        if ((mIntent == null)
+            || (TextUtils.isEmpty(mIntent.getStringExtra(CommonConstantsUtil.EXTRA_CONTAINER_INDEX)))) {
+            HwLogUtil.e(TAG, "onCreate() index is empty");
+            return;
+        }
+        containerIndex = mIntent.getStringExtra(CommonConstantsUtil.EXTRA_CONTAINER_INDEX);
+        mAssetPackage = AssetPackageHolder.getInstance().getAssetPackage();
+        initData();
+        WearableScrollingLayoutCallback scrollingLayoutCallback =
+            new WearableScrollingLayoutCallback(R.id.rl_widget_option_container);
+        LinearLayoutManager layoutManager = new WearableLinearLayoutManager(this, scrollingLayoutCallback);
+        WearableRecyclerView mWearableRecyclerView = findViewById(R.id.rv_widget_option_selector);
+        mWearableRecyclerView.setLayoutManager(layoutManager);
+        mWearableRecyclerView.setAdapter(new WidgetOptionListAdapter(getContext(), widgetOptionBeans, this));
+        int size = widgetOptionBeans.size();
+        // 此处需要使用下标索引的值
+        for (int i = 0; i < size; i++) {
+            if (widgetOptionBeans.get(i).isSelected()) {
+                mWearableRecyclerView.scrollToPosition(i);
+            }
+        }
+    }
+
+    private void initData() {
+        getOptions();
+        getTypes();
+        if (widgetOptionBeans == null) {
+            widgetOptionBeans = new ArrayList<>(0);
+        }
+        widgetOptionBeans.clear();
+        WidgetOptionBean widgetOptionBeanEmpty = new WidgetOptionBean();
+        widgetOptionBeanEmpty.setType(CommonConstantsUtil.RECYCLER_VIEW_TYPE_ITEM);
+        widgetOptionBeanEmpty.setIcon(CustomizeUtil.getDataDrawableBySubType(this, ""));
+        widgetOptionBeanEmpty.setContent(getResources().getString(R.string.module_none));
+        widgetOptionBeanEmpty.setOptionIndex(String.valueOf(0));
+        widgetOptionBeans.add(widgetOptionBeanEmpty);
+        for (String type : types) {
+            // 当需要显示的分组的数量大于1个时才显示分组的标题，否则显示分组无意义
+            if (types.size() > 1) {
+                WidgetOptionBean widgetOptionBeanTitle = new WidgetOptionBean();
+                widgetOptionBeanTitle.setType(CommonConstantsUtil.RECYCLER_VIEW_TYPE_TITLE);
+                widgetOptionBeanTitle.setContent(type);
+                widgetOptionBeans.add(widgetOptionBeanTitle);
+            }
+            for (Option option : options) {
+                String subType = option.getDataType().trim();
+                if (TextUtils.equals(CustomizeUtil.getDataMainTypeBySubType(this, subType), type.trim())) {
+                    WidgetOptionBean widgetOptionBeanItem = new WidgetOptionBean();
+                    widgetOptionBeanItem.setType(CommonConstantsUtil.RECYCLER_VIEW_TYPE_ITEM);
+                    widgetOptionBeanItem.setOptionIndex(option.getIndex());
+                    widgetOptionBeanItem.setContent(CustomizeUtil.getDataNameBySubType(this, subType));
+                    widgetOptionBeanItem.setIcon(CustomizeUtil.getDataDrawableBySubType(this, subType));
+                    // 解决样式选择无后重新加上样式时getClickContainer().getSelectedOption()为空，爆出空指针异常的问题
+                    if (getClickContainer().getSelectedOption() != null
+                        && TextUtils.equals(getClickContainer().getSelectedOption(), option.getIndex())) {
+                        widgetOptionBeanItem.setSelected(true);
+                        widgetOptionBeanItem.setIcon(CustomizeUtil.getChoiceDataDrawableBySubType(this, subType));
+                    }
+                    widgetOptionBeans.add(widgetOptionBeanItem);
+                }
+            }
+        }
+    }
+
+    private void getOptions() {
+        if (options == null) {
+            options = new ArrayList<>(0);
+        }
+        options.clear();
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET);
+        if (!element.isPresent()) {
+            return;
+        }
+        Optional<Container> container = element.get().getContainer(containerIndex);
+        if (!container.isPresent()) {
+            return;
+        }
+        String availableOptionsIndex = container.get().getAvailableOption();
+        if (availableOptionsIndex != null) {
+            for (String index : availableOptionsIndex.split(",")) {
+                Optional<Option> option = element.get().getOption(index);
+                if (!option.isPresent()) {
+                    continue;
+                }
+                options.add(option.get());
+            }
+        }
+        HwLogUtil.i(TAG, "getOptions() options.size=" + options.size());
+    }
+
+    private void getTypes() {
+        if (types == null) {
+            types = new ArrayList<>(0);
+        }
+        types.clear();
+        for (Option option : options) {
+            String subType = option.getDataType();
+            String mainType = CustomizeUtil.getDataMainTypeBySubType(this, subType.trim());
+            if (!types.contains(mainType)) {
+                types.add(mainType);
+            }
+        }
+        HwLogUtil.i(TAG, "getTypes() types.size=" + types.size());
+    }
+
+    private Container getClickContainer() {
+        Optional<Container> container =
+            mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET).get().getContainer(
+                containerIndex);
+        return container.get();
+    }
+
+    @Override
+    public void onClick(int position) {
+        // 更新xml配置
+        boolean isHaveWidget = false;
+        Container currContainer = getClickContainer();
+        currContainer.setSelectedOption(widgetOptionBeans.get(position).getOptionIndex());
+        String availableOption = currContainer.getAvailableOption();
+        if (!TextUtils.isEmpty(availableOption)) {
+            String optionIndex = currContainer.getSelectedOption();
+            List<String> availableList = HwUtil.getStringValues(availableOption);
+            isHaveWidget = TextUtils.isEmpty(optionIndex) ? Boolean.FALSE : availableList.contains(optionIndex);
+        }
+        ModuleBus.emit(new WatchFaceModuleChangeEvent(containerIndex, isHaveWidget, mAssetPackage.getPath()));
+
+        // 当为世界时间时，跳转到世界时间设置界面。
+        Optional<Element> element = mAssetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET);
+        String indexOption = getClickContainer().getSelectedOption();
+        Optional<Option> option = element.get().getOption(indexOption);
+        if ((option.isPresent()) && (TextUtils.equals(option.get().getDataType(),
+                DataConstantUtils.DATA_TYPE_WORLD_TIME))) {
+            Intent intent = new Intent();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setAction(CommonConstantsUtil.ACTION_START_WORLD_TIME_SETTING);
+            startActivity(intent);
+        }
+        finish();
+    }
+}
+
