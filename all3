@@ -1,0 +1,1991 @@
+base
+
+
+import android.graphics.Canvas;
+import android.graphics.RectF;
+import android.text.TextUtils;
+
+/**
+ * 抽象绘制类
+ *
+ * 主要描述绘制的动态属性
+ * 包括 scale(缩放) 、 rotate(旋转)
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public abstract class BaseDraw implements IDrawUnit {
+    private String mRotateType;
+
+    private float mRotateFixedDegree;
+
+    private float[] mRotateCenterPoint;
+
+    private float[] mRotateCenterPointRelative;
+
+    private float[] mRotateDegree;
+
+    private float[] mRotateTime;
+
+    private List<String> mRotateMotionType;
+
+    private String mTranslateType;
+
+    private float[] mResPosition;
+
+    private float[] mResPositionRelative;
+
+    private float[] mTranslateEndPosition;
+
+    private float[] mTranslateEndPositionRelative;
+
+    private String mValueType;
+
+    private String mScaleType;
+
+    private float[] mScaleAmount;
+
+    private float[] mScaleTime;
+
+    private List<String> mScaleMotionType;
+
+    private float[] mScaleCenterPoint;
+
+    private float[] mScaleCenterPointRelative;
+
+    private RotateAnimation mRotateAnimation;
+
+    private ScaleAnimation mScaleAnimation;
+
+    private float mArcLinearMargin;
+
+    /**
+     * 初始化资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    protected BaseDraw(AssetPackage assetPackage, Layer layer) {
+        // 获取旋转配置
+        mRotateType = HwUtil.getStringValue(layer.getRotateType());
+        mRotateFixedDegree = HwUtil.getFloatValue(layer.getRotateFixedDegree());
+        mRotateCenterPoint = HwUtil.getFloatValues(layer.getRotateCenterPoint());
+        mRotateCenterPointRelative = HwUtil.getFloatValues(layer.getRotateCenterPointRelative());
+
+        mRotateDegree = HwUtil.getFloatValues(layer.getRotateDegree());
+        mRotateTime = HwUtil.getFloatValues(layer.getRotateTime());
+        mRotateMotionType = HwUtil.getStringValues(layer.getRotateMotionType());
+
+        if (TextUtils.equals(mRotateType, UnitConstants.VALUE_ROTATE_TYPE_TIME_VARIANT)) {
+            mRotateAnimation = new RotateAnimation(mRotateDegree, mRotateTime, mRotateMotionType);
+            FpsUtil.setUpdateInterval(FpsUtil.COMMON_ANIMATION_UPDATE_INTERVAL_MS);
+        }
+        if (TextUtils.equals(mRotateType, UnitConstants.VALUE_ROTATE_TYPE_GYRO_VARIANT)) {
+            FpsUtil.setUpdateInterval(FpsUtil.COMMON_ANIMATION_UPDATE_INTERVAL_MS);
+        }
+        // 获取缩放配置
+        mScaleType = HwUtil.getStringValue(layer.getScaleType());
+        mScaleAmount = HwUtil.getFloatValues(layer.getScaleAmount());
+        mScaleTime = HwUtil.getFloatValues(layer.getScaleTime());
+        mScaleMotionType = HwUtil.getStringValues(layer.getScaleMotionType());
+        mScaleCenterPoint = HwUtil.getFloatValues(layer.getScaleCenterPoint());
+        mScaleCenterPointRelative = HwUtil.getFloatValues(layer.getScaleCenterPointRelative());
+
+        if (TextUtils.equals(mScaleType, UnitConstants.VALUE_SCALE_TYPE_TIME_VARIANT)) {
+            mScaleAnimation = new ScaleAnimation(mScaleAmount, mScaleTime, mScaleMotionType);
+            FpsUtil.setUpdateInterval(FpsUtil.COMMON_ANIMATION_UPDATE_INTERVAL_MS);
+        }
+
+        // 获取平移配置
+        mTranslateType = HwUtil.getStringValue(layer.getTranslateType());
+        mResPosition = HwUtil.getFloatValues(layer.getResPosition());
+        mResPositionRelative = HwUtil.getFloatValues(layer.getResPositionRelative());
+        mTranslateEndPosition = HwUtil.getFloatValues(layer.getTranslateEndPosition());
+        mTranslateEndPositionRelative = HwUtil.getFloatValues(layer.getTranslateEndPositionRelative());
+        mValueType = HwUtil.getStringValue(layer.getValueType());
+
+        mArcLinearMargin = HwUtil.getFloatValue(layer.getArcLinearMargin());
+    }
+
+    @Override
+    public void setWidgetRect(RectF rect) {
+        if (rect == null) {
+            return;
+        }
+        if ((mRotateCenterPointRelative != null) && (mRotateCenterPointRelative.length != 0)) {
+            mRotateCenterPoint =
+                new float[] {rect.left + mRotateCenterPointRelative[0], rect.top + mRotateCenterPointRelative[1]};
+        }
+        if ((mScaleCenterPointRelative != null) && (mScaleCenterPointRelative.length != 0)) {
+            mScaleCenterPoint =
+                new float[] {rect.left + mScaleCenterPointRelative[0], rect.top + mScaleCenterPointRelative[1]};
+        }
+        if ((mTranslateEndPositionRelative != null) && (mTranslateEndPositionRelative.length != 0)) {
+            mTranslateEndPosition =
+                new float[] {rect.left + mTranslateEndPositionRelative[0], rect.top + mTranslateEndPositionRelative[1]};
+        }
+        if ((mResPositionRelative != null) && (mResPositionRelative.length != 0)) {
+            mResPosition = new float[] {rect.left + mResPositionRelative[0], rect.top + mResPositionRelative[1]};
+        }
+    }
+
+    private void doRotate(Canvas canvas) {
+        if (!TextUtils.isEmpty(mRotateType)) {
+            switch (mRotateType) {
+                case UnitConstants.VALUE_ROTATE_TYPE_FIXED:
+                    canvas.rotate(mRotateFixedDegree, mRotateCenterPoint[0], mRotateCenterPoint[1]);
+                    break;
+                case UnitConstants.VALUE_ROTATE_TYPE_TIME_VARIANT:
+                    canvas.rotate(mRotateAnimation.getDegree(), mRotateCenterPoint[0], mRotateCenterPoint[1]);
+                    break;
+                case UnitConstants.VALUE_ROTATE_TYPE_GYRO_VARIANT:
+                    float gyroscopeDregree = GyroscopeManager.getInstance().getTarget();
+                    canvas.rotate(gyroscopeDregree, mRotateCenterPoint[0], mRotateCenterPoint[1]);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public void setRotateCenterPoint(float startX,float startY) {
+        mRotateCenterPoint[0] = startX;
+        mRotateCenterPoint[1] = startY;
+    }
+
+    private void doScale(Canvas canvas) {
+        if (!TextUtils.isEmpty(mScaleType)) {
+            switch (mScaleType) {
+                case UnitConstants.VALUE_SCALE_TYPE_TIME_VARIANT:
+                    float amount = mScaleAnimation.getAmount();
+                    canvas.scale(amount, amount, mScaleCenterPoint[0], mScaleCenterPoint[1]);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void doTranslate(Canvas canvas) {
+        if (!TextUtils.isEmpty(mTranslateType)) {
+            switch (mTranslateType) {
+                case UnitConstants.VALUE_TRANSLATE_TYPE_FIXED:
+                    IntRangeValue intRangeValue = DataAdapter.getInstance().getIntRangeValue(mValueType);
+                    float[] relative = HwUtil.getValueRelative(mResPosition, mTranslateEndPosition,
+                        intRangeValue.getMax(), intRangeValue.getMin(), intRangeValue.getValue());
+                    canvas.translate(relative[0], relative[1]);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void doAnimation(Canvas canvas) {
+        // first scale, then rotate, then translate
+        doScale(canvas);
+        doRotate(canvas);
+        doTranslate(canvas);
+    }
+
+    @Override
+    public void draw(Canvas canvas, boolean isAmbientMode) {
+        //preDraw(canvas, isAmbientMode);
+        canvas.save();
+        doAnimation(canvas);
+        onDraw(canvas, isAmbientMode);
+        canvas.restore();
+    }
+
+    public float getArcLinearMargin() {
+        return mArcLinearMargin;
+    }
+
+    @Override
+    public float[] getDrawUnitEndPosition() {
+        return new float[0];
+    }
+
+    /**
+     * 设置旋转
+     *
+     * @param degree 旋转角度
+     * @param bitmap 原始bitmap
+     * @return 旋转后的bitmap
+     */
+    public void setRotateAnimation(float degree) {
+        mRotateFixedDegree = degree;
+    }
+
+    @Override
+    public void destroy() {
+        onDestroy();
+    }
+
+    @Override
+    public void onVisibilityChanged(boolean visible) {
+    }
+
+    @Override
+    public void setRelativeAttribute(AttributeBean bean) {
+    }
+
+    /**
+     * 获取控件对齐方式
+     *
+     * @return String 返回对齐方式
+     */
+    public String getDrawUnitAlign() {
+        return UnitConstants.VALUE_ALIGN_LEFT;
+    }
+
+    /**
+     * 绘制
+     *
+     * @param canvas 画笔
+     * @param isAmbientMode 是否处于半亮模式
+     */
+    protected abstract void onDraw(Canvas canvas, boolean isAmbientMode);
+
+    /**
+     * 资源销毁
+     */
+    protected abstract void onDestroy();
+
+    @Override
+    public void onClick(int x, int y) {
+    }
+}
+
+
+
+
+
+import android.graphics.Bitmap;
+import android.graphics.Paint;
+import android.graphics.RectF;
+
+/**
+ * 选图绘制类，支持位置变换效果
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public abstract class BaseResDraw extends BaseDraw {
+    private static final String TAG = "BaseResDraw";
+
+    private List<Bitmap> mActiveBitmaps;
+
+    private List<Bitmap> mAmbientBitmaps;
+
+    private float[] mPosition;
+
+    private float[] mPositionRelative;
+
+    private String mValueType;
+
+    private Paint mPaint;
+
+    /**
+     * 初始化选图绘制资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    public BaseResDraw(AssetPackage assetPackage, Layer layer) {
+        super(assetPackage, layer);
+        mActiveBitmaps = assetPackage.getBitmaps(layer.getResActive());
+        mAmbientBitmaps = assetPackage.getBitmaps(layer.getResAmbient());
+        mPosition = HwUtil.getPoint(layer.getResPosition());
+        mPositionRelative = HwUtil.getPoint(layer.getResPositionRelative());
+        mValueType = HwUtil.getStringValue(layer.getValueType());
+
+        mPaint = new Paint();
+        mPaint.setFlags(Paint.FILTER_BITMAP_FLAG);
+    }
+
+    @Override
+    public void setWidgetRect(RectF rect) {
+        super.setWidgetRect(rect);
+        if (rect == null) {
+            return;
+        }
+        if ((mPositionRelative != null) && (mPositionRelative.length != 0)) {
+            mPosition = new float[] {rect.left + mPositionRelative[0], rect.top + mPositionRelative[1]};
+        }
+    }
+
+    public List<Bitmap> getActiveBitmaps() {
+        return mActiveBitmaps;
+    }
+
+    public List<Bitmap> getAmbientBitmaps() {
+        return mAmbientBitmaps;
+    }
+
+    protected float[] getPosition() {
+        return mPosition;
+    }
+
+    protected void setPosition(float[] position) {
+        mPosition = position;
+    }
+
+    protected String getValueType() {
+        return mValueType;
+    }
+
+    protected Paint getPaint() {
+        return mPaint;
+    }
+}
+
+
+
+
+
+/**
+ * 绘制单元接口，提供绘制方法和资源销毁方法
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public interface IDrawUnit {
+    /**
+     * 绘制前准备
+     *
+     * @param canvas 画笔
+     * @param isAmbientMode 是否处于半亮模式
+     */
+    void preDraw(Canvas canvas, boolean isAmbientMode);
+
+    /**
+     * 绘制
+     * @param canvas 画笔
+     * @param isAmbientMode 是否是半亮模式
+     */
+    void draw(Canvas canvas, boolean isAmbientMode);
+
+    /**
+     * 根据控件区域重新计算图层绘制的绝对坐标
+     * @param rect 控件区域
+     */
+    void setWidgetRect(RectF rect);
+
+    /**
+     * 根据父图层计算的相关数据传递给内部图层
+     * @param bean 属性封装类
+     */
+    void setRelativeAttribute(AttributeBean bean);
+
+    /**
+     * 获取两个图层间距
+     *
+     * @return layer之间距离
+     */
+    float getArcLinearMargin();
+
+    /**
+     * 亮暗模式是否改变
+     * @param ambientMode 是否半亮模式改变
+     */
+    void isAmbientModeChanged(boolean ambientMode);
+
+    /**
+     * 获取绘制单元的宽度
+     * @return float 返回绘制单元宽度
+     */
+    float[] getDrawUnitEndPosition();
+
+    /**
+     * 显示模式是否改变
+     * @param visible 是否显示
+     */
+    void onVisibilityChanged(boolean visible);
+
+    /**
+     * 资源销毁
+     */
+    void destroy();
+
+    /**
+     * 点击事件
+     * @param x x轴坐标
+     * @param y y轴坐标
+     */
+    void onClick(int x, int y);
+}
+
+
+
+
+
+/**
+ * 表盘绘制unit的工厂类，用于生产unit对象
+ *
+ * @author swx405947
+ * @version 1.0.0
+ * @since 2019/01/16
+ */
+
+public class UnitFactoryUtil {
+    private UnitFactoryUtil() {
+    }
+
+    /**
+     * 生产方法
+     *
+     * @param assetPackage 资源包对象
+     * @param layer xml中的最小绘制单元
+     * @return 生产出的layer对象
+     */
+    public static IDrawUnit createDrawUnit(AssetPackage assetPackage, Layer layer) {
+        IDrawUnit dawUnit;
+        switch (layer.getDrawType()) {
+            case UnitConstants.VALUE_DRAW_TYPE_SELECTED_LAYER:
+                dawUnit = new SelectedLayer(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_LINEAR_LAYER:
+                dawUnit = new LinearLayer(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_RANDOM_SELECTED_LAYER:
+                dawUnit = new RandomSelectLayer(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_SINGLE_RES:
+                dawUnit = new SingleResDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_SELECTED_RES:
+                dawUnit = new SelectedResDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_ORDERED_RES:
+                dawUnit = new OrderedResDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_GIF_RES:
+                dawUnit = new GifDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_VIDEO_RES:
+                dawUnit = new VideoDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_SELECTE_VIDEO_RES:
+                dawUnit = new SelectVideoDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_HAND_RES:
+                dawUnit = new HandDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_COMBINED_RES:
+                dawUnit = new CombinedResDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_TEXT:
+                dawUnit = new TextDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_ARC_TEXT:
+                dawUnit = new ArcTextDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_LINE:
+                dawUnit = new LineDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_ARC:
+                dawUnit = new ArcDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_RANDOM_RES:
+                dawUnit = new RandomResDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_ARC_LINEAR:
+                dawUnit = new ArcLinerLayer(assetPackage,layer);
+                break;
+            default:
+                dawUnit = createDrawUnitInternal(assetPackage, layer);
+                break;
+        }
+        return dawUnit;
+    }
+
+    private static IDrawUnit createDrawUnitInternal(AssetPackage assetPackage, Layer layer) {
+        IDrawUnit drawUnit = null;
+        switch (layer.getDrawType()) {
+            case UnitConstants.VALUE_DRAW_TYPE_COMPLICATION:
+                drawUnit = new ComplicationDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_INTELLIGENT_TEXT:
+                drawUnit = new IntelligentTextDraw(assetPackage, layer);
+                break;
+            case UnitConstants.VALUE_DRAW_TYPE_INTELLIGENT_RES:
+                drawUnit = new IntelligentResDraw(assetPackage, layer);
+                break;
+            default:
+                break;
+        }
+        return drawUnit;
+    }
+}
+
+
+
+
+
+/**
+ * 图层相关常量类
+ *
+ * @author sWX405947
+ * @version 1.0.0
+ * @since 2019/1/22
+ */
+
+public class UnitConstants {
+    // ================================label属性 start==============================================
+    /**
+     * 标签：背景
+     */
+    public static final String LABEL_BACKGROUND = "background";
+
+    /**
+     * 标签：颜色
+     */
+    public static final String LABEL_COLOR = "color";
+
+    /**
+     * 标签：时间
+     */
+    public static final String LABEL_TIME = "time";
+
+    /**
+     * 标签：刻度盘
+     */
+    public static final String LABEL_DIAL = "dial";
+
+    /**
+     * 标签：日期
+     */
+    public static final String LABEL_DATE = "date";
+
+    /**
+     * 标签：控件
+     */
+    public static final String LABEL_WIDGET = "widget";
+
+    /**
+     * 标签：日期
+     */
+    public static final String LABEL_FONT = "font";
+
+    /**
+     * 标签:控件
+     */
+    public static final String LABEL_POSITION = "position";
+
+    /**
+     * 绘制类型：随机选图
+     */
+    public static final String VALUE_DRAW_TYPE_RANDOM_RES = "random_res";
+
+    /**
+     * 标签：complication
+     */
+    public static final String LABEL_COMPLICATION = "complication";
+
+    /** 元素：样式 */
+    public static final String STYLES = "styles";
+
+    /**
+     * 背景排序码
+     */
+    public static final int LABEL_BACKGROUND_SORT_NUM = 1;
+
+    /**
+     * 刻度盘排序码
+     */
+    public static final int LABEL_DIAL_SORT_NUM = 2;
+
+    /**
+     * 日期排序码
+     */
+    public static final int LABEL_DATE_SORT_NUM = 3;
+
+    /**
+     * 时间排序码
+     */
+    public static final int LABEL_TIME_SORT_NUM = 4;
+
+    /**
+     * 控件排序码
+     */
+    public static final int LABEL_WIDGET_SORT_NUM = 5;
+
+    // ================================label属性 end================================================
+
+    // ================================绘制类型 start================================================
+    /**
+     * 绘制类型：选layer
+     */
+    public static final String VALUE_DRAW_TYPE_SELECTED_LAYER = "selected_layer";
+
+    /**
+     * 绘制类型：随机选取layer
+     */
+    public static final String VALUE_DRAW_TYPE_RANDOM_SELECTED_LAYER = "random_selected_layer";
+
+    /**
+     * 绘制类型：线性layer
+     */
+    public static final String VALUE_DRAW_TYPE_LINEAR_LAYER = "linear_layer";
+
+    /**
+     * 绘制类型：支持智能取色的文本
+     */
+    public static final String VALUE_DRAW_INTELLIGENT_TEXT = "intelligent_text";
+
+    /**
+     * 绘制类型：文本
+     */
+    public static final String VALUE_DRAW_TYPE_TEXT = "text";
+
+    /**
+     * 绘制类型：弧形文本
+     */
+    public static final String VALUE_DRAW_TYPE_ARC_TEXT = "text_arc";
+
+    /**
+     * 绘制类型：单图
+     */
+    public static final String VALUE_DRAW_TYPE_SINGLE_RES = "single_res";
+
+    /**
+     * 绘制类型：选图
+     */
+    public static final String VALUE_DRAW_TYPE_SELECTED_RES = "selected_res";
+
+    /**
+     * 绘制类型：组合图
+     */
+    public static final String VALUE_DRAW_TYPE_COMBINED_RES = "combined_res";
+
+    /**
+     * 绘制类型：序列帧
+     */
+    public static final String VALUE_DRAW_TYPE_ORDERED_RES = "ordered_res";
+
+    /**
+     * 绘制类型：指针
+     */
+    public static final String VALUE_DRAW_TYPE_HAND_RES = "hand_res";
+
+    /**
+     * 绘制类型：文本
+     */
+    public static final String VALUE_DRAW_TYPE_GIF_RES = "gif_res";
+
+    /**
+     * 绘制类型：视频
+     */
+    public static final String VALUE_DRAW_TYPE_VIDEO_RES = "video_res";
+
+    /**
+     * 绘制类型：多视频播放
+     */
+    public static final String VALUE_DRAW_TYPE_SELECTE_VIDEO_RES = "select_video_res";
+
+    /**
+     * 绘制类型：支持智能取色的图片
+     */
+    public static final String VALUE_DRAW_TYPE_INTELLIGENT_RES = "intelligent_res";
+
+    /**
+     * 绘制类型：直线
+     */
+    public static final String VALUE_DRAW_TYPE_LINE = "line";
+
+    /**
+     * 绘制类型：弧形
+     */
+    public static final String VALUE_DRAW_TYPE_ARC = "arc";
+
+    /**
+     * 绘制类型：弧形
+     */
+
+    public static final String VALUE_DRAW_TYPE_ARC_LINEAR = "arc_linear";
+
+    /**
+     * 绘制类型：complication
+     */
+    public static final String VALUE_DRAW_TYPE_COMPLICATION = "complication";
+    // ================================绘制类型 end==================================================
+
+    // ================================数据类型 start================================================
+    /**
+     * 数据类型：小时
+     */
+    public static final String VALUE_TYPE_HOUR = "hour";
+
+    /**
+     * 数据类型：分钟
+     */
+    public static final String VALUE_TYPE_MINUTE = "minute";
+
+    /**
+     * 数据类型：秒
+     */
+    public static final String VALUE_TYPE_SECOND = "second";
+
+    /**
+     * 数据类型：am pm
+     */
+    public static final String VALUE_TYPE_AM_PM = "am_pm";
+
+    /**
+     * 数据类型：数字月
+     */
+    public static final String VALUE_TYPE_DIGIT_MONTH = "digit_month";
+
+    /**
+     * 数据类型：世界月
+     */
+    public static final String VALUE_TYPE_WORD_MONTH = "word_month";
+
+    /**
+     * 数据类型：天
+     */
+    public static final String VALUE_TYPE_DAY = "day";
+
+    /**
+     * 数据类型：数字周
+     */
+    public static final String VALUE_TYPE_DIGIT_WEEK = "digit_week";
+
+    /**
+     * 数据类型：世界周
+     */
+    public static final String VALUE_TYPE_WORD_WEEK = "word_week";
+
+    /**
+     * 数据类型：步数
+     */
+    public static final String VALUE_TYPE_WORD_STEPS = "steps";
+
+    /**
+     * 数据类型：温度数据
+     */
+    public static final String VALUE_TYPE_TEMPERATURE_DATA = "temperature_data";
+
+    /**
+     * 数据类型：无数据类型
+     */
+    public static final String VALUE_TYPE_NONE = "none";
+    // ================================数据类型 end==================================================
+
+    // ================================动画相关 start================================================
+    /**
+     * 旋转类型：固定角度
+     */
+    public static final String VALUE_ROTATE_TYPE_FIXED = "fixed";
+
+    /**
+     * 旋转类型：随时间旋转
+     */
+    public static final String VALUE_ROTATE_TYPE_TIME_VARIANT = "time_variant";
+
+    /**
+     * 旋转类型：随陀螺仪旋转
+     */
+    public static final String VALUE_ROTATE_TYPE_GYRO_VARIANT = "gyro_variant";
+
+    /**
+     * 缩放类型：随时间缩放
+     */
+    public static final String VALUE_SCALE_TYPE_TIME_VARIANT = "time_variant";
+
+    /**
+     * 旋转方向：正向
+     */
+    public static final String VALUE_LOOP_TYPE_FORWARD = "forward";
+
+    /**
+     * 旋转方向：反向
+     */
+    public static final String VALUE_LOOP_TYPE_REVERSE = "reverse";
+
+    /**
+     * 速度类型：匀速
+     */
+    public static final String VALUE_MOTION_TYPE_UNIFORM = "uniform";
+
+    /**
+     * 速度类型：匀加速
+     */
+    public static final String VALUE_MOTION_TYPE_UNIFORM_ACCELERATED = "uniform_accelerated";
+
+    /**
+     * 速度类型：匀减速
+     */
+    public static final String VALUE_MOTION_TYPE_UNIFORM_DECELERATED = "uniform_decelerated";
+
+    /**
+     * 平移类型：固定偏移量
+     */
+    public static final String VALUE_TRANSLATE_TYPE_FIXED = "fixed";
+
+    // ================================动画相关 end==================================================
+
+    // ==========================时间相关 start======================================================
+    /**
+     * 全部大写
+     */
+    public static final String VALUE_WORD_CAPITAL_TYPE_ALL = "all";
+
+    /**
+     * 首字母大写
+     */
+    public static final String VALUE_WORD_CAPITAL_TYPE_FIRST = "first";
+    // =========================时间相关 end=========================================================
+
+    // ===========================对齐方式start======================================================
+    /**
+     * 对齐方式：左对齐
+     */
+    public static final String VALUE_ALIGN_LEFT = "left";
+
+    /**
+     * 对齐方式：居中
+     */
+    public static final String VALUE_ALIGN_CENTER = "center";
+
+    /**
+     * 对齐方式：友对齐
+     */
+    public static final String VALUE_ALIGN_RIGHT = "right";
+    // ===========================对齐方式end========================================================
+
+    // =======================xml属性类，属性需要按照驼峰命名法命名start================================
+    /**
+     * 公共属性：分辨率
+     */
+    public static final String KEY_DPI = "dpi";
+
+    /**
+     * 公共属性：数据类型
+     */
+    public static final String KEY_VALUE_TYPE = "valueType";
+
+    /**
+     * 公共属性：绘制类型
+     */
+    public static final String KEY_DRAW_TYPE = "drawType";
+
+    /**
+     * 文本绘制属性：文本内容
+     */
+    public static final String KEY_TEXT_CONTENT = "textContent";
+
+    /**
+     * 文本绘制属性：亮屏颜色
+     */
+    public static final String KEY_TEXT_ACTIVE_COLOR = "textActiveColor";
+
+    /**
+     * 文本绘制属性：暗屏颜色
+     */
+    public static final String KEY_TEXT_AMBIENT_COLOR = "textAmbientColor";
+
+    /**
+     * 文本绘制属性：文本字体
+     */
+    public static final String KEY_TEXT_FONT = "textFont";
+
+    /**
+     * 文本绘制属性：文本大小
+     */
+    public static final String KEY_TEXT_SIZE = "textSize";
+
+    /**
+     * 文本绘制属性：文本对齐方式
+     */
+    public static final String KEY_TEXT_ALIGN = "textAlign";
+
+    /**
+     * 文本绘制属性：文本位置
+     */
+    public static final String KEY_TEXT_POSITION = "textPosition";
+
+    /**
+     * 文本绘制属性：文本相对位置
+     */
+    public static final String KEY_TEXT_POSITION_RELATIVE = "textPositionRelative";
+
+    /**
+     * 时间文字额外属性：是否简写
+     */
+    public static final String KEY_WORD_IS_ABBR = "wordIsAbbr";
+
+    /**
+     * 时间文字额外属性：大小写
+     */
+    public static final String KEY_WORD_CAPITAL_TYPE = "wordCapitalType";
+
+    /**
+     * 旋转属性：旋转类型
+     */
+    public static final String KEY_ROTATE_TYPE = "rotateType";
+
+    /**
+     * 固定角度旋转旋转属性：旋转的角度，绘制单元的起始位置围绕旋转中心顺时针旋转的角度
+     */
+    public static final String KEY_ROTATE_FIXED_DEGREE = "rotateFixedDegree";
+
+    /**
+     * 固定角度旋转旋转属性：旋转中心绝对坐标
+     */
+    public static final String KEY_ROTATE_CENTER_POINT = "rotateCenterPoint";
+
+    /**
+     * 固定角度旋转旋转属性：旋转中心相对坐标，控件内元素旋转时使用相对坐标，以控件矩形区域左上角顶点为原点
+     */
+    public static final String KEY_ROTATE_CENTER_POINT_RELATIVE = "rotateCenterPointRelative";
+
+    /**
+     * 随时间旋转属性：一个周期的旋转角度，顺时针旋转时为正值；逆时针旋转时为负值，例：rotate_degree="45,-45,-45,45"
+     */
+    public static final String KEY_ROTATE_DEGREE = "rotateDegree";
+
+    /**
+     * 随时间旋转属性：一个周期的旋转时间（毫秒），与旋转校对对应，例：rotate_time="250,250,250,250"
+     */
+    public static final String KEY_ROTATE_TIME = "rotateTime";
+
+    /**
+     * 随时间旋转属性：旋转速度的类型，取值范围为匀速、匀加速、匀减速三种
+     */
+    public static final String KEY_ROTATE_MOTION_TYPE = "rotateMotionType";
+
+    /**
+     * 随时间缩放属性：缩放类型
+     */
+    public static final String KEY_SCALE_TYPE = "scaleType";
+
+    /**
+     * 随时间缩放属性：一个周期的缩放倍数，至原始大小（缩放倍数为1.25），定义为 scale_amount="0.8, 0.625, 1.6, 1.25"
+     */
+    public static final String KEY_SCALE_AMOUNT = "scaleAmount";
+
+    /**
+     * 随时间缩放属性：一个周期的缩放时间（毫秒），缩放倍数分段定义时，缩放时间也需分段定义，如上述心跳效果，定义为 rotate_time="300,200,200,300"
+     */
+    public static final String KEY_SCALE_TIME = "scaleTime";
+
+    /**
+     * 随时间缩放属性：缩放速度的类型，取值范围为匀速、匀加速、匀减速三种
+     */
+    public static final String KEY_SCALE_MOTION_TYPE = "scaleMotionType";
+
+    /**
+     * 随时间缩放属性：缩放中心绝对坐标（缩放中心的坐标不会随缩放而改变）
+     */
+    public static final String KEY_SCALE_CENTER_POINT = "scaleCenterPoint";
+
+    /**
+     * 随时间缩放属性：缩放中心相对坐标，控件内元素缩放时使用相对坐标，以控件矩形区域左上角顶点为原点
+     */
+    public static final String KEY_SCALE_CENTER_POINT_RELATIVE = "scaleCenterPointRelative";
+
+    /**
+     * 图片视频绘制属性：亮屏模式资源
+     */
+    public static final String KEY_RES_ACTIVE = "resActive";
+
+    /**
+     * 图片视频绘制属性：半亮模式资源
+     */
+    public static final String KEY_RES_AMBIENT = "resAmbient";
+
+    /**
+     * 图片视频绘制属性：图片绘制在表盘上的中心点绝对坐标"x,y"
+     */
+    public static final String KEY_RES_POSITION = "resPosition";
+
+    /**
+     * 图片视频绘制属性：当图片在控件中绘制时，要使用相对坐标，以控件矩形区域左上角顶点为原点，定义图片中心点的相对坐标"x,y"
+     */
+    public static final String KEY_RES_POSITION_RELATIVE = "resPositionRelative";
+
+    /**
+     * 图片视频绘制属性：资源对齐方式，取值范围为left / right / center
+     */
+    public static final String KEY_RES_ALIGN = "resAlign";
+
+    /**
+     * 指针绘制属性：全亮模式指针刻度图片资源，可选
+     */
+    public static final String KEY_RES_ACTIVE_SCALE = "resActiveScale";
+
+    /**
+     * 指针绘制属性：全亮模式指针在左半边（6点~12点）的资源
+     */
+    public static final String KEY_RES_ACTIVE_LEFT = "resActiveLeft";
+
+    /**
+     * 指针绘制属性：全亮模式指针在右半边（0点~6点）的资源，可选
+     */
+    public static final String KEY_RES_ACTIVE_RIGHT = "resActiveRight";
+
+    /**
+     * 指针绘制属性：全亮模式指针固定点资源（可选）
+     */
+    public static final String KEY_RES_ACTIVE_DOT = "resActiveDot";
+
+    /**
+     * 指针绘制属性：半亮模式指针刻度图片资源，可选
+     */
+    public static final String KEY_RES_AMBIENT_SCALE = "resAmbientScale";
+
+    /**
+     * 指针绘制属性：半亮模式指针在左半边（6点-12点）的资源，可选
+     */
+    public static final String KEY_RES_AMBIENT_LEFT = "resAmbientLeft";
+
+    /**
+     * 指针绘制属性：半亮模式指针在右半边（0点-6点）的资源，可选
+     */
+    public static final String KEY_RES_AMBIENT_RIGHT = "resAmbientRight";
+
+    /**
+     * 指针绘制属性：半亮模式指针固定点资源，可选
+     */
+    public static final String KEY_RES_AMBIENT_DOT = "resAmbientDot";
+
+    /**
+     * 指针绘制属性：指针影子资源，可选
+     */
+    public static final String KEY_RES_SHADOW = "resShadow";
+
+    /**
+     * 指针绘制属性：指针旋转起始角度，可选，默认为0
+     */
+    public static final String KEY_ROTATE_START_ANGEL = "rotateStartAngel";
+
+    /**
+     * 指针绘制属性：指针旋转终止角度，可选，默认为360
+     */
+    public static final String KEY_ROTATE_END_ANGEL = "rotateEndAngel";
+
+    /**
+     * 指针绘制属性：指针资源上的旋转坐标（指针上的旋转点以指针资源左上角为原点的相对坐标）
+     */
+    public static final String KEY_ROTATE_POINT_HAND = "rotatePointHand";
+
+    /**
+     * 指针绘制属性：指针在表盘上的旋转坐标
+     */
+    public static final String KEY_ROTATE_POINT_FACE = "rotatePointFace";
+
+    /**
+     * 指针绘制属性：当指针在控件中绘制时，要使用相对坐标，以控件矩形区域左上角顶点为原点，定义指针在表盘上的相对旋转坐标
+     */
+    public static final String KEY_ROTATE_POINT_FACE_RELATIVE = "rotatePointFaceRelative";
+
+    /**
+     * 进度绘制属性（公共）：指针起始角度代表的数据值，取值与value_type取值相关，如定义value_type是电量，则min_value="0"
+     */
+    public static final String KEY_MIN_VALUE = "minValue";
+
+    /**
+     * 进度绘制属性（公共）：指针终止角度代表的数据值，取值与value_type取值相关，如定义value_type是电量，则max_value="100"
+     */
+    public static final String KEY_MAX_VALUE = "maxValue";
+
+    /**
+     * 进度绘制属性（公共）：主颜色，使用"#AARRGGBB" 格式定义
+     */
+    public static final String KEY_PRIMARY_COLOR = "primaryColor";
+
+    /**
+     * 进度绘制属性（公共）：定义进度条底色
+     */
+    public static final String KEY_SECONDARY_COLOR = "secondaryColor";
+
+    /**
+     * 进度绘制属性（公共）：线条宽度
+     */
+    public static final String KEY_LINE_WIDTH = "lineWidth";
+
+    /**
+     * 进度绘制属性（公共）：起始点形状，可定义矩形或圆形，取值：rect / round
+     */
+    public static final String KEY_START_CAP = "startCap";
+
+    /**
+     * 进度绘制属性（公共）：结束点形状，可定义矩形或圆形，取值：rect / round
+     */
+    public static final String KEY_END_CAP = "endCap";
+
+    /**
+     * 进度绘制属性（直线）：直线起始点绝对坐标
+     */
+    public static final String KEY_START_POINT = "startPoint";
+
+    /**
+     * 进度绘制属性（直线）：直线终止点绝对坐标
+     */
+    public static final String KEY_END_POINT = "endPoint";
+
+    /**
+     * 进度绘制属性：直线起始点相对坐标，在控件中绘制时使用相对坐标，已控件矩形区域左上角顶点为原点
+     */
+    public static final String KEY_START_POINT_RELATIVE = "startPointRelative";
+
+    /**
+     * 进度绘制属性：直线终止点相对坐标，在控件中绘制时使用相对坐标，以控件矩形区域左上角顶点为原点
+     */
+    public static final String KEY_END_POINT_RELATIVE = "endPointRelative";
+
+    /**
+     * 进度绘制属性（弧形）：分辨率
+     */
+    public static final String KEY_START_ANGLE = "startAngle";
+
+    /**
+     * 进度绘制属性（弧形）：分辨率
+     */
+    public static final String KEY_END_ANGLE = "endAngle";
+
+    /**
+     * 进度绘制属性（弧形）：分辨率
+     */
+    public static final String KEY_RECT = "rect";
+
+    /**
+     * 进度绘制属性（弧形）：分辨率
+     */
+    public static final String KEY_RECT_RELATIVE = "rectRelative";
+
+    /**
+     * widget绘制属性：分辨率
+     */
+    public static final String KEY_INDEX = "index";
+
+    /**
+     * widget绘制属性：默认选项索引，为0时表示不指定任何选项
+     */
+    public static final String KEY_SELECTED_OPTION = "selectedOption";
+
+    /**
+     * widget绘制属性：元素是否支持自定义
+     */
+    public static final String KEY_IS_SUPPORT_OPTION = "isSupportOption";
+
+    /**
+     * widget绘制属性：可选项
+     */
+    public static final String KEY_AVAILABLE_OPTION = "availableOption";
+
+    /**
+     * complication绘制属性：控件区域背景色，可选
+     */
+    public static final String KEY_BACKGROUND_COLOR = "backgroundColor";
+
+    /**
+     * complication绘制属性：控件区域背景图，可选
+     */
+    public static final String KEY_BACKGROUND_DRAWABLE = "backgroundDrawable";
+
+    /**
+     * complication绘制属性：边线颜色，可选
+     */
+    public static final String KEY_BORDER_COLOR = "borderColor";
+
+    /**
+     * complication绘制属性：控件点击时的高亮颜色，可选
+     */
+    public static final String KEY_HIGHLIGHT_COLOR = "highlightColor";
+
+    /**
+     * complication绘制属性：图标着色颜色，可选
+     */
+    public static final String KEY_ICON_COLOR = "iconColor";
+
+    /**
+     * complication绘制属性：文本颜色
+     */
+    public static final String KEY_TEXT_COLOR = "textColor";
+
+    /**
+     * complication绘制属性：标题颜色
+     */
+    public static final String KEY_TITLE_COLOR = "titleColor";
+
+    /**
+     * complication绘制属性：标题字体
+     */
+    public static final String KEY_TITLE_FONT = "titleFont";
+
+    /**
+     * complication绘制属性：标题大小
+     */
+    public static final String KEY_TITLE_SIZE = "titleSize";
+
+    /**
+     * complication绘制属性：进度条颜色
+     */
+    public static final String KEY_RANGE_PRIMARY_COLOR = "rangePrimaryColor";
+
+    /**
+     * complication绘制属性：进度条底色
+     */
+    public static final String KEY_RANGE_SECONDARY_COLOR = "rangeSecondaryColor";
+
+    /**
+     * complication绘制属性：控件区域位置
+     */
+    public static final String KEY_BOUNDS_RECT = "boundsRect";
+    // =======================xml属性类，属性需要按照驼峰命名法命名end=================================
+
+    private UnitConstants() {
+    }
+}
+
+
+
+
+
+
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.SweepGradient;
+import android.text.TextUtils;
+
+/**
+ * 弧形绘制类，不支持位置变换效果
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public class ArcDraw extends BaseDraw {
+    private static final String TAG = "ArcDraw";
+
+    private static final String PAINT_CAP_ROUND = "round";
+
+    private static final float FULL_CIRCLE_ANGLE = 360.0f;
+
+    private int[] mPrimaryColor;
+
+    private int[] mSecondaryColor;
+
+    private int mLineWidth;
+
+    private String mLineCap;
+
+    private float mStartAngle;
+
+    private float mEndAngle;
+
+    private RectF mRect;
+
+    private RectF mRectRelative;
+
+    private String mValueType;
+
+    private Paint mPrimaryPaint;
+
+    private Paint mSecondaryPaint;
+
+    private float mArcStartAngle;
+
+    private float mArcSweepAngle;
+
+    private float mShadowStartAngle;
+
+    private float mShadowSweepAngle;
+
+    private final boolean isArcAmbient;
+
+    /**
+     * 初始化弧形绘制资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    public ArcDraw(AssetPackage assetPackage, Layer layer) {
+        super(assetPackage, layer);
+
+        mPrimaryColor = HwUtil.getColors(layer.getPrimaryColor());
+        mSecondaryColor = HwUtil.getColors(layer.getSecondaryColor());
+        mLineWidth = HwUtil.getIntValue(layer.getLineWidth());
+        mLineCap = HwUtil.getStringValue(layer.getLineCap());
+        mStartAngle = HwUtil.getFloatValue(layer.getStartAngle());
+        mEndAngle = HwUtil.getFloatValue(layer.getEndAngle());
+        mRect = HwUtil.getRectF(layer.getRect());
+        mRectRelative = HwUtil.getRectF(layer.getRectRelative());
+        mValueType = HwUtil.getStringValue(layer.getValueType());
+        isArcAmbient = HwUtil.getBoolValue(layer.getArcAmbientDraw());
+    }
+
+    @Override
+    public void setWidgetRect(RectF rect) {
+        super.setWidgetRect(rect);
+        if (rect == null) {
+            return;
+        }
+        if (mRectRelative == null) {
+            return;
+        }
+        mRect = new RectF(rect.left + mRectRelative.left, rect.top + mRectRelative.top, rect.left + mRectRelative.right,
+            rect.top + mRectRelative.bottom);
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+    }
+
+    private void updatePaint() {
+        if ((mPrimaryColor != null) && (mPrimaryColor.length > 0)) {
+            mPrimaryPaint = new Paint();
+            mPrimaryPaint.setAntiAlias(true);
+            mPrimaryPaint.setStyle(Paint.Style.STROKE);
+            mPrimaryPaint.setStrokeWidth(mLineWidth);
+            mPrimaryPaint.setStrokeCap((TextUtils.equals(mLineCap, PAINT_CAP_ROUND)) ? (Paint.Cap.ROUND)
+                : (Paint.Cap.BUTT));
+            // 设置渐变需要两种以上的颜色
+            if (mPrimaryColor.length > 1) {
+                SweepGradient sweepGradient = new SweepGradient(mRect.centerX(), mRect.centerY(), mPrimaryColor,
+                    new float[] {0, mArcSweepAngle / FULL_CIRCLE_ANGLE});
+                Matrix matrix = new Matrix();
+                matrix.setRotate(mArcStartAngle, mRect.centerX(), mRect.centerY());
+                sweepGradient.setLocalMatrix(matrix);
+                mPrimaryPaint.setShader(sweepGradient);
+            } else {
+                mPrimaryPaint.setColor(mPrimaryColor[0]);
+            }
+        }
+
+        if ((mSecondaryColor != null) && (mSecondaryColor.length > 0)) {
+            mSecondaryPaint = new Paint();
+            mSecondaryPaint.setAntiAlias(true);
+            mSecondaryPaint.setStrokeWidth(mLineWidth);
+            mSecondaryPaint.setStrokeCap((TextUtils.equals(mLineCap, PAINT_CAP_ROUND)) ? (Paint.Cap.ROUND)
+                : (Paint.Cap.BUTT));
+            // 设置渐变需要两种以上的颜色
+            if (mSecondaryColor.length > 1) {
+                SweepGradient sweepGradient = new SweepGradient(mRect.centerX(), mRect.centerY(), mSecondaryColor,
+                    new float[] {0, mShadowSweepAngle / FULL_CIRCLE_ANGLE});
+                Matrix matrix = new Matrix();
+                matrix.setRotate(mShadowStartAngle, mRect.centerX(), mRect.centerY());
+                sweepGradient.setLocalMatrix(matrix);
+                mSecondaryPaint.setShader(sweepGradient);
+            } else {
+                mSecondaryPaint.setColor(mSecondaryColor[0]);
+            }
+        }
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+        mShadowStartAngle = (mStartAngle < mEndAngle) ? mStartAngle : mEndAngle;
+        mShadowSweepAngle = (mStartAngle < mEndAngle) ? (mEndAngle - mStartAngle) : (mStartAngle - mEndAngle);
+        IntRangeValue rangeValue = DataAdapter.getInstance().getIntRangeValue(mValueType);
+        if (rangeValue == null) {
+            mArcStartAngle = (mStartAngle < mEndAngle) ? mStartAngle : mEndAngle;
+            mArcSweepAngle = 0;
+        } else {
+            float angle = HwUtil.getAngel(mStartAngle, mEndAngle, rangeValue.getMax(), rangeValue.getMin(), rangeValue
+                .getValue());
+            mArcStartAngle = (mStartAngle < mEndAngle) ? mStartAngle : angle;
+            mArcSweepAngle = (mStartAngle < mEndAngle) ? (angle - mStartAngle) : (mStartAngle - angle);
+        }
+        updatePaint();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas, boolean isAmbientMode) {
+        if (!isAmbientMode) {
+            if (mSecondaryPaint != null) {
+                canvas.drawArc(mRect, mShadowStartAngle, mShadowSweepAngle, false, mSecondaryPaint);
+            }
+            if (mPrimaryPaint != null) {
+                canvas.drawArc(mRect, mArcStartAngle, mArcSweepAngle, false, mPrimaryPaint);
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+    }
+}
+
+
+
+;
+import com.huawei.wearable.watchfacecommon.view.unit.base.IDrawUnit;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 弧形布局类，不支持位置变换效果
+ *
+ * @author zwx697580
+ * @version 1.0.0
+ * @since 2019-01-16
+ */
+public class ArcLinerLayer implements IDrawUnit {
+    private static final int FACTOR = 2;
+
+    private static final float TOP_CIRCLE_DEGREE = 270;
+
+    private List<IDrawUnit> mDrawUnits;
+
+    private RectF mRectF;
+
+    private boolean isRotateBitmap;
+
+    /**
+     * 初始化弧形布局类
+     *
+     * @param assetPackage 资源包
+     * @param parentLayer  当前图层
+     */
+    public ArcLinerLayer(AssetPackage assetPackage, Layer parentLayer) {
+        mDrawUnits = new ArrayList<>(0);
+        mRectF = HwUtil.getRectF(parentLayer.getRect());
+        isRotateBitmap = HwUtil.getBoolValue(parentLayer.getArcLinearBitmapRotate());
+        String containerIndex = parentLayer.getArcLinearSelectedContainer();
+        if (!TextUtils.isEmpty(containerIndex)) {
+            obtainLinearLayerWithContainer(assetPackage,containerIndex);
+        } else {
+            List<Layer> layers = parentLayer.getLayers();
+            for (Layer layer : layers) {
+                IDrawUnit unit = UnitFactoryUtil.createDrawUnit(assetPackage, layer);
+                mDrawUnits.add(unit);
+            }
+        }
+
+    }
+
+    private void obtainLinearLayerWithContainer(AssetPackage assetPackage, String containerIndex) {
+        Optional<Element> element = assetPackage.getElementsProvider().getElement(UnitConstants.LABEL_WIDGET);
+        if (!element.isPresent()) {
+            return;
+        }
+        List<String> indexList = HwUtil.getStringValues(containerIndex);
+        List<Container> containers = element.get().getContainers();
+        if (containers != null) {
+            for (Container container : containers) {
+                String index = container.getIndex();
+                if (indexList.contains(index)) {
+                    if (TextUtils.equals(container.getIsAvailable(),"false")) {
+                        continue;
+                    }
+
+                    if(HwUtil.getBoolValue(container.getIsSupportOption())) {
+                        Optional<Option> option = element.get().getOption(container.getSelectedOption());
+                        if (!option.isPresent()) {
+                            continue;
+                        }
+                        List<Layer> layerList = option.get().getLayers();
+                        for(Layer layer : layerList) {
+                            IDrawUnit unit = UnitFactoryUtil.createDrawUnit(assetPackage, layer);
+                            unit.setWidgetRect(HwUtil.getRectF(container.getRect()));
+                            mDrawUnits.add(unit);
+                        }
+                    } else {
+                        List<Layer> layers = container.getLayers();
+                        for (Layer layer : layers) {
+                            IDrawUnit unit = UnitFactoryUtil.createDrawUnit(assetPackage, layer);
+                            // 需要根据控件位置和图层相对坐标重新计算图层的绝对坐标
+                            unit.setWidgetRect(HwUtil.getRectF(container.getRect()));
+                            mDrawUnits.add(unit);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+    }
+
+    @Override
+    public void draw(Canvas canvas, boolean isAmbientMode) {
+        float totalRadian = 0;
+        int count = 0;
+        int size = mDrawUnits.size();
+        for (IDrawUnit drawUnit : mDrawUnits) {
+            drawUnit.preDraw(canvas,isAmbientMode);
+            float[] end = drawUnit.getDrawUnitEndPosition();
+            float width = end[0];
+            float radian = CalculateRadianUtils.calculateSweepDegree(width);
+            totalRadian += radian + (count == size -1 ? 0 : drawUnit.getArcLinearMargin());
+            count++;
+        }
+
+        float startAngle = TOP_CIRCLE_DEGREE - totalRadian / FACTOR;
+        for (IDrawUnit drawUnit : mDrawUnits) {
+            float[] end = drawUnit.getDrawUnitEndPosition();
+            float width = end[0];
+            float radian = CalculateRadianUtils.calculateSweepDegree(width);
+            if (drawUnit instanceof BaseResDraw) {
+                float r = (mRectF.right - mRectF.left + width) / FACTOR;
+                Point startPoint = CalculateRadianUtils.calculateStartPoint(startAngle + radian / FACTOR, r, width);
+                float rotateDegree = CalculateRadianUtils.calculateRotateDegree(startAngle + radian / FACTOR);
+                drawUnit.setRelativeAttribute(new AttributeBean(startPoint.x, startPoint.y, isRotateBitmap ? rotateDegree : 0));
+            } else {
+                drawUnit.setRelativeAttribute(new AttributeBean(startAngle, radian));
+            }
+            drawUnit.draw(canvas, isAmbientMode);
+            float margin = drawUnit.getArcLinearMargin();
+            startAngle += radian + margin;
+        }
+    }
+
+    @Override
+    public void setWidgetRect(RectF rect) {
+        for (IDrawUnit drawUnit : mDrawUnits) {
+            drawUnit.setWidgetRect(rect);
+        }
+    }
+
+    @Override
+    public void setRelativeAttribute(AttributeBean bean) {
+    }
+
+    @Override
+    public float getArcLinearMargin() {
+        return 0;
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+
+    }
+
+    @Override
+    public float[] getDrawUnitEndPosition() {
+        return new float[0];
+    }
+
+    @Override
+    public void onVisibilityChanged(boolean visible) {
+
+    }
+
+    @Override
+    public void destroy() {
+        for (IDrawUnit drawUnit : mDrawUnits) {
+            drawUnit.destroy();
+        }
+    }
+
+    @Override
+    public void onClick(int x, int y) {
+
+    }
+}
+
+
+
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.text.TextUtils;
+
+/**
+ * 组合图绘制类，支持位置变换效果
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public class CombinedResDraw extends BaseResDraw {
+    private static final String TAG = "CombinedResDraw";
+
+    private static final float HALF = 0.5f;
+
+    private String mResAlign;
+
+    private List<Bitmap> mBitmapList;
+
+    private float mStartX;
+
+    private float mStartY;
+
+    /**
+     * 初始化组合图绘制资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    public CombinedResDraw(AssetPackage assetPackage, Layer layer) {
+        super(assetPackage, layer);
+        mResAlign = HwUtil.getStringValue(layer.getResAlign());
+        mBitmapList = new ArrayList<>(0);
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+        mBitmapList.clear();
+        String valueString = DataAdapter.getInstance().getStringValue(getValueType());
+        List<Bitmap> bitmaps = isAmbientMode ? getAmbientBitmaps() : getActiveBitmaps();
+        if (bitmaps == null || bitmaps.size() == 0) {
+            return;
+        }
+        int totalWidth = 0;
+        int bitmapSize = bitmaps.size();
+        for (int i = 0; i < valueString.length(); i++) {
+            int digit = HwUtil.getDigit(valueString, i);
+            if ((digit >= bitmapSize) && (bitmapSize > 0)) {
+                digit %= bitmapSize;
+            }
+            // 要求mAmbientBitmaps和mActiveBitmaps 必须是0~9十个数字按顺序排列的图片资源数组
+            mBitmapList.add(bitmaps.get(digit));
+            totalWidth += bitmaps.get(digit).getWidth();
+        }
+        if (TextUtils.equals(mResAlign, UnitConstants.VALUE_ALIGN_RIGHT)) {
+            mStartX = getPosition()[0] - totalWidth;
+        } else if (TextUtils.equals(mResAlign, UnitConstants.VALUE_ALIGN_CENTER)) {
+            mStartX = getPosition()[0] - totalWidth * HALF;
+        } else {
+            mStartX = getPosition()[0];
+        }
+        mStartY = getPosition()[1];
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas, boolean isAmbientMode) {
+        if (mBitmapList.size() == 0) {
+            HwLogUtil.e(TAG, "onDraw() combined bitmap list empty");
+            return;
+        }
+        float startX = mStartX;
+        float startY = mStartY;
+        for (Bitmap bitmap : mBitmapList) {
+            if (bitmap == null) {
+                continue;
+            }
+            canvas.drawBitmap(bitmap, startX, startY, getPaint());
+            startX += bitmap.getWidth();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mBitmapList.clear();
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+    }
+}
+
+
+
+
+
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+
+/**
+ * 序列帧绘制类，不支持位置变换效果
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public class OrderedResDraw extends BaseResDraw {
+    private static final String TAG = "OrderedResDraw";
+
+    private static final int RES_INDEX_INVALID = -1;
+
+    private int mResIndex;
+
+    private long mResInterval;
+
+    private long mLastDrawTime;
+
+    private boolean mResOrderedIsPlayOnce; // 帧动画是否需要播放一次
+
+    private boolean mIsPlayOnceFinish = false; // 帧动画是否播放一次已经完成
+
+    /**
+     * 初始化序列帧绘制资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    public OrderedResDraw(AssetPackage assetPackage, Layer layer) {
+        super(assetPackage, layer);
+        mResIndex = RES_INDEX_INVALID;
+        mResInterval = HwUtil.getLongValue(layer.getResInterval());
+        mResOrderedIsPlayOnce = HwUtil.getBoolValue(layer.getResOrderedIsPlayOnce());
+        mLastDrawTime = 0;
+        FpsUtil.setUpdateInterval(mResInterval);
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+        if (isAmbientMode || mIsPlayOnceFinish) {
+            mResIndex = RES_INDEX_INVALID;
+            return;
+        }
+        long curTime = System.currentTimeMillis();
+        if ((curTime - mLastDrawTime) < mResInterval) {
+            return;
+        }
+        mLastDrawTime = curTime;
+        mResIndex++;
+        if (mResIndex >= getActiveBitmaps().size()) {
+            if (mResOrderedIsPlayOnce) {
+                mIsPlayOnceFinish = true;
+            }
+            mResIndex = 0;
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas, boolean isAmbientMode) {
+        if (isAmbientMode) {
+            if ((getAmbientBitmaps() != null) && (getAmbientBitmaps().size() > 0)) {
+                Bitmap bitmap = getAmbientBitmaps().get(0);
+
+                if (bitmap != null) {
+                    canvas.drawBitmap(bitmap, getPosition()[0], getPosition()[1], getPaint());
+                }
+            }
+        } else {
+            Bitmap bitmap;
+            if (mResOrderedIsPlayOnce) {
+                if (!mIsPlayOnceFinish) {
+                    bitmap = getActiveBitmaps().get(mResIndex);
+                } else {
+                    bitmap = getActiveBitmaps().get(getActiveBitmaps().size() - 1); // 播放完停留在最后一帧
+                    FpsUtil.resetUpdateInterval();
+                }
+            } else {
+                bitmap = getActiveBitmaps().get(mResIndex);
+            }
+
+            if (bitmap != null) {
+                canvas.drawBitmap(bitmap, getPosition()[0], getPosition()[1], getPaint());
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+        if (mResOrderedIsPlayOnce) {
+            if (!ambientMode) {
+                mResIndex = RES_INDEX_INVALID; // index复位
+                mIsPlayOnceFinish = false;
+                FpsUtil.setUpdateInterval(mResInterval);
+                HwLogUtil.i(TAG, "restart play");
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+import android.graphics.Canvas;
+import android.graphics.RectF;
+
+/**
+ * SelectedLayer用于控件效果和数据取值相关的场景，如：陀飞轮当电量值不同时，选择不同的旋转速度
+ * 实现思路：
+ * 1. 把和数据取值相关的layer，定义成selected_layer，然后里面嵌套多个基本layer
+ * 2. 调用DataAdapter#getLayerIndexValue的接口获取mValueType对应的layer索引，再根据索引选择对应的layer绘制
+ * 3. layer索引xml和DataAdapter协商即可，selected_layer不对第三方表盘设计师开放
+ *
+ * @author m00230717
+ * @version 1.0.0
+ * @since 2019-01-16
+ */
+public class SelectedLayer implements IDrawUnit {
+    private List<IDrawUnit> mDrawUnits;
+
+    private String mValueType;
+
+    private IDrawUnit mSelectedDrawUnit;
+
+    /**
+     * 初始化SelectedLayer
+     *
+     * @param assetPackage 资源包
+     * @param parentLayer 图层
+     */
+    public SelectedLayer(AssetPackage assetPackage, Layer parentLayer) {
+        mValueType = parentLayer.getValueType();
+        mDrawUnits = new ArrayList<>(0);
+        List<Layer> layers = parentLayer.getLayers();
+        for (Layer layer : layers) {
+            IDrawUnit unit = UnitFactoryUtil.createDrawUnit(assetPackage, layer);
+            mDrawUnits.add(unit);
+        }
+    }
+
+    private IDrawUnit getSelectDrawUnit() {
+        int index = DataAdapter.getInstance().getLayerIndexValue(mValueType);
+        return mDrawUnits.get(index);
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+        int index = DataAdapter.getInstance().getLayerIndexValue(mValueType);
+        mSelectedDrawUnit = mDrawUnits.get(index);
+        mSelectedDrawUnit.preDraw(canvas,isAmbientMode);
+    }
+
+    @Override
+    public void draw(Canvas canvas, boolean isAmbientMode) {
+        if (mSelectedDrawUnit != null) {
+            mSelectedDrawUnit.draw(canvas, isAmbientMode);
+        }
+    }
+
+    @Override
+    public void setWidgetRect(RectF rect) {
+        for (IDrawUnit drawUnit : mDrawUnits) {
+            drawUnit.setWidgetRect(rect);
+        }
+    }
+
+    @Override
+    public void setRelativeAttribute(AttributeBean bean) {
+    }
+
+    @Override
+    public float getArcLinearMargin() {
+        return (mSelectedDrawUnit != null) ? (mSelectedDrawUnit.getArcLinearMargin()) : 0;
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+        IDrawUnit drawUnit = getSelectDrawUnit();
+        drawUnit.isAmbientModeChanged(ambientMode);
+    }
+
+    @Override
+    public float[] getDrawUnitEndPosition() {
+        return (mSelectedDrawUnit != null) ? (mSelectedDrawUnit.getDrawUnitEndPosition()) : (new float[]{0,0});
+    }
+
+    @Override
+    public void onVisibilityChanged(boolean visible) {
+        IDrawUnit drawUnit = getSelectDrawUnit();
+        drawUnit.onVisibilityChanged(visible);
+    }
+
+    @Override
+    public void destroy() {
+        for (IDrawUnit drawUnit : mDrawUnits) {
+            drawUnit.destroy();
+        }
+    }
+
+    @Override
+    public void onClick(int x, int y) {
+        IDrawUnit drawUnit = getSelectDrawUnit();
+        drawUnit.onClick(x, y);
+    }
+}
+
+
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+
+/**
+ * 单图绘制类，支持位置变换效果
+ *
+ * @author z00355007
+ * @version 1.0.0
+ * @since 2019/1/16
+ */
+public class SingleResDraw extends BaseResDraw {
+    private static final String TAG = "SingleResDraw";
+
+    private static final int FACTOR = 2;
+
+    /**
+     * 初始化单图绘制资源
+     *
+     * @param assetPackage 资源包
+     * @param layer 图层
+     */
+    public SingleResDraw(AssetPackage assetPackage, Layer layer) {
+        super(assetPackage, layer);
+    }
+
+    @Override
+    public void preDraw(Canvas canvas, boolean isAmbientMode) {
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas, boolean isAmbientMode) {
+        List<Bitmap> bitmaps = isAmbientMode ? getAmbientBitmaps() : getActiveBitmaps();
+        if ((bitmaps == null) || (bitmaps.size() <= 0)) {
+            return;
+        }
+        Bitmap bitmap = bitmaps.get(0);
+        if (bitmap != null) {
+            canvas.drawBitmap(bitmap, getPosition()[0], getPosition()[1], getPaint());
+        }
+    }
+
+    @Override
+    public void setRelativeAttribute(AttributeBean bean) {
+        setPosition(new float[] {bean.getPositionX(), bean.getPositionY()});
+        setRotateAnimation(bean.getRotateAngle());
+
+        Bitmap showBitmap = getShowBitmap();
+        float bitmapCenterX = (showBitmap == null) ? 0 : (showBitmap.getWidth()) / FACTOR;
+        float bitmapCenterY = (showBitmap == null) ? 0 : (showBitmap.getHeight()) / FACTOR;
+        float centerX = getPosition()[0] + bitmapCenterX;
+        float centerY = getPosition()[1] + bitmapCenterY;
+        setRotateCenterPoint(centerX, centerY);
+    }
+
+    private Bitmap getShowBitmap() {
+        List<Bitmap> bitmaps = getActiveBitmaps();
+        if ((bitmaps == null) || (bitmaps.size() <= 0)) {
+            return null;
+        }
+        return bitmaps.get(0);
+    }
+
+    @Override
+    protected void onDestroy() {
+    }
+
+    @Override
+    public void isAmbientModeChanged(boolean ambientMode) {
+    }
+
+    @Override
+    public float[] getDrawUnitEndPosition() {
+        if (getShowBitmap() != null) {
+            return new float[] {getShowBitmap().getWidth(), 0};
+        } else {
+            return new float[] {getArcLinearMargin(), 0};
+        }
+    }
+}
+
+
+
+
+
+
+
+
