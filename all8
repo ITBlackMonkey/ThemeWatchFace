@@ -1,0 +1,1375 @@
+/**
+ * xml文件中layer标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Layer {
+    @SerializedName("@index")
+    private String index;
+
+    @SerializedName("@draw_type")
+    private String drawType;
+
+    /**
+     * select layer
+     */
+    @SerializedName("layer")
+    private List<Layer> layers;
+
+    /**
+     * text
+     */
+    @SerializedName("@text_content")
+    private String textContent;
+
+    @SerializedName("@text_active_color")
+    private String textActiveColor;
+
+    @SerializedName("@text_ambient_color")
+    private String textAmbientColor;
+
+    @SerializedName("@text_font")
+    private String textFont;
+
+    @SerializedName("@text_size")
+    private String textSize;
+
+    @SerializedName("@text_align")
+    private String textAlign;
+
+    @SerializedName("@text_position")
+    private String textPosition;
+
+    @SerializedName("@text_position_relative")
+    private String textPositionRelative;
+
+    @SerializedName("@word_support_cn")
+    private String wordSupportCN;
+
+    @SerializedName("@word_is_abbr")
+    private String wordIsAbbr;
+
+    @SerializedName("@word_capital_type")
+    private String wordCapitalType;
+
+    @SerializedName("@text_is_bold")
+    private String textIsBold;
+
+    @SerializedName("@arc_linear_margin")
+    private String arcLinearMargin;
+
+    @SerializedName("@arc_linear_bitmap_rotate")
+    private String arcLinearBitmapRotate;
+
+    @SerializedName("@arc_linear_selected_container")
+    private String arcLinearSelectedContainer;
+
+    /**
+     * res
+     */
+    @SerializedName("@res_active")
+    private String resActive;
+
+    @SerializedName("@res_active_left")
+    private String resActiveLeft;
+
+    @SerializedName("@res_active_right")
+    private String resActiveRight;
+
+    @SerializedName("@res_active_dot")
+    private String resActiveDot;
+
+    @SerializedName("@res_active_scale")
+    private String resActiveScale;
+
+    @SerializedName("@res_ambient")
+    private String resAmbient;
+
+    @SerializedName("@res_ambient_left")
+    private String resAmbientLeft;
+
+    @SerializedName("@res_ambient_right")
+    private String resAmbientRight;
+
+    @SerializedName("@res_ambient_dot")
+    private String resAmbientDot;
+
+    @SerializedName("@res_ambient_scale")
+    private String resAmbientScale;
+
+    @SerializedName("@res_shadow")
+    private String resShadow;
+
+    @SerializedName("@res_shadow_is_only_show_active")
+    private String resShadowIsOnlyShowActive;
+
+    @SerializedName("@res_dot_shadow")
+    private String resDotShadow;
+
+    @SerializedName("@res_interval")
+    private String resInterval;
+
+    @SerializedName("@res_align")
+    private String resAlign;
+
+    @SerializedName("@res_position")
+    private String resPosition;
+
+    @SerializedName("@res_position_relative")
+    private String resPositionRelative;
+
+    @SerializedName("@res_ordered_is_play_once")
+    private String resOrderedIsPlayOnce;
+
+    @SerializedName("@rotate_point_hand")
+    private String rotatePointHand;
+
+    @SerializedName("@rotate_point_face")
+    private String rotatePointFace;
+
+    @SerializedName("@rotate_point_face_relative")
+    private String rotatePointFaceRelative;
+
+    @SerializedName("@rotate_start_angel")
+    private String rotateStartAngel;
+
+    @SerializedName("@rotate_end_angel")
+    private String rotateEndAngel;
+
+    /**
+     * shape
+     */
+    @SerializedName("@primary_color")
+    private String primaryColor;
+
+    @SerializedName("@secondary_color")
+    private String secondaryColor;
+
+    @SerializedName("@line_width")
+    private String lineWidth;
+
+    @SerializedName("@line_cap")
+    private String lineCap;
+
+    @SerializedName("@start_point")
+    private String startPoint;
+
+    @SerializedName("@end_point")
+    private String endPoint;
+
+    @SerializedName("@start_point_relative")
+    private String startPointRelative;
+
+    @SerializedName("@end_point_relative")
+    private String endPointRelative;
+
+    @SerializedName("@start_angle")
+    private String startAngle;
+
+    @SerializedName("@end_angle")
+    private String endAngle;
+
+    @SerializedName("@rect")
+    private String rect;
+
+    @SerializedName("@rect_relative")
+    private String rectRelative;
+
+    @SerializedName("@arc_ambient_draw")
+    private String arcAmbientDraw;
+
+    /**
+     * complication
+     */
+    @SerializedName("@background_color")
+    private String backgroundColor;
+
+    @SerializedName("@background_drawable")
+    private String backgroundDrawable;
+
+    @SerializedName("@border_color")
+    private String borderColor;
+
+    @SerializedName("@highlight_color")
+    private String highlightColor;
+
+    @SerializedName("@icon_color")
+    private String iconColor;
+
+    @SerializedName("@text_color")
+    private String textColor;
+
+    @SerializedName("@title_color")
+    private String titleColor;
+
+    @SerializedName("@title_font")
+    private String titleFont;
+
+    @SerializedName("@title_size")
+    private String titleSize;
+
+    @SerializedName("@range_primary_color")
+    private String rangePrimaryColor;
+
+    @SerializedName("@range_secondary_color")
+    private String rangeSecondaryColor;
+
+    @SerializedName("@bounds_rect")
+    private String boundsRect;
+
+    /**
+     * rotate
+     */
+    @SerializedName("@rotate_type")
+    private String rotateType;
+
+    @SerializedName("@rotate_fixed_degree")
+    private String rotateFixedDegree;
+
+    @SerializedName("@rotate_center_point")
+    private String rotateCenterPoint;
+
+    @SerializedName("@rotate_center_point_relative")
+    private String rotateCenterPointRelative;
+
+    @SerializedName("@rotate_degree")
+    private String rotateDegree;
+
+    @SerializedName("@rotate_time")
+    private String rotateTime;
+
+    @SerializedName("@rotate_motion_type")
+    private String rotateMotionType;
+
+    /**
+     * scale
+     */
+    @SerializedName("@scale_type")
+    private String scaleType;
+
+    @SerializedName("@scale_center_point")
+    private String scaleCenterPoint;
+
+    @SerializedName("@scale_center_point_relative")
+    private String scaleCenterPointRelative;
+
+    @SerializedName("@scale_amount")
+    private String scaleAmount;
+
+    @SerializedName("@scale_time")
+    private String scaleTime;
+
+    @SerializedName("@scale_motion_type")
+    private String scaleMotionType;
+
+    /**
+     * translate
+     */
+    @SerializedName("@translate_type")
+    private String translateType;
+
+    @SerializedName("@translate_end_position")
+    private String translateEndPosition;
+
+    @SerializedName("@translate_end_position_relative")
+    private String translateEndPositionRelative;
+
+    /**
+     * value
+     */
+    @SerializedName("@value_type")
+    private String valueType;
+
+    /**
+     * 相册表盘自定义新增
+     */
+    @SerializedName("@text_font_options")
+    private String textFontOptions;
+
+    @SerializedName("@text_position_label")
+    private String textPositionLabel;
+
+    @SerializedName("@text_position_options")
+    private String textPositionOptions;
+
+    @SerializedName("@text_position_labels")
+    private String textPositionLabels;
+
+    @SerializedName("@shadow_offset")
+    private String shadowOffSet;
+
+    @SerializedName("@text_shadow_position")
+    private String textShadowPosition;
+
+    @SerializedName("@text_shadow_color")
+    private String textShadowColor;
+
+    @SerializedName("@text_shadow_radius")
+    private String textShadowRadius;
+
+    @SerializedName("@is_support_text_shadow")
+    private String isSupportTextShadow;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public String getDrawType() {
+        return drawType;
+    }
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public String getTextContent() {
+        return textContent;
+    }
+
+    public String getTextActiveColor() {
+        return textActiveColor;
+    }
+
+    public String getTextAmbientColor() {
+        return textAmbientColor;
+    }
+
+    public String getTextFont() {
+        return textFont;
+    }
+
+    public String getTextSize() {
+        return textSize;
+    }
+
+    public String getTextAlign() {
+        return textAlign;
+    }
+
+    public String getTextPosition() {
+        return textPosition;
+    }
+
+    public String getTextPositionRelative() {
+        return textPositionRelative;
+    }
+
+    public String getTextIsBold() {
+        return textIsBold;
+    }
+
+    public String getWordSupportCN() {
+        return wordSupportCN;
+    }
+
+    public String getWordIsAbbr() {
+        return wordIsAbbr;
+    }
+
+    public String getWordCapitalType() {
+        return wordCapitalType;
+    }
+
+    public String getResActive() {
+        return resActive;
+    }
+
+    public String getResActiveLeft() {
+        return resActiveLeft;
+    }
+
+    public String getResActiveRight() {
+        return resActiveRight;
+    }
+
+    public String getResActiveDot() {
+        return resActiveDot;
+    }
+
+    public String getResActiveScale() {
+        return resActiveScale;
+    }
+
+    public String getResAmbient() {
+        return resAmbient;
+    }
+
+    public String getResAmbientLeft() {
+        return resAmbientLeft;
+    }
+
+    public String getResAmbientRight() {
+        return resAmbientRight;
+    }
+
+    public String getResAmbientDot() {
+        return resAmbientDot;
+    }
+
+    public String getResAmbientScale() {
+        return resAmbientScale;
+    }
+
+    public String getResShadow() {
+        return resShadow;
+    }
+
+    public String getResShadowIsOnlyShowActive() {
+        return resShadowIsOnlyShowActive;
+    }
+
+    public String getResDotShadow() {
+        return resDotShadow;
+    }
+
+    public String getResInterval() {
+        return resInterval;
+    }
+
+    public String getResAlign() {
+        return resAlign;
+    }
+
+    public String getResPosition() {
+        return resPosition;
+    }
+
+    public String getResPositionRelative() {
+        return resPositionRelative;
+    }
+
+    public String getResOrderedIsPlayOnce() {
+        return resOrderedIsPlayOnce;
+    }
+
+    public String getRotatePointHand() {
+        return rotatePointHand;
+    }
+
+    public String getRotatePointFace() {
+        return rotatePointFace;
+    }
+
+    public String getRotatePointFaceRelative() {
+        return rotatePointFaceRelative;
+    }
+
+    public String getRotateStartAngel() {
+        return rotateStartAngel;
+    }
+
+    public String getRotateEndAngel() {
+        return rotateEndAngel;
+    }
+
+    public String getPrimaryColor() {
+        return primaryColor;
+    }
+
+    public String getSecondaryColor() {
+        return secondaryColor;
+    }
+
+    public String getLineWidth() {
+        return lineWidth;
+    }
+
+    public String getLineCap() {
+        return lineCap;
+    }
+
+    public String getStartPoint() {
+        return startPoint;
+    }
+
+    public String getEndPoint() {
+        return endPoint;
+    }
+
+    public String getStartPointRelative() {
+        return startPointRelative;
+    }
+
+    public String getEndPointRelative() {
+        return endPointRelative;
+    }
+
+    public String getStartAngle() {
+        return startAngle;
+    }
+
+    public String getEndAngle() {
+        return endAngle;
+    }
+
+    public String getRect() {
+        return rect;
+    }
+
+    public String getRectRelative() {
+        return rectRelative;
+    }
+
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public String getBackgroundDrawable() {
+        return backgroundDrawable;
+    }
+
+    public String getBorderColor() {
+        return borderColor;
+    }
+
+    public String getHighlightColor() {
+        return highlightColor;
+    }
+
+    public String getIconColor() {
+        return iconColor;
+    }
+
+    public String getTextColor() {
+        return textColor;
+    }
+
+    public String getTitleColor() {
+        return titleColor;
+    }
+
+    public String getTitleFont() {
+        return titleFont;
+    }
+
+    public String getTitleSize() {
+        return titleSize;
+    }
+
+    public String getRangePrimaryColor() {
+        return rangePrimaryColor;
+    }
+
+    public String getRangeSecondaryColor() {
+        return rangeSecondaryColor;
+    }
+
+    public String getBoundsRect() {
+        return boundsRect;
+    }
+
+    public String getRotateType() {
+        return rotateType;
+    }
+
+    public String getRotateFixedDegree() {
+        return rotateFixedDegree;
+    }
+
+    public String getRotateCenterPoint() {
+        return rotateCenterPoint;
+    }
+
+    public String getRotateCenterPointRelative() {
+        return rotateCenterPointRelative;
+    }
+
+    public String getRotateDegree() {
+        return rotateDegree;
+    }
+
+    public String getRotateTime() {
+        return rotateTime;
+    }
+
+    public String getRotateMotionType() {
+        return rotateMotionType;
+    }
+
+    public String getScaleType() {
+        return scaleType;
+    }
+
+    public String getScaleCenterPoint() {
+        return scaleCenterPoint;
+    }
+
+    public String getScaleCenterPointRelative() {
+        return scaleCenterPointRelative;
+    }
+
+    public String getScaleAmount() {
+        return scaleAmount;
+    }
+
+    public String getScaleTime() {
+        return scaleTime;
+    }
+
+    public String getScaleMotionType() {
+        return scaleMotionType;
+    }
+
+    public String getTranslateType() {
+        return translateType;
+    }
+
+    public String getTranslateEndPosition() {
+        return translateEndPosition;
+    }
+
+    public String getTranslateEndPositionRelative() {
+        return translateEndPositionRelative;
+    }
+
+    public String getValueType() {
+        return valueType;
+    }
+
+    public String getTextFontOptions() {
+        return textFontOptions;
+    }
+
+    public String getTextPositionLabel() {
+        return textPositionLabel;
+    }
+
+    public String getTextPositionOptions() {
+        return textPositionOptions;
+    }
+
+    public String getTextPositionLabels() {
+        return textPositionLabels;
+    }
+
+    public String getShadowOffSet() {
+        return shadowOffSet;
+    }
+
+    public void setTextFontOptions(String textFontOptions) {
+        this.textFontOptions = textFontOptions;
+    }
+
+    public void setTextPositionLabel(String textPositionLabel) {
+        this.textPositionLabel = textPositionLabel;
+    }
+
+    public void setTextPositionOptions(String textPositionOptions) {
+        this.textPositionOptions = textPositionOptions;
+    }
+
+    public void setTextPositionLabels(String textPositionLabels) {
+        this.textPositionLabels = textPositionLabels;
+    }
+
+    public void setTextFont(String textFont) {
+        this.textFont = textFont;
+    }
+
+    public void setTextPosition(String textPosition) {
+        this.textPosition = textPosition;
+    }
+
+    public void setTextPositionRelative(String textPositionRelative) {
+        this.textPositionRelative = textPositionRelative;
+    }
+
+    public String getTextShadowPosition() {
+        return textShadowPosition;
+    }
+
+    public void setTextShadowPosition(String textShadowPosition) {
+        this.textShadowPosition = textShadowPosition;
+    }
+
+    public String getTextShadowColor() {
+        return textShadowColor;
+    }
+
+    public void setTextShadowColor(String textShadowColor) {
+        this.textShadowColor = textShadowColor;
+    }
+
+    public String getTextShadowRadius() {
+        return textShadowRadius;
+    }
+
+    public void setTextShadowRadius(String textShadowRadius) {
+        this.textShadowRadius = textShadowRadius;
+    }
+
+    public String getIsSupportTextShadow() {
+        return isSupportTextShadow;
+    }
+
+    public String getArcLinearMargin() {
+        return arcLinearMargin;
+    }
+
+    public String getArcLinearBitmapRotate() {
+        return arcLinearBitmapRotate;
+    }
+
+    public String getArcLinearSelectedContainer() {
+        return arcLinearSelectedContainer;
+    }
+
+    public void setArcLinearSelectedContainer(String arcLinearSelectedContainer) {
+        this.arcLinearSelectedContainer = arcLinearSelectedContainer;
+    }
+
+    public String getArcAmbientDraw() {
+        return arcAmbientDraw;
+    }
+
+    public void setArcAmbientDraw(String arcAmbientDraw) {
+        this.arcAmbientDraw = arcAmbientDraw;
+    }
+
+    @Override
+    public String toString() {
+        return "Layer{" + "index='" + index + '\'' + ", drawType='" + drawType + '\'' + ", layers=" + layers
+            + ", textContent='" + textContent + '\'' + ", textActiveColor='" + textActiveColor + '\''
+            + ", textAmbientColor='" + textAmbientColor + '\'' + ", textFont='" + textFont + '\'' + ", textSize='"
+            + textSize + '\'' + ", textAlign='" + textAlign + '\'' + ", textPosition='" + textPosition + '\''
+            + ", textPositionRelative='" + textPositionRelative + '\'' + ", wordSupportCN='" + wordSupportCN + '\''
+            + ", wordIsAbbr='" + wordIsAbbr + '\'' + ", wordCapitalType='" + wordCapitalType + '\'' + ", textIsBold='"
+            + textIsBold + '\'' + ", resActive='" + resActive + '\'' + ", resActiveLeft='" + resActiveLeft + '\''
+            + ", resActiveRight='" + resActiveRight + '\'' + ", resActiveDot='" + resActiveDot + '\''
+            + ", resActiveScale='" + resActiveScale + '\'' + ", resAmbient='" + resAmbient + '\'' + ", resAmbientLeft='"
+            + resAmbientLeft + '\'' + ", resAmbientRight='" + resAmbientRight + '\'' + ", resAmbientDot='"
+            + resAmbientDot + '\'' + ", resAmbientScale='" + resAmbientScale + '\'' + ", resShadow='" + resShadow + '\''
+            + ", resShadowIsOnlyShowActive='" + resShadowIsOnlyShowActive + '\'' + ", resDotShadow='" + resDotShadow
+            + '\'' + ", resInterval='" + resInterval + '\'' + ", resAlign='" + resAlign + '\'' + ", resPosition='"
+            + resPosition + '\'' + ", resPositionRelative='" + resPositionRelative + '\'' + ", resOrderedIsPlayOnce='"
+            + resOrderedIsPlayOnce + '\'' + ", rotatePointHand='" + rotatePointHand + '\'' + ", rotatePointFace='"
+            + rotatePointFace + '\'' + ", rotatePointFaceRelative='" + rotatePointFaceRelative + '\''
+            + ", rotateStartAngel='" + rotateStartAngel + '\'' + ", rotateEndAngel='" + rotateEndAngel + '\''
+            + ", primaryColor='" + primaryColor + '\'' + ", secondaryColor='" + secondaryColor + '\'' + ", lineWidth='"
+            + lineWidth + '\'' + ", lineCap='" + lineCap + '\'' + ", startPoint='" + startPoint + '\'' + ", endPoint='"
+            + endPoint + '\'' + ", startPointRelative='" + startPointRelative + '\'' + ", endPointRelative='"
+            + endPointRelative + '\'' + ", startAngle='" + startAngle + '\'' + ", endAngle='" + endAngle + '\''
+            + ", rect='" + rect + '\'' + ", rectRelative='" + rectRelative + '\'' + ", backgroundColor='"
+            + backgroundColor + '\'' + ", backgroundDrawable='" + backgroundDrawable + '\'' + ", borderColor='"
+            + borderColor + '\'' + ", highlightColor='" + highlightColor + '\'' + ", iconColor='" + iconColor + '\''
+            + ", textColor='" + textColor + '\'' + ", titleColor='" + titleColor + '\'' + ", titleFont='" + titleFont
+            + '\'' + ", titleSize='" + titleSize + '\'' + ", rangePrimaryColor='" + rangePrimaryColor + '\''
+            + ", rangeSecondaryColor='" + rangeSecondaryColor + '\'' + ", boundsRect='" + boundsRect + '\''
+            + ", rotateType='" + rotateType + '\'' + ", rotateFixedDegree='" + rotateFixedDegree + '\''
+            + ", rotateCenterPoint='" + rotateCenterPoint + '\'' + ", rotateCenterPointRelative='"
+            + rotateCenterPointRelative + '\'' + ", rotateDegree='" + rotateDegree + '\'' + ", rotateTime='"
+            + rotateTime + '\'' + ", rotateMotionType='" + rotateMotionType + '\'' + ", scaleType='" + scaleType + '\''
+            + ", scaleCenterPoint='" + scaleCenterPoint + '\'' + ", scaleCenterPointRelative='"
+            + scaleCenterPointRelative + '\'' + ", scaleAmount='" + scaleAmount + '\'' + ", scaleTime='" + scaleTime
+            + '\'' + ", scaleMotionType='" + scaleMotionType + '\'' + ", translateType='" + translateType + '\''
+            + ", translateEndPosition='" + translateEndPosition + '\'' + ", translateEndPositionRelative='"
+            + translateEndPositionRelative + '\'' + ", valueType='" + valueType + '\'' + ", textFontOptions='"
+            + textFontOptions + '\'' + ", textPositionLabel='" + textPositionLabel + '\'' + ", textPositionOptions='"
+            + textPositionOptions + '\'' + ", textPositionLabels='" + textPositionLabels + '\'' + ", shadowOffSet='"
+            + shadowOffSet + '\'' + ", textShadowPosition='" + textShadowPosition + '\'' + ", textShadowColor='"
+            + textShadowColor + '\'' + ", textShadowRadius='" + textShadowRadius + '\'' + ", isSupportTextShadow='"
+            + isSupportTextShadow + '\'' + '}';
+    }
+}
+
+
+
+
+
+
+
+import java.util.List;
+import java.util.Optional;
+
+import com.google.gson.annotations.SerializedName;
+
+import android.text.TextUtils;
+
+/**
+ * xml文件中option标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Option {
+    @SerializedName("layer")
+    private List<Layer> layers;
+
+    @SerializedName("@index")
+    private String index;
+
+    @SerializedName("@res_preview")
+    private String resPreview;
+
+    @SerializedName("@res_border_preview")
+    private String resBorderPreview;
+
+    @SerializedName("@data_type")
+    private String dataType;
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public String getResPreview() {
+        return resPreview;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public String getResBorderPreview() {
+        return resBorderPreview;
+    }
+
+    /**
+     * 获取指定layer
+     * @param i layer索引
+     * @return layer对象
+     */
+    public Optional<Layer> getLayer(String i) {
+        if ((layers == null) || (layers.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Layer layer : layers) {
+            if (layer == null) {
+                continue;
+            }
+            if (TextUtils.equals(layer.getIndex().trim(), i.trim())) {
+                return Optional.of(layer);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public String toString() {
+        return " Option { layers=" + layers + " , index=" + index + " , resPreview=" + resPreview + " , dataType="
+            + dataType + " ,resBoredrPreview=" + resBorderPreview + " } ";
+    }
+}
+
+
+
+
+
+
+
+
+
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.graphics.Region;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.SystemClock;
+import android.support.wearable.watchface.WatchFaceService;
+import android.util.Log;
+import android.view.Choreographer;
+import android.view.Surface;
+import android.view.SurfaceControl;
+import android.view.SurfaceHolder;
+import android.view.SurfaceSession;
+import android.view.Choreographer.FrameCallback;
+import android.view.SurfaceControl.Builder;
+import android.view.SurfaceHolder.Callback;
+import java.util.ArrayList;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class HwCanvasWatchFaceService extends WatchFaceService {
+    private static final String TAG = "HwCanvasWatchFaceService";
+
+    public HwCanvasWatchFaceService() {
+    }
+
+    public HwCanvasWatchFaceService.Engine onCreateEngine() {
+        return new HwCanvasWatchFaceService.Engine();
+    }
+
+    public class Engine extends android.support.wearable.watchface.WatchFaceService.Engine {
+        private static final int MSG_INVALIDATE = 0;
+        private boolean mDrawRequested;
+        private boolean mDestroyed;
+        private final Choreographer mChoreographer = Choreographer.getInstance();
+        private final FrameCallback mFrameCallback = new FrameCallback() {
+            public void doFrame(long frameTimeNs) {
+                if (!Engine.this.mDestroyed && Engine.this.mDrawRequested) {
+                    Engine.this.draw(Engine.this.getSurfaceHolder());
+                }
+
+            }
+        };
+        private SurfaceSession mSurfaceSession;
+        private SurfaceControl mSurfaceControl;
+        private SurfaceControl mDeferredDestroySurfaceControl;
+        private boolean mIsCreating = false;
+        private boolean mSurfaceCreated = false;
+        private int mSurfaceWidth = -1;
+        private int mSurfaceHeight = -1;
+        private int mFormat = -1;
+        private boolean mVisible = false;
+        private boolean mVisibleChanged = false;
+        final ReentrantLock mSurfaceLock = new ReentrantLock();
+        private int mSurfaceFlags = 4;
+        private boolean mUseHardware = false;
+        final ArrayList<Callback> mCallbacks = new ArrayList();
+        final Rect mSurfaceFrame = new Rect();
+        private long mLastLockTime = 0L;
+        private final SurfaceHolder mSurfaceHolder = new SurfaceHolder() {
+            private static final String LOG_TAG = "SurfaceHolder";
+            private Surface mSurface = new Surface();
+
+            public boolean isCreating() {
+                return Engine.this.mIsCreating;
+            }
+
+            public void setFixedSize(int width, int height) {
+                if (Engine.this.mSurfaceWidth != width || Engine.this.mSurfaceHeight != height) {
+                    Engine.this.mSurfaceWidth = width;
+                    Engine.this.mSurfaceHeight = height;
+                }
+
+            }
+
+            public void setFormat(int format) {
+                boolean formatChanged = Engine.this.mFormat != format;
+                Engine.this.mFormat = format;
+                if (Engine.this.mSurfaceControl != null) {
+                    Engine.this.updateSurface(Engine.this.getSurfaceHolder(), formatChanged, false, false);
+                }
+
+            }
+
+            public void setSizeFromLayout() {
+            }
+
+            public void setKeepScreenOn(boolean screenOn) {
+                throw new UnsupportedOperationException("Wallpapers do not support keep screen on");
+            }
+
+            /** @deprecated */
+            @Deprecated
+            public void setType(int type) {
+            }
+
+            public void addCallback(Callback callback) {
+                ArrayList var2 = Engine.this.mCallbacks;
+                synchronized(Engine.this.mCallbacks) {
+                    if (!Engine.this.mCallbacks.contains(callback)) {
+                        Engine.this.mCallbacks.add(callback);
+                    }
+
+                }
+            }
+
+            public void removeCallback(Callback callback) {
+                ArrayList var2 = Engine.this.mCallbacks;
+                synchronized(Engine.this.mCallbacks) {
+                    Engine.this.mCallbacks.remove(callback);
+                }
+            }
+
+            public Canvas lockCanvas() {
+                return this.internalLockCanvas((Rect)null, false);
+            }
+
+            public Canvas lockCanvas(Rect inOutDirty) {
+                return this.internalLockCanvas(inOutDirty, false);
+            }
+
+            public Canvas lockHardwareCanvas() {
+                return this.internalLockCanvas((Rect)null, true);
+            }
+
+            private Canvas internalLockCanvas(Rect dirty, boolean hardware) {
+                Engine.this.mSurfaceLock.lock();
+                Log.d("HwCanvasWatchFaceService", System.identityHashCode(this) + " Locking canvas..., surfaceControl=" + Engine.this.mSurfaceControl);
+                Canvas c = null;
+                if (Engine.this.mSurfaceControl != null) {
+                    try {
+                        if (hardware) {
+                            c = this.mSurface.lockHardwareCanvas();
+                        } else {
+                            c = this.mSurface.lockCanvas(dirty);
+                        }
+                    } catch (Exception var10) {
+                        Log.e("SurfaceHolder", "Exception locking surface" + var10);
+                    }
+                }
+
+                Log.d("HwCanvasWatchFaceService", System.identityHashCode(this) + " Returned canvas: " + c);
+                if (c != null) {
+                    Engine.this.mLastLockTime = SystemClock.uptimeMillis();
+                    return c;
+                } else {
+                    long now = SystemClock.uptimeMillis();
+                    long nextTime = Engine.this.mLastLockTime + 100L;
+                    if (nextTime > now) {
+                        try {
+                            Thread.sleep(nextTime - now);
+                        } catch (InterruptedException var9) {
+                            ;
+                        }
+
+                        now = SystemClock.uptimeMillis();
+                    }
+
+                    Engine.this.mLastLockTime = now;
+                    Engine.this.mSurfaceLock.unlock();
+                    return null;
+                }
+            }
+
+            public void unlockCanvasAndPost(Canvas canvas) {
+                this.mSurface.unlockCanvasAndPost(canvas);
+                Engine.this.mSurfaceLock.unlock();
+            }
+
+            public Surface getSurface() {
+                return this.mSurface;
+            }
+
+            public Rect getSurfaceFrame() {
+                return Engine.this.mSurfaceFrame;
+            }
+        };
+        private final Handler mHandler = new Handler() {
+            public void handleMessage(Message message) {
+                switch(message.what) {
+                case 0:
+                    Engine.this.invalidate();
+                default:
+                }
+            }
+        };
+
+        protected void updateSurface(SurfaceHolder holder, boolean formatChanged, boolean sizeChanged, boolean redrawNeeded) {
+            Log.i("HwCanvasWatchFaceService", "updateSurface()");
+            if (null == holder) {
+                Log.e("HwCanvasWatchFaceService", "updateSurface sysSurfaceHolder is null");
+            } else if (!holder.getSurface().isValid()) {
+                Log.e("HwCanvasWatchFaceService", "updateSurface sysSurfaceHolder surface is not Valid");
+            } else {
+                boolean creating = this.mSurfaceControl == null;
+                Rect rect = holder.getSurfaceFrame();
+                if (creating || formatChanged || sizeChanged || this.mVisibleChanged) {
+                    try {
+                        if (creating) {
+                            this.mSurfaceSession = new SurfaceSession(holder.getSurface());
+                            this.mDeferredDestroySurfaceControl = this.mSurfaceControl;
+                            this.mSurfaceFlags &= -1025;
+                            this.mSurfaceControl = new HwCanvasWatchFaceService.Engine.SurfaceControlWithBackground("SurfaceWatchService - video ", (this.mSurfaceFlags & 1024) != 0, (new Builder(this.mSurfaceSession)).setSize(this.mSurfaceWidth, this.mSurfaceHeight).setFormat(this.mFormat).setFlags(this.mSurfaceFlags));
+                        } else if (this.mSurfaceControl == null) {
+                            return;
+                        }
+
+                        this.mSurfaceLock.lock();
+
+                        try {
+                            SurfaceControl.openTransaction();
+
+                            try {
+                                this.mSurfaceControl.setLayer(-2);
+                                this.mSurfaceControl.show();
+                                if (sizeChanged || creating) {
+                                    this.mSurfaceControl.setPosition((float)rect.left, (float)rect.top);
+                                    this.mSurfaceControl.setMatrix(1.0F, 0.0F, 0.0F, 1.0F);
+                                }
+
+                                if (sizeChanged) {
+                                    this.mSurfaceControl.setSize(rect.width(), rect.height());
+                                }
+                            } finally {
+                                SurfaceControl.closeTransaction();
+                            }
+                        } finally {
+                            this.mSurfaceLock.unlock();
+                        }
+
+                        try {
+                            if (creating) {
+                                this.mSurfaceHolder.getSurface().copyFrom(this.mSurfaceControl);
+                            }
+
+                            Callback[] callbacks;
+                            Callback[] var9;
+                            int var10;
+                            int var11;
+                            Callback c;
+                            if (this.mSurfaceHolder.getSurface().isValid()) {
+                                if (!this.mSurfaceCreated) {
+                                    this.mSurfaceCreated = true;
+                                    this.mIsCreating = true;
+                                    this.onSecondSurfaceCreated(this.mSurfaceHolder);
+                                    callbacks = this.getSurfaceCallbacks();
+                                    if (callbacks != null) {
+                                        var9 = callbacks;
+                                        var10 = callbacks.length;
+
+                                        for(var11 = 0; var11 < var10; ++var11) {
+                                            c = var9[var11];
+                                            c.surfaceCreated(this.mSurfaceHolder);
+                                        }
+                                    }
+                                }
+
+                                if (creating || formatChanged || sizeChanged) {
+                                    this.onSecondSurfaceChanged(this.mSurfaceHolder, this.mFormat, this.mSurfaceWidth, this.mSurfaceHeight);
+                                    callbacks = this.getSurfaceCallbacks();
+                                    if (callbacks != null) {
+                                        var9 = callbacks;
+                                        var10 = callbacks.length;
+
+                                        for(var11 = 0; var11 < var10; ++var11) {
+                                            c = var9[var11];
+                                            c.surfaceChanged(this.mSurfaceHolder, this.mFormat, this.mSurfaceWidth, this.mSurfaceHeight);
+                                        }
+                                    }
+                                }
+                            } else {
+                                this.onSecondSurfaceDestroyed(this.mSurfaceHolder);
+                                callbacks = this.getSurfaceCallbacks();
+                                if (callbacks != null) {
+                                    var9 = callbacks;
+                                    var10 = callbacks.length;
+
+                                    for(var11 = 0; var11 < var10; ++var11) {
+                                        c = var9[var11];
+                                        c.surfaceDestroyed(this.mSurfaceHolder);
+                                    }
+                                }
+                            }
+                        } finally {
+                            this.mIsCreating = false;
+                            if (this.mSurfaceControl != null && !this.mSurfaceCreated) {
+                                this.mSurfaceHolder.getSurface().release();
+                                this.mSurfaceControl.destroy();
+                                this.mSurfaceControl = null;
+                            }
+
+                        }
+                    } catch (Exception var29) {
+                        Log.e("HwCanvasWatchFaceService", "Exception configuring surface", var29);
+                    }
+                }
+
+            }
+        }
+
+        private Callback[] getSurfaceCallbacks() {
+            ArrayList var2 = this.mCallbacks;
+            synchronized(this.mCallbacks) {
+                Callback[] callbacks = new Callback[this.mCallbacks.size()];
+                this.mCallbacks.toArray(callbacks);
+                return callbacks;
+            }
+        }
+
+        public Engine() {
+            super(HwCanvasWatchFaceService.this);
+        }
+
+        public void onDestroy() {
+            this.mDestroyed = true;
+            this.mHandler.removeMessages(0);
+            this.mChoreographer.removeFrameCallback(this.mFrameCallback);
+            super.onDestroy();
+        }
+
+        public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            Log.i("HwCanvasWatchFaceService", "onSurfaceChanged");
+            boolean formatChanged = this.mFormat != format;
+            this.mFormat = format;
+            boolean sizeChanged = this.mSurfaceHeight != height || this.mSurfaceWidth != width;
+            this.mSurfaceHeight = height;
+            this.mSurfaceWidth = width;
+            this.updateSurface(holder, formatChanged, sizeChanged, false);
+            this.invalidate();
+        }
+
+        public void onSurfaceRedrawNeeded(SurfaceHolder holder) {
+            Log.i("HwCanvasWatchFaceService", "onSurfaceRedrawNeeded");
+            super.onSurfaceRedrawNeeded(holder);
+            this.updateSurface(holder, false, false, true);
+            this.draw(holder);
+        }
+
+        public void onSurfaceCreated(SurfaceHolder holder) {
+            Log.i("HwCanvasWatchFaceService", "onSurfaceCreated");
+            super.onSurfaceCreated(holder);
+            this.invalidate();
+        }
+
+        public void onVisibilityChanged(boolean visible) {
+            super.onVisibilityChanged(visible);
+            this.mVisibleChanged = this.mVisible != visible;
+            this.mVisible = visible;
+        }
+
+        protected void onSecondSurfaceCreated(SurfaceHolder holder) {
+        }
+
+        protected void onSecondSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        }
+
+        protected void onSecondSurfaceDestroyed(SurfaceHolder holder) {
+        }
+
+        public void invalidate() {
+            if (!this.mDrawRequested) {
+                this.mDrawRequested = true;
+                this.mChoreographer.postFrameCallback(this.mFrameCallback);
+            }
+
+        }
+
+        public void postInvalidate() {
+            this.mHandler.sendEmptyMessage(0);
+        }
+
+        public void onDraw(Canvas canvas, Rect bounds) {
+        }
+
+        private void draw(SurfaceHolder holder) {
+            this.mDrawRequested = false;
+            Canvas canvas;
+            if (this.mUseHardware) {
+                canvas = holder.lockHardwareCanvas();
+            } else {
+                canvas = holder.lockCanvas();
+            }
+
+            if (canvas != null) {
+                try {
+                    this.onDraw(canvas, holder.getSurfaceFrame());
+                } finally {
+                    holder.unlockCanvasAndPost(canvas);
+                }
+            }
+
+        }
+
+        protected void useHardware(boolean flag) {
+            this.mUseHardware = flag;
+        }
+
+        class SurfaceControlWithBackground extends SurfaceControl {
+            private SurfaceControl mBackgroundControl;
+            private boolean mOpaque = true;
+            private boolean mVisible = false;
+
+            public SurfaceControlWithBackground(String name, boolean opaque, Builder b) throws Exception {
+                super(b.setName(name).build());
+                this.mBackgroundControl = b.setName("Background for - " + name).setFormat(1024).setColorLayer(true).build();
+                this.mOpaque = opaque;
+            }
+
+            public void setAlpha(float alpha) {
+                super.setAlpha(alpha);
+                this.mBackgroundControl.setAlpha(alpha);
+            }
+
+            public void setLayer(int zorder) {
+                super.setLayer(zorder);
+                this.mBackgroundControl.setLayer(-3);
+            }
+
+            public void setPosition(float x, float y) {
+                super.setPosition(x, y);
+                this.mBackgroundControl.setPosition(x, y);
+            }
+
+            public void setSize(int w, int h) {
+                super.setSize(w, h);
+                this.mBackgroundControl.setSize(w, h);
+            }
+
+            public void setWindowCrop(Rect crop) {
+                super.setWindowCrop(crop);
+                this.mBackgroundControl.setWindowCrop(crop);
+            }
+
+            public void setFinalCrop(Rect crop) {
+                super.setFinalCrop(crop);
+                this.mBackgroundControl.setFinalCrop(crop);
+            }
+
+            public void setLayerStack(int layerStack) {
+                super.setLayerStack(layerStack);
+                this.mBackgroundControl.setLayerStack(layerStack);
+            }
+
+            public void setOpaque(boolean isOpaque) {
+                super.setOpaque(isOpaque);
+                this.mOpaque = isOpaque;
+                this.updateBackgroundVisibility();
+            }
+
+            public void setSecure(boolean isSecure) {
+                super.setSecure(isSecure);
+            }
+
+            public void setMatrix(float dsdx, float dtdx, float dsdy, float dtdy) {
+                super.setMatrix(dsdx, dtdx, dsdy, dtdy);
+                this.mBackgroundControl.setMatrix(dsdx, dtdx, dsdy, dtdy);
+            }
+
+            public void hide() {
+                super.hide();
+                this.mVisible = false;
+                this.updateBackgroundVisibility();
+            }
+
+            public void show() {
+                super.show();
+                this.mVisible = true;
+                this.updateBackgroundVisibility();
+            }
+
+            public void destroy() {
+                super.destroy();
+                this.mBackgroundControl.destroy();
+            }
+
+            public void release() {
+                super.release();
+                this.mBackgroundControl.release();
+            }
+
+            public void setTransparentRegionHint(Region region) {
+                super.setTransparentRegionHint(region);
+                this.mBackgroundControl.setTransparentRegionHint(region);
+            }
+
+            public void deferTransactionUntil(IBinder handle, long frame) {
+                super.deferTransactionUntil(handle, frame);
+                this.mBackgroundControl.deferTransactionUntil(handle, frame);
+            }
+
+            public void deferTransactionUntil(Surface barrier, long frame) {
+                super.deferTransactionUntil(barrier, frame);
+                this.mBackgroundControl.deferTransactionUntil(barrier, frame);
+            }
+
+            void updateBackgroundVisibility() {
+                if (this.mOpaque && this.mVisible) {
+                    this.mBackgroundControl.show();
+                } else {
+                    this.mBackgroundControl.hide();
+                }
+
+            }
+        }
+    }
+}
