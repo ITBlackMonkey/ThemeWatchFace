@@ -1,0 +1,1425 @@
+
+/**
+ * 数据提供者适配器
+ *
+ * @author m00230717
+ * @version 1.0.0
+ * @since 2019/3/7
+ */
+public class DataAdapter {
+    private static DataAdapter instance;
+
+    private HashMap<String, IDataProvider> mDataProviders;
+
+    /**
+     * 数据提供者私有构造函数
+     */
+    private DataAdapter() {
+        mDataProviders = new HashMap<>(0);
+    }
+
+    /**
+     * 数据提供者适配器单例获取
+     * @return DataAdapter单例对象
+     */
+    public static DataAdapter getInstance() {
+        if (instance == null) {
+            synchronized (DataAdapter.class) {
+                if (instance == null) {
+                    instance = new DataAdapter();
+                }
+            }
+        }
+        return instance;
+    }
+
+    /**
+     * 注册数据提供者
+     * @param valueType 数据类型
+     * @param dataProvider 数据提供者对象
+     */
+    public void registerDataProvider(String valueType, IDataProvider dataProvider) {
+        mDataProviders.put(valueType, dataProvider);
+    }
+
+    /**
+     * 去注册数据提供者
+     * @param valueType 数据类型
+     * @param dataProvider 数据提供者对象
+     */
+    public void unregisterDataProvider(String valueType, IDataProvider dataProvider) {
+        mDataProviders.remove(valueType, dataProvider);
+    }
+
+    /**
+     * 获取字符串值
+     * @param valueType 数据类型
+     * @return 字符串值
+     */
+    public String getStringValue(String valueType) {
+        IDataProvider provider = mDataProviders.get(valueType);
+        if (provider != null) {
+            return provider.getStringValue(valueType);
+        }
+        return "";
+    }
+
+    /**
+     * 获取字符串值
+     * @param valueType 数据类型
+     * @param format 字符串格式要求
+     * @return 字符串值
+     */
+    public String getStringValue(String valueType, String... format) {
+        IDataProvider provider = mDataProviders.get(valueType);
+        if (provider != null) {
+            return provider.getStringValue(valueType, format);
+        }
+        return "";
+    }
+
+    /**
+     * 获取整数值
+     * @param valueType 数据类型
+     * @return 整数值
+     */
+    public int getIntValue(String valueType) {
+        IDataProvider provider = mDataProviders.get(valueType);
+        if (provider != null) {
+            return provider.getIntValue(valueType);
+        }
+        return 0;
+    }
+
+    /**
+     * 获取浮点数值
+     * @param valueType 数据类型
+     * @return 浮点数值
+     */
+    public float getFloatValue(String valueType) {
+        IDataProvider provider = mDataProviders.get(valueType);
+        if (provider != null) {
+            return provider.getFloatValue(valueType);
+        }
+        return 0f;
+    }
+
+    /**
+     * 获取整数RangeValue对象
+     * @param valueType 数据类型
+     * @return 整数RangeValue对象
+     */
+    public IntRangeValue getIntRangeValue(String valueType) {
+        IDataProvider provider = mDataProviders.get(valueType);
+        if (provider != null) {
+            return provider.getIntRangeValue(valueType);
+        }
+        return new IntRangeValue(0, 0, 0);
+    }
+
+    /**
+     * 获取浮点数RangeValue对象
+     * @param valueType 数据类型
+     * @return 浮点数RangeValue对象
+     */
+    public FloatRangeValue getFloatRangeValue(String valueType) {
+        IDataProvider provider = mDataProviders.get(valueType);
+        if (provider != null) {
+            return provider.getFloatRangeValue(valueType);
+        }
+        return new FloatRangeValue(0f, 0f, 0f);
+    }
+
+    /**
+     * 获取数据类型对应的索引值
+     * @param valueType 数据类型
+     * @return 索引值
+     */
+    public int getIndexValue(String valueType) {
+        IDataProvider provider = mDataProviders.get(valueType);
+        if (provider != null) {
+            return provider.getIndexValue(valueType);
+        }
+        return 0;
+    }
+
+    /**
+     * 获取数据类型对应的layer索引值
+     * @param valueType 数据类型
+     * @return layer索引值
+     */
+    public int getLayerIndexValue(String valueType) {
+        IDataProvider provider = mDataProviders.get(valueType);
+        if (provider != null) {
+            return provider.getLayerIndexValue(valueType);
+        }
+        return 0;
+    }
+
+    /**
+     * 点击事件
+     * @param dataType 数据类型
+     */
+    public void doClick(String dataType) {
+        IDataProvider provider = mDataProviders.get(dataType);
+        if (provider != null) {
+            provider.doClick(dataType);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+/**
+ * 数据相关常量类
+ *
+ * @author lWX689279
+ * @version 1.0.0
+ * @since 2019/3/6
+ */
+public class DataConstantUtils {
+    /**
+     * 年
+     */
+    public static final String VALUE_TYPE_DATA_YEAR = "data_year";
+
+    /**
+     * 数字月
+     */
+    public static final String VALUE_TYPE_DATA_MONTH = "data_month";
+
+    /**
+     * 文本月
+     */
+    public static final String VALUE_TYPE_DATA_WORD_MONTH = "data_word_month";
+
+    /**
+     * 月 日
+     */
+    public static final String VALUE_TYPE_DATA_MONTH_DAY = "data_month_day";
+
+    /**
+     * 天
+     */
+    public static final String VALUE_TYPE_DATA_DAY = "data_day";
+
+    /**
+     * 天
+     */
+    public static final String VALUE_TYPE_DATA_DAY_FILL_IN_0 = "data_day_fill_in_0";
+
+    /**
+     * 天(left)
+     */
+    public static final String VALUE_TYPE_DATA_DAY_FILL_IN_LEFT = "data_day_fill_in_left";
+
+    /**
+     * 天(right)
+     */
+    public static final String VALUE_TYPE_DATA_DAY_FILL_IN_RIGHT = "data_day_fill_in_right";
+
+    /**
+     * 前一天
+     */
+    public static final String VALUE_TYPE_DATA_DAY_BEFORE = "data_day_before";
+
+    /**
+     * 后一天
+     */
+    public static final String VALUE_TYPE_DATA_DAY_AFTER = "data_day_after";
+
+    /**
+     * 数字周
+     */
+    public static final String VALUE_TYPE_DATA_WEEK = "data_week";
+
+    /**
+     * 文本周，星期一，星期二，星期三...
+     */
+    public static final String VALUE_TYPE_DATA_WORD_WEEK = "data_word_week";
+
+    /**
+     * 文本周，周一，周二，周三...
+     */
+    public static final String VALUE_TYPE_DATA_WORD_WEEK_1 = "data_word_week_1";
+
+    /**
+     * 时
+     */
+    public static final String VALUE_TYPE_DATA_HOUR = "data_hour";
+
+    /**
+     * 分，用于平移分针，范围为60 * 60
+     */
+    public static final String VALUE_TYPE_DATA_MINUTE = "data_minute";
+
+    /**
+     * 分,用于分针一格一格跳，范围为60
+     */
+    public static final String VALUE_TYPE_DATA_MINUTE_SECOND = "data_minute_second";
+
+    /**
+     * 时:分
+     */
+    public static final String VALUE_TYPE_DATA_HOUR_MINUTE = "data_hour_minute";
+
+    /**
+     * 秒
+     */
+    public static final String VALUE_TYPE_DATA_SECOND = "data_second";
+
+    /**
+     * am_pm
+     */
+    public static final String VALUE_TYPE_DATA_AMPM = "data_am_pm";
+
+    /**
+     * 天数/月 图片索引
+     */
+    public static final String VALUE_TYPE_DATA_DAYS_OF_MONTH_INDEX = "data_days_of_month_index";
+
+    /**
+     * 电量
+     */
+    public static final String VALUE_TYPE_DATA_BATTERY = "data_battery";
+
+    /**
+     * 电量（图片索引）
+     */
+    public static final String VALUE_TYPE_DATA_BATTERY_ICON_INDEX = "data_battery_icon_index";
+
+    /**
+     * 电量(根据范围返回对应索引)
+     */
+    public static final String VALUE_TYPE_DATA_BATTERY_SELECTED = "battery_selection";
+
+    /**
+     * 月相
+     */
+    public static final String VALUE_TYPE_DATA_MOON = "data_moon";
+
+    /**
+     * 旋转月相
+     */
+    public static final String VALUE_TYPE_DATA_ROTATE_MOON = "data_rotate_moon";
+
+    /**
+     * 压力（气压）
+     */
+    public static final String VALUE_TYPE_DATA_PRESSURE = "data_pressure";
+
+    /**
+     * 压力（运动）
+     */
+    public static final String VALUE_TYPE_DATA_PRESSURE_SPORT = "data_pressure_sport";
+
+    /**
+     * 距离
+     */
+    public static final String VALUE_TYPE_DATA_DISTANCE = "data_distance";
+
+    /**
+     * 最大摄氧量
+     */
+    public static final String VALUE_TYPE_DATA_MAX_OXYGEN_UPTAKE = "data_max_oxygen_uptake";
+
+    /**
+     * 世界时
+     */
+    public static final String VALUE_TYPE_WORLD_TIME = "data_world_time";
+
+    /**
+     * 海拔高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE = "data_altitude";
+
+    /**
+     * 当前时间高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_0 = "data_altitude_offset_0";
+
+    /**
+     * 当前时间前1个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_1 = "data_altitude_offset_1";
+
+    /**
+     * 当前时间前2个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_2 = "data_altitude_offset_2";
+
+    /**
+     * 当前时间前3个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_3 = "data_altitude_offset_3";
+
+    /**
+     * 当前时间前4个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_4 = "data_altitude_offset_4";
+
+    /**
+     * 当前时间前5个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_5 = "data_altitude_offset_5";
+
+    /**
+     * 当前时间前6个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_6 = "data_altitude_offset_6";
+
+    /**
+     * 当前时间前7个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_7 = "data_altitude_offset_7";
+
+    /**
+     * 当前时间前8个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_8 = "data_altitude_offset_8";
+
+    /**
+     * 当前时间前9个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_9 = "data_altitude_offset_9";
+
+    /**
+     * 当前时间前10个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_10 = "data_altitude_offset_10";
+
+    /**
+     * 当前时间前11个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_11 = "data_altitude_offset_11";
+
+    /**
+     * 当前时间前12个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_12 = "data_altitude_offset_12";
+
+    /**
+     * 当前时间前13个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_13 = "data_altitude_offset_13";
+
+    /**
+     * 当前时间前14个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_14 = "data_altitude_offset_14";
+
+    /**
+     * 当前时间前15个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_15 = "data_altitude_offset_15";
+
+    /**
+     * 当前时间前16个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_16 = "data_altitude_offset_16";
+
+    /**
+     * 当前时间前17个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_17 = "data_altitude_offset_17";
+
+    /**
+     * 当前时间前18个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_18 = "data_altitude_offset_18";
+
+    /**
+     * 当前时间前19个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_19 = "data_altitude_offset_19";
+
+    /**
+     * 当前时间前20个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_20 = "data_altitude_offset_20";
+
+    /**
+     * 当前时间前21个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_21 = "data_altitude_offset_21";
+
+    /**
+     * 当前时间前22个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_22 = "data_altitude_offset_22";
+
+    /**
+     * 当前时间前23个小时时的高度
+     */
+    public static final String VALUE_TYPE_DATA_ALTITUDE_OFFSET_23 = "data_altitude_offset_23";
+
+    /**
+     * pm2.5数值
+     */
+
+    public static final String VALUE_TYPE_DATA_AIR_QUALITY_PM2_5_NUM = "data_air_quality_pm2_5_num";
+
+    /**
+     * 比当前pm2.5数值多1
+     */
+    public static final String VALUE_TYPE_DATA_AIR_QUALITY_PM2_5_NUM_RIGHT_ONE = "data_air_quality_pm2_5_num_right_one";
+
+    /**
+     * 比当前pm2.5数值多2
+     */
+    public static final String VALUE_TYPE_DATA_AIR_QUALITY_PM2_5_NUM_RIGHT_TWO = "data_air_quality_pm2_5_num_right_two";
+
+    /**
+     * 比当前pm2.5数值少1
+     */
+    public static final String VALUE_TYPE_DATA_AIR_QUALITY_PM2_5_NUM_LEFT_ONE = "data_air_quality_pm2_5_num_left_one";
+
+    /**
+     * 比当前pm2.5数值少2
+     */
+    public static final String VALUE_TYPE_DATA_AIR_QUALITY_PM2_5_NUM_LEFT_TWO = "data_air_quality_pm2_5_num_left_two";
+
+    /**
+     * 天气质量级别：优、良、中、差，等
+     */
+    public static final String VALUE_TYPE_DATA_AIR_QUALITY_TEXT = "data_air_quality_text";
+
+    /**
+     * 当前天气温度数值，比如24
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_VALUE = "data_current_weather_value";
+
+    /**
+     * 当前天气温度数值+°，比如24°
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_VALUE_AND_DEGREE =
+        "data_current_weather_value_and_degree";
+
+    /**
+     * 比当前温度少1度
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_VALUE_LEFT_ONE = "data_current_weather_value_left_one";
+
+    /**
+     * 比当前温度少2度
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_VALUE_LEFT_TWO = "data_current_weather_value_left_two";
+
+    /**
+     * 比当前温度多1度
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_VALUE_RIGHT_ONE = "data_current_weather_value_right_one";
+
+    /**
+     * 比当前温度多2度
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_VALUE_RIGHT_TWO = "data_current_weather_value_right_two";
+
+    /**
+     * 当前温度，带单位，比如24℃或者136℉
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_ALL = "data_current_weather_value_all";
+
+    /**
+     * 当前天气温度单位，比如℃
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_UNIT = "data_current_weather_unit";
+
+    /**
+     * 当前天气图标
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_ICON = "data_current_weather_icon";
+
+    /**
+     * 24小时天气
+     */
+    public static final String VALUE_TYPE_DATA_24HOURS_WEATHER = "data_24hours_weather";
+
+    /**
+     * 日出时间或者日落时间 ,转换成分钟
+     */
+    public static final String VALUE_TYPE_DATA_SUNRISE_SUNSET_TIME = "data_24hours_sunrise_sunset_time";
+
+    /**
+     * 显示日出或者日落时间时的图标 日出时间时 返回0 返回日落时间时 返回1
+     */
+    public static final String VALUE_TYPE_DATA_SUNRISE_SUNSET_ICON = "data_24hours_sunrise_sunset_icon";
+
+    /**
+     * 日出时间范围
+     */
+    public static final String VALUE_TYPE_DATA_SUNRISE_TIME_RANGE = "data_24hours_sunrise_range";
+
+    /**
+     * 日落时间范围
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_TIME_RANGE = "data_24hours_sunset_range";
+
+    /**
+     * 24时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_24_LAYER =
+        "data_24hours_sunrise_sunset_hours_24_layer";
+
+    /**
+     * 2时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_2_LAYER =
+        "data_24hours_sunrise_sunset_hours_2_layer";
+
+    /**
+     * 4时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_4_LAYER =
+        "data_24hours_sunrise_sunset_hours_4_layer";
+
+    /**
+     * 6时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_6_LAYER =
+        "data_24hours_sunrise_sunset_hours_6_layer";
+
+    /**
+     * 8时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_8_LAYER =
+        "data_24hours_sunrise_sunset_hours_8_layer";
+
+    /**
+     * 10时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_10_LAYER =
+        "data_24hours_sunrise_sunset_hours_10_layer";
+
+    /**
+     * 12时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_12_LAYER =
+        "data_24hours_sunrise_sunset_hours_12_layer";
+
+    /**
+     * 14时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_14_LAYER =
+        "data_24hours_sunrise_sunset_hours_14_layer";
+
+    /**
+     * 16时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_16_LAYER =
+        "data_24hours_sunrise_sunset_hours_16_layer";
+
+    /**
+     * 18时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_18_LAYER =
+        "data_24hours_sunrise_sunset_hours_18_layer";
+
+    /**
+     * 20时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_20_LAYER =
+        "data_24hours_sunrise_sunset_hours_20_layer";
+
+    /**
+     * 22时layer 为白天或者黑夜 若白天时返回1 ，黑夜时返回0（等于）
+     */
+    public static final String VALUE_TYPE_DATA_SUNSET_SUNSET_HOURS_22_LAYER =
+        "data_24hours_sunrise_sunset_hours_22_layer";
+
+    /**
+     * 最高温度
+     */
+    public static final String VALUE_TYPE_DATA_24HOURS_WEATHER_HIGHER_TEMP = "data_24hours_weather_high_temp";
+
+    /**
+     * 最高温度，带度
+     */
+    public static final String VALUE_TYPE_DATA_24HOURS_WEATHER_HIGHER_TEMP_AND_DEGREE =
+        "data_24hours_weather_high_temp_and_degree";
+
+    /**
+     * 最低温度
+     */
+    public static final String VALUE_TYPE_DATA_24HOURS_WEATHER_LOWER_TEMP = "data_24hours_weather_lower_temp";
+
+    /**
+     * 最低温度，带度
+     */
+    public static final String VALUE_TYPE_DATA_24HOURS_WEATHER_LOWER_TEMP_AND_DEGREE =
+        "data_24hours_weather_lower_temp_and_degree";
+
+    /**
+     * 城市天气
+     */
+    public static final String VALUE_TYPE_DATA_CITY_WEATHER = "data_city_weather";
+
+    /**
+     * 当前步数/目标步数
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_STEP = "data_health_step";
+
+    /**
+     * 当前站立次数/目标站立次数
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_STAND = "data_health_stand";
+
+    /**
+     * 当前运动时长/目标运动时长
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_SPORTSTIME = "data_health_sporttime";
+
+    /**
+     * 步数制作图形,当前值，最大值，最小值
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_STEP_TARGET_MAX_MIN_VALUE =
+        "data_health_step_target_max_min_value";
+
+    /**
+     * 当前心率
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_HEARTRATE_CURRENT = "data_health_health_current";
+
+    /**
+     * 心率的layer index
+     * */
+    public static final String VALUE_TYPE_DATA_HEALTH_HEARTRATE_CURRENT_INDEX = "data_health_health_current_index";
+
+    /**
+     * 最小心率
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_HEARTRATE_MIN = "data_health_health_min";
+
+    /**
+     * 最大心率
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_HEARTRATE_MAX = "data_health_health_current_max";
+
+    /**
+     * 爬楼
+     */
+    public static final String VALUE_TYPE_DATA_CLIM = "data_health_clim";
+
+    /**
+     * 当前站立次数
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_STAND_CURRENT = "data_health_stand_current";
+
+    /**
+     * 当前中高强度运动时长
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_SPORTTIME_CURRENT = "data_health_sporttime_current";
+
+    /**
+     * 当前卡路里
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_CALORIE_CURRENT = "data_health_calorie_current";
+
+    /**
+     * 卡路里的layer index
+     * */
+    public static final String VALUE_TYPE_DATA_HEALTH_CALORIE_CURRENT_INDEX = "data_health_calorie_current_index";
+
+    /**
+     * 当前卡路里带单位，如234千卡
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_CALORIE_CURRENT_WITH_UNIT =
+        "data_health_calorie_current_and_unit";
+
+    // 3.7新加
+    /**
+     * 当前步数
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_STEP_CURRENT = "data_health_step_current";
+
+    /**
+     * 步数的layer Index
+     * */
+    public static final String VALUE_TYPE_DATA_HEALTH_STEP_CURRENT_INDEX = "data_health_step_current_index";
+
+    /**
+     * 当前步数带单位，如735步
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_STEP_CURRENT_WITH_UNIT = "data_health_step_current_and_unit";
+
+    /**
+     * 最大卡路里
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_CALORIE_MAX = "data_health_health_current_max";
+
+    /**
+     * 最小卡路里
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_CALORIE_MIN = "data_health_health_current_min";
+
+    /**
+     * 站立次数制作图形,当前值，最大值，最小值
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_STAND_MAX_MIN_VALUE = "data_health_stand_max_min_value";
+
+    /**
+     * 运动时长制作图形,当前值，最大值，最小值
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_SPORTTIME_MAX_MIN_VALUE = "data_health_sporttime_max_min_value";
+
+    /**
+     * 卡路里制作图形,当前值，最大值，最小值
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_COLORIE_MAX_MIN_VALUE = "data_health_colorie_max_min_value";
+
+    /**
+     * 心率制作指针，当前最，最大值，最小值
+     */
+    public static final String VALUE_TYPE_DATA_HEALTH_HEAT_MAX_MIN_VALUE = "data_health_heat_max_min_value";
+
+    /** 世界时 时针 */
+    public static final String VALUE_TYPE_WORLD_TIME_HOUR = "world_time_hour";
+
+    /** 世界时 分针 */
+    public static final String VALUE_TYPE_WORLD_TIME_MINUTE = "world_time_minute";
+
+    /** 世界时区 白天或者黑夜 */
+    public static final String VALUE_TYPE_WORLD_TIME_MOON_OR_SUN = "world_timezone_moon_or_sun";
+
+    /** 世界时 城市简码 */
+    public static final String VALUE_TYPE_WORLD_TIME_CITY_CODE = "world_time_city_code";
+
+    /** 世界时 AM PM */
+    public static final String VALUE_TYPE_WORLD_TIME_AM_PM = "world_time_am_pm";
+
+    /** 世界时 AM PM */
+    public static final String VALUE_TYPE_WORLD_TIME_AM_PM_INDEX = "world_time_am_pm_index";
+
+    /** 简炫表盘widget是否存在 */
+    public static final String VALUE_TYPE_NONE_WIDGET_DIAL = "selected_dial_widget";
+
+    /** 简炫表盘widget,默认存在 */
+    public static final String VALUE_TYPE_NONE_WIDGET_DIAL_DEFAULT_HIDE = "selected_dial_widget_default_hide";
+
+    /** 金色表盘widget是否存在 */
+    public static final String VALUE_TYPE_NONE_WIDGET_GOLDEN_DIAL = "selected_dial_widget_golden";
+
+    /** 一周表盘星期背景layer索引 */
+    public static final String VALUE_TYPE_AWEEK_BACKGROUND_INDEX = "aweek_background_index";
+
+    /** 一周表盘星期时针layer索引 */
+    public static final String VALUE_TYPE_AWEEK_HOUR_INDEX = "aweek_hour_index";
+
+    /** 一周表盘星期分针layer索引 */
+    public static final String VALUE_TYPE_AWEEK_MINUTE_INDEX = "aweek_minute_index";
+
+    /** 步数 */
+    public static final String DATA_TYPE_STEP = "step";
+
+    /** 卡路里 */
+    public static final String DATA_TYPE_CALORIES = "calories";
+
+    /** 天气 */
+    public static final String DATA_TYPE_WEATHER = "weather";
+
+    /** 压力（气压） */
+    public static final String DATA_TYPE_PRESSURE = "pressure";
+
+    /** 心率 */
+    public static final String DATA_TYPE_HEART_RATE = "heart_rate";
+
+    /** 电池 */
+    public static final String DATA_TYPE_BATTERY = "battery";
+
+    /** 压力（运动） */
+    public static final String DATA_TYPE_PRESSURE_SPORT = "pressure_sport";
+
+    /** 日历 */
+    public static final String DATA_TYPE_CALENDAR = "calendar";
+
+    /** 日历样式 1 */
+    public static final String DATA_TYPE_CALENDAR_1 = "calendar_1";
+
+    /** 日历样式 2 */
+    public static final String DATA_TYPE_CALENDAR_2 = "calendar_2";
+
+    /** 日历样式 3 */
+    public static final String DATA_TYPE_CALENDAR_3 = "calendar_3";
+
+    /** 日历样式 4 */
+    public static final String DATA_TYPE_CALENDAR_4 = "calendar_4";
+
+    /** 月相 */
+    public static final String DATA_TYPE_MOON_PHASE = "moon_phase";
+
+    /** 空气质量 */
+    public static final String DATA_TYPE_AIR_QUALITY = "air_quality";
+
+    /** 世界时 */
+    public static final String DATA_TYPE_WORLD_TIME = "world_time";
+
+    /** 秒针 */
+    public static final String DATA_TYPE_SECOND_HAND = "second_hand";
+
+    /** 日出日落 */
+    public static final String DATA_TYPE_SUNRISE_SUNSET = "sunrise_and_sunset";
+
+    /** 爬楼 */
+    public static final String DATA_TYPE_CLIMB_STAIR = "climb_stair";
+
+    /** 活动小时 */
+    public static final String DATA_TYPE_ACTIVITY_HOUR = "activity_hour";
+
+    /** 中高强度 */
+    public static final String DATA_TYPE_MIDDLE_HIGH_INTENSITY = "middle_high_intensity";
+
+    /** 活动小时文字 */
+    public static final String DATA_TYPE_ACTIVITY_HOUR_TEXT = "activity_hour_text";
+
+    /** 中高强度文字 */
+    public static final String DATA_TYPE_MIDDLE_HIGH_INTENSITY_TEXT = "middle_high_intensity_text";
+
+    /** 距离 */
+    public static final String DATA_TYPE_DISTANCE = "distance";
+
+    /** 最大摄氧量 */
+    public static final String DATA_TYPE_MAX_OXYGEN_UPTAKE = "max_oxygen_uptake";
+
+    /** 当前心率阶段 */
+    public static final String DATA_HEATH_HEAT_RATE_STEP = "data_current_heat_rate_step";
+
+    /**
+     * 蓝牙打开状态
+     */
+    public static final String DATA_TYPE_BLUTH_STATUS = "blueth_status";
+
+    /**
+     * 天数
+     */
+    public static final String DATA_TYPE_MONTH_DAY = "month_day";
+
+    /**
+     * 天数&星期
+     */
+    public static final String DATA_TYPE_MONTH_DAY_WEEK = "month_day_week";
+
+    /**
+     * 星期
+     */
+    public static final String DATA_TYPE_MONTH_WEEK = "month_week";
+
+    /**
+     * 日期
+     */
+    public static final String DATA_TYPE_TIME_DAY = "data_time_day";
+
+    /**
+     * 农历
+     */
+    public static final String DATA_TYPE_TIME_DAY_CHINA = "data_time_day_china";
+
+    /**
+     * 联系人
+     */
+    public static final String DATA_TYPE_CONTACT = "contact";
+
+    /**
+     * 日期
+     */
+    public static final String DATA_DAY = "data_day";
+
+    /**
+     * 星期
+     */
+    public static final String DATA_WEEK = "data_week";
+
+    /**
+     *当前温度占比
+     */
+    public static final String VALUE_TYPE_DATA_CURRENT_WEATHER_PERCENTAGE = "data_current_weather_percentage";
+
+    /**
+     * 秒针刻度
+     */
+    public static final String DATA_TYPE_SECONDS_DEGREE = "health_seconds_degree";
+
+    private DataConstantUtils() {
+    }
+}
+
+
+
+
+
+
+
+
+/**
+ * 数据提供者接口
+ *
+ * @author m00230717
+ * @version 1.0.0
+ * @since 2019/3/7
+ */
+public interface IDataProvider {
+    /**
+     * 获取字符串值
+     *
+     * @param valueType 数据类型
+     * @return 字符串值
+     */
+    String getStringValue(String valueType);
+
+    /**
+     * 获取字符串值
+     * @param valueType 数据类型
+     * @param format 字符串格式要求
+     * @return 字符串值
+     */
+    String getStringValue(String valueType, String... format);
+
+    /**
+     * 获取整数值
+     * @param valueType 数据类型
+     * @return 整数值
+     */
+    int getIntValue(String valueType);
+
+    /**
+     * 获取浮点数值
+     * @param valueType 数据类型
+     * @return 浮点数值
+     */
+    float getFloatValue(String valueType);
+
+    /**
+     * 获取整数RangeValue对象
+     * @param valueType 数据类型
+     * @return 整数RangeValue对象
+     */
+    IntRangeValue getIntRangeValue(String valueType);
+
+    /**
+     * 获取浮点数RangeValue对象
+     * @param valueType 数据类型
+     * @return 浮点数RangeValue对象
+     */
+    FloatRangeValue getFloatRangeValue(String valueType);
+
+    /**
+     * 获取数据类型对应的索引值
+     * @param valueType 数据类型
+     * @return 索引值
+     */
+    int getIndexValue(String valueType);
+
+    /**
+     * 获取数据类型对应的layer索引值
+     * @param valueType 数据类型
+     * @return layer索引值
+     */
+    int getLayerIndexValue(String valueType);
+
+    /**
+     * 点击事件
+     * @param dataType 数据类型
+     */
+    void doClick(String dataType);
+}
+
+
+
+
+
+
+
+
+
+
+/**
+ * xml文件中container标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Container {
+    @SerializedName("layer")
+    private List<Layer> layers;
+
+    @SerializedName("@index")
+    private String index;
+
+    @SerializedName("@rect")
+    private String rect;
+
+    @SerializedName("@is_support_option")
+    private String isSupportOption;
+
+    @SerializedName("@res_preview")
+    private String resPreview;
+
+    @SerializedName("@selected_option")
+    private String selectedOption;
+
+    @SerializedName("@available_option")
+    private String availableOption;
+
+    @SerializedName("@data_type")
+    private String dataType;
+
+    @SerializedName("@is_available")
+    private String isAvailable;
+
+    @SerializedName("@rotate_degree")
+    private String rotateDegree;
+
+    @SerializedName("@center_degree")
+    private String centerDegree;
+
+    @SerializedName("@res_rotate_preview")
+    private String resRotatePreview;
+
+    @SerializedName("@res_radian")
+    private String resRadian;
+
+    @SerializedName("@is_arc_linear")
+    private String isArcLinear;
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public String getRect() {
+        return rect;
+    }
+
+    public String getIsSupportOption() {
+        return isSupportOption;
+    }
+
+    public String getResPreview() {
+        return resPreview;
+    }
+
+    public String getSelectedOption() {
+        return selectedOption;
+    }
+
+    public String getAvailableOption() {
+        return availableOption;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public String getIsAvailable() {
+        return isAvailable;
+    }
+
+    public void setIsAvailable(String isAvailable) {
+        this.isAvailable = isAvailable;
+    }
+
+    public void setSelectedOption(String selectedOption) {
+        this.selectedOption = selectedOption;
+    }
+
+    public String getRotateDegree() {
+        return rotateDegree;
+    }
+
+    public void setRotateDegree(String rotateDegree) {
+        this.rotateDegree = rotateDegree;
+    }
+
+    public String getResRotatePreview() {
+        return resRotatePreview;
+    }
+
+    public void setResRotatePreview(String resRotatePreview) {
+        this.resRotatePreview = resRotatePreview;
+    }
+
+    public String getCenterDegree() {
+        return centerDegree;
+    }
+
+    public void setCenterDegree(String centerDegree) {
+        this.centerDegree = centerDegree;
+    }
+
+    public String getResRadian() {
+        return resRadian;
+    }
+
+    public void setResRadian(String resRadian) {
+        this.resRadian = resRadian;
+    }
+
+    public String getIsArcLinear() {
+        return isArcLinear;
+    }
+
+    public void setIsArcLinear(String isArcLinear) {
+        this.isArcLinear = isArcLinear;
+    }
+
+    /**
+     * 获取指定layer
+     * @param i layer索引
+     * @return layer对象
+     */
+    public Optional<Layer> getLayer(String i) {
+        if ((layers == null) || (layers.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Layer layer : layers) {
+            if (layer == null) {
+                continue;
+            }
+            if (TextUtils.equals(layer.getIndex().trim(), i.trim())) {
+                return Optional.of(layer);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public String toString() {
+        return " Container { layers=" + layers + " , index=" + index + " , rect=" + rect + " , isSupportOption="
+            + isSupportOption + " , selectedOption=" + selectedOption + " , availableOption=" + availableOption
+            + " , dataType=" + dataType + " } ";
+    }
+}
+
+
+
+
+
+
+
+
+import android.text.TextUtils;
+
+/**
+ * xml中element标签对应对象
+ *
+ * @author h00383482
+ * @version 1.0.0
+ * @since 2019/1/3
+ */
+
+public class Element {
+    @SerializedName("option")
+    private List<Option> options;
+
+    @SerializedName("container")
+    private List<Container> containers;
+
+    @SerializedName("layer")
+    private List<Layer> layers;
+
+    @SerializedName("@label")
+    private String label;
+
+    @SerializedName("@is_support_option")
+    private String isSupportOption;
+
+    @SerializedName("@selected_option")
+    private String selectedOption;
+
+    @SerializedName("@res_preview")
+    private String resPreview;
+
+    public List<Option> getOptions() {
+        return options;
+    }
+
+    public List<Container> getContainers() {
+        return containers;
+    }
+
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getIsSupportOption() {
+        return isSupportOption;
+    }
+
+    public String getSelectedOption() {
+        return selectedOption;
+    }
+
+    public void setSelectedOption(String index) {
+        selectedOption = index;
+    }
+
+    public String getResPreview() {
+        return resPreview;
+    }
+
+    /**
+     * 获取指定option
+     * @param optionIndexStr option索引
+     * @return option对象
+     */
+    public Optional<Option> getOption(String optionIndexStr) {
+        // 修复样式中选择无的时候崩溃的bug
+        if (TextUtils.isEmpty(optionIndexStr)) {
+            return Optional.empty();
+        }
+        if ((options == null) || (options.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Option option : options) {
+            if (option == null) {
+                continue;
+            }
+            if (TextUtils.equals(option.getIndex().trim(), optionIndexStr.trim())) {
+                return Optional.of(option);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * 获取指定container
+     * @param i container索引
+     * @return container对象
+     */
+    public Optional<Container> getContainer(String i) {
+        if ((containers == null) || (containers.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Container container : containers) {
+            if (container == null) {
+                continue;
+            }
+            if (TextUtils.equals(container.getIndex().trim(), i.trim())) {
+                return Optional.of(container);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * 获取指定layer
+     * @param i layer索引
+     * @return layer对象
+     */
+    public Optional<Layer> getLayer(String i) {
+        if ((layers == null) || (layers.size() <= 0)) {
+            return Optional.empty();
+        }
+        for (Layer layer : layers) {
+            if (layer == null) {
+                continue;
+            }
+            if (TextUtils.equals(layer.getIndex().trim(), i.trim())) {
+                return Optional.of(layer);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * 获取预览图
+     * @return 预览图名称
+     */
+    public String getPreview() {
+        if (HwUtil.getBoolValue(getIsSupportOption())) {
+            Optional<Option> option = getOption(getSelectedOption());
+            if (!option.isPresent()) {
+                return "";
+            }
+            return option.get().getResPreview();
+        } else {
+            return getResPreview();
+        }
+    }
+
+    /**
+     * 获取预览图
+     * @param i container索引
+     * @return 预览图名称
+     */
+    public String getPreview(String i) {
+        Optional<Container> container = getContainer(i);
+        if (!container.isPresent()) {
+            return "";
+        }
+        if (HwUtil.getBoolValue(container.get().getIsSupportOption())) {
+            Optional<Option> option = getOption(container.get().getSelectedOption());
+            if (!option.isPresent()) {
+                return "";
+            }
+            return option.get().getResPreview();
+        } else {
+            return container.get().getResPreview();
+        }
+    }
+
+    /**
+     * 获取蓝色异形预览图
+     *
+     * @param i container索引
+     * @return 蓝色异形预览图名称
+     */
+    public String getBorderPreview(String i) {
+        Optional<Container> container = getContainer(i);
+        if (!container.isPresent()) {
+            return "";
+        }
+        if (HwUtil.getBoolValue(container.get().getIsSupportOption())) {
+            Optional<Option> option = getOption(container.get().getSelectedOption());
+            if (!option.isPresent()) {
+                return "";
+            }
+            return option.get().getResBorderPreview();
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * 获取蓝色异形预览图(健康三环)
+     *
+     * @param i container索引
+     * @return 蓝色异形预览图名称
+     */
+    public String getContainerPreview(String i) {
+        Optional<Container> container = getContainer(i);
+        if (!container.isPresent()) {
+            return "";
+        }
+        if (HwUtil.getBoolValue(container.get().getIsSupportOption())) {
+            return container.get().getResRotatePreview();
+        } else {
+            return "";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return " Element { options=" + options + " , containers=" + containers + " , layers=" + layers + " , label="
+            + label + " , isSupportOption=" + isSupportOption + " , selectedOption=" + selectedOption + " } ";
+    }
+}
+
+
+
+
+
